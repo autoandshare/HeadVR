@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="autoandshare.headvr.activity.SettingActivity">
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_margin="10dp"
+        android:background="@android:color/darker_gray" />
+
+    <TextView
+        android:id="@+id/textViewBrightness"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Brightness" />
+
+    <SeekBar
+        android:id="@+id/seekBarBrightness"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:max="200" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_margin="10dp"
+        android:background="@android:color/darker_gray" />
+
+    <TextView
+        android:id="@+id/textViewVideoSize"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="VideoSize" />
+
+    <SeekBar
+        android:id="@+id/seekBarVideoSize"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:max="200" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_margin="10dp"
+        android:background="@android:color/darker_gray" />
+
+    <TextView
+        android:id="@+id/textViewEyeDistance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="EyeDistance" />
+
+    <SeekBar
+        android:id="@+id/seekBarEyeDistance"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:max="200" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_margin="10dp"
+        android:background="@android:color/darker_gray" />
+
+    <TextView
+        android:id="@+id/textViewEyeDistance3D"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="EyeDistance" />
+
+    <SeekBar
+        android:id="@+id/seekBarEyeDistance3D"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:max="200" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_margin="10dp"
+        android:background="@android:color/darker_gray" />
+
+    <TextView
+        android:id="@+id/textViewVerticalDistance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="EyeDistance" />
+
+    <SeekBar
+        android:id="@+id/seekBarVerticalDistance"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:max="200" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_margin="10dp"
+        android:background="@android:color/darker_gray" />
+
+    <TextView
+        android:id="@+id/textViewSensitivity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="MotionSensitivity" />
+
+    <SeekBar
+        android:id="@+id/seekBarSensitivity"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_margin="10dp"
+        android:background="@android:color/darker_gray" />
+
+    <Button
+        android:id="@+id/buttonReset"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Reset" />
+
+</LinearLayout>
