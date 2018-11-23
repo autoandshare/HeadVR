@@ -93,7 +93,7 @@ public class SettingActivity extends AppCompatActivity implements View.OnClickLi
     private void initSeekBars() {
         initSeekBars(R.id.seekBarBrightness, Setting.id.Brightness, R.id.textViewBrightness);
         initSeekBars(R.id.seekBarEyeDistance, Setting.id.EyeDistance, R.id.textViewEyeDistance);
-        initSeekBars(R.id.seekBarEyeDistance3D, Setting.id.EyeDistance, R.id.textViewEyeDistance3D);
+        initSeekBars(R.id.seekBarEyeDistance3D, Setting.id.EyeDistance3D, R.id.textViewEyeDistance3D);
         initSeekBars(R.id.seekBarVerticalDistance, Setting.id.VerticalDistance, R.id.textViewVerticalDistance);
         initSeekBars(R.id.seekBarVideoSize, Setting.id.VideoSize, R.id.textViewVideoSize);
         initSeekBars(R.id.seekBarSensitivity, Setting.id.MotionSensitivity, R.id.textViewSensitivity);

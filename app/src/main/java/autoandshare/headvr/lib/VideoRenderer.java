@@ -1,6 +1,7 @@
 package autoandshare.headvr.lib;
 
 import android.app.Activity;
+import android.graphics.PointF;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
@@ -88,6 +89,16 @@ public class VideoRenderer {
     private MediaPlayer mPlayer;
     private VRTexture2D videoScreen;
 
+    private boolean isSideBySide(String path) {
+        return path.matches(".*\\bsbs\\b.*") ||
+                path.matches(".*\\bSBS\\b.*");
+    }
+
+    private boolean isOverUnder(String path) {
+        return path.matches(".*\\bou\\b.*") ||
+                path.matches(".*\\bOU\\b.*");
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.ICE_CREAM_SANDWICH)
     public VideoRenderer(Activity activity, Uri uri, float videoSize) {
         if (uri == null) {
@@ -109,10 +120,34 @@ public class VideoRenderer {
             state.videoLength = mPlayer.getDuration();
 
             // TODO: support side by side, over under
-            videoScreen.updatePositions(videoSize,
-                    videoSize * mPlayer.getVideoHeight() / mPlayer.getVideoWidth(),
-                    3.1f,
-                    null);
+            if (isSideBySide(uri.getPath())) {
+
+                videoScreen.updatePositions(videoSize,
+                        videoSize * mPlayer.getVideoHeight() / mPlayer.getVideoWidth(),
+                        3.1f,
+                        null,
+                        new PointF(0, 1), new PointF(0.5f, 0),
+                        new PointF(0.5f, 1), new PointF(1, 0)
+                );
+
+            } else if (isOverUnder(uri.getPath())) {
+
+                videoScreen.updatePositions(videoSize,
+                        videoSize * mPlayer.getVideoHeight() / mPlayer.getVideoWidth(),
+                        3.1f,
+                        null,
+                        new PointF(0, 1), new PointF(1, 0.5f),
+                        new PointF(0, 0.5f), new PointF(1, 0)
+                );
+
+            } else {
+
+                videoScreen.updatePositions(videoSize,
+                        videoSize * mPlayer.getVideoHeight() / mPlayer.getVideoWidth(),
+                        3.1f,
+                        null);
+
+            }
 
         } catch (IOException ex) {
             state.errorMessage = "Unable to play the file";
