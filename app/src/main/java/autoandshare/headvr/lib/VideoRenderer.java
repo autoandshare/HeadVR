@@ -11,6 +11,7 @@ import android.view.Surface;
 import com.google.vr.sdk.base.Eye;
 
 import java.io.IOException;
+import java.util.regex.Pattern;
 
 import autoandshare.headvr.lib.headcontrol.HeadControl;
 import autoandshare.headvr.lib.headcontrol.HeadMotion.Motion;
@@ -89,15 +90,28 @@ public class VideoRenderer {
     private MediaPlayer mPlayer;
     private VRTexture2D videoScreen;
 
+    private Pattern sideBySidePattern =
+            Pattern.compile("[^A-Za-z0-9](h?)sbs[^A-Za-z0-9]",
+                    Pattern.CASE_INSENSITIVE);
+
+    private Pattern overUnderPattern =
+            Pattern.compile("[^A-Za-z0-9](h?)ou[^A-Za-z0-9]",
+                    Pattern.CASE_INSENSITIVE);
+
+    private Pattern topAndBottomPattern =
+            Pattern.compile("[^A-Za-z0-9](h?)tab[^A-Za-z0-9]",
+                    Pattern.CASE_INSENSITIVE);
+
     private boolean isSideBySide(String path) {
-        return path.matches(".*\\bsbs\\b.*") ||
-                path.matches(".*\\bSBS\\b.*");
+        return sideBySidePattern.matcher(path).find();
     }
 
     private boolean isOverUnder(String path) {
-        return path.matches(".*\\bou\\b.*") ||
-                path.matches(".*\\bOU\\b.*");
+        return overUnderPattern.matcher(path).find() ||
+                topAndBottomPattern.matcher(path).find();
     }
+
+
 
     @RequiresApi(api = Build.VERSION_CODES.ICE_CREAM_SANDWICH)
     public VideoRenderer(Activity activity, Uri uri, float videoSize) {
@@ -119,11 +133,16 @@ public class VideoRenderer {
             state.currentPosition = mPlayer.getCurrentPosition();
             state.videoLength = mPlayer.getDuration();
 
-            // TODO: support side by side, over under
-            if (isSideBySide(uri.getPath())) {
+            float heightWidthRatio = (float)mPlayer.getVideoHeight() / mPlayer.getVideoWidth();
 
+            if (isSideBySide(uri.getPath())) {
+                // auto detect half and full
+                // 4:3 - 21:9 | (4*2):3 - (21*2):9
+                if (heightWidthRatio < (3f/8 + 9f/21)/2) {
+                    heightWidthRatio *= 2;
+                }
                 videoScreen.updatePositions(videoSize,
-                        videoSize * mPlayer.getVideoHeight() / mPlayer.getVideoWidth(),
+                        videoSize * heightWidthRatio,
                         3.1f,
                         null,
                         new PointF(0, 1), new PointF(0.5f, 0),
@@ -131,9 +150,14 @@ public class VideoRenderer {
                 );
 
             } else if (isOverUnder(uri.getPath())) {
+                // auto detect half and full
+                // 21:9 - 4:3 | 21:(9*2) - 4:(3*2)
+                if (heightWidthRatio > (3f/4 + 18f/21)/2) {
+                    heightWidthRatio /= 2;
+                }
 
                 videoScreen.updatePositions(videoSize,
-                        videoSize * mPlayer.getVideoHeight() / mPlayer.getVideoWidth(),
+                        videoSize * heightWidthRatio,
                         3.1f,
                         null,
                         new PointF(0, 1), new PointF(1, 0.5f),
@@ -143,7 +167,7 @@ public class VideoRenderer {
             } else {
 
                 videoScreen.updatePositions(videoSize,
-                        videoSize * mPlayer.getVideoHeight() / mPlayer.getVideoWidth(),
+                        videoSize * heightWidthRatio,
                         3.1f,
                         null);
 
