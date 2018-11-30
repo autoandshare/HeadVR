@@ -121,7 +121,6 @@ public class VideoRenderer {
         }
         try {
             videoScreen = new VRTexture2D();
-
             mPlayer = new MediaPlayer();
 
             mPlayer.setDataSource(activity.getApplicationContext(), uri);

@@ -22,10 +22,10 @@ public class BasicUI {
     private Paint progressLinePaint2;
     private static final float textSize = 30;
     private static final float strokeWidth = 16;
-    private static final float margin = 20;
+    private static final float margin = 10;
     private static final float textY = -6;
     private static final float lineY = 45;
-    private static final float uiWidth = 1f;
+    private static final float uiWidth = 1.2f;
 
     public BasicUI() {
 
@@ -38,7 +38,7 @@ public class BasicUI {
         progressPaint = new Paint();
         progressPaint.setColor(Color.LTGRAY);
         progressPaint.setTextSize(textSize);
-        progressPaint.setTextAlign(Paint.Align.CENTER);
+        progressPaint.setTextAlign(Paint.Align.RIGHT);
 
         progressLinePaint1 = new Paint();
         progressLinePaint1.setColor(Color.LTGRAY);
@@ -104,14 +104,14 @@ public class BasicUI {
         } else if (control.notIdle()) {
             string = motionString(control.getMotions());
         }
-        drawString(canvas, string, 320, textY, iconPaint);
+        drawString(canvas, string, 45, textY, iconPaint);
     }
 
     private void drawProgress(Canvas canvas, VideoRenderer.State videoState) {
         int showPosition = videoState.seeking ? videoState.newPosition : videoState.currentPosition;
         drawString(canvas, formatTime(showPosition) + " / " +
                         formatTime(videoState.videoLength),
-                canvas.getWidth() / 2, textY, progressPaint);
+                canvas.getWidth() - margin, textY, progressPaint);
 
         float begin = margin;
         float end = canvas.getWidth() - begin;
@@ -145,7 +145,7 @@ public class BasicUI {
 
     private String motionString(List<Motion> motions) {
         StringBuilder string = new StringBuilder();
-        for (int i = 0; i < motions.size(); i++) {
+        for (int i = 0; (i < motions.size()) && (i < 5); i++) {
             string.append(motionChar.get(motions.get(i)));
         }
         return string.toString();
