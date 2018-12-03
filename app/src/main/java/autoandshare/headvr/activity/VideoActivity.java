@@ -120,6 +120,7 @@ public class VideoActivity extends GvrActivity implements
         super.onPause();
         Log.i(TAG, "onPause()");
         videoRenderer.pause();
+        videoRenderer.savePosition();
     }
 
     @Override

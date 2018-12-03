@@ -111,33 +111,40 @@ public class VideoRenderer {
                 topAndBottomPattern.matcher(path).find();
     }
 
-
+    private VideoProperties videoProperties;
+    private Uri uri;
 
     @RequiresApi(api = Build.VERSION_CODES.ICE_CREAM_SANDWICH)
     public VideoRenderer(Activity activity, Uri uri, float videoSize) {
+        this.uri = uri;
+        
+        videoProperties = new VideoProperties(activity);
+
+        videoScreen = new VRTexture2D();
+        mPlayer = new MediaPlayer();
+        mPlayer.setSurface(new Surface(videoScreen.getSurfaceTexture()));
+        mPlayer.setLooping(false);
+
         if (uri == null) {
             this.state.errorMessage = "No url provided";
             return;
         }
         try {
-            videoScreen = new VRTexture2D();
-            mPlayer = new MediaPlayer();
 
             mPlayer.setDataSource(activity.getApplicationContext(), uri);
-            mPlayer.setSurface(new Surface(videoScreen.getSurfaceTexture()));
-            mPlayer.setLooping(true);
             mPlayer.prepare();
+            mPlayer.seekTo(videoProperties.getPosition(uri));
             mPlayer.start();
             state.playing = true;
             state.currentPosition = mPlayer.getCurrentPosition();
             state.videoLength = mPlayer.getDuration();
 
-            float heightWidthRatio = (float)mPlayer.getVideoHeight() / mPlayer.getVideoWidth();
+            float heightWidthRatio = (float) mPlayer.getVideoHeight() / mPlayer.getVideoWidth();
 
             if (isSideBySide(uri.getPath())) {
                 // auto detect half and full
                 // 4:3 - 21:9 | (4*2):3 - (21*2):9
-                if (heightWidthRatio < (3f/8 + 9f/21)/2) {
+                if (heightWidthRatio < (3f / 8 + 9f / 21) / 2) {
                     heightWidthRatio *= 2;
                 }
                 videoScreen.updatePositions(videoSize,
@@ -151,7 +158,7 @@ public class VideoRenderer {
             } else if (isOverUnder(uri.getPath())) {
                 // auto detect half and full
                 // 21:9 - 4:3 | 21:(9*2) - 4:(3*2)
-                if (heightWidthRatio > (3f/4 + 18f/21)/2) {
+                if (heightWidthRatio > (3f / 4 + 18f / 21) / 2) {
                     heightWidthRatio /= 2;
                 }
 
@@ -197,6 +204,12 @@ public class VideoRenderer {
     public void pause() {
         if (state.playing) {
             pauseOrPlay();
+        }
+    }
+
+    public void savePosition() {
+        if (state.errorMessage == null) {
+            videoProperties.setPosition(uri, mPlayer.getCurrentPosition());
         }
     }
 
