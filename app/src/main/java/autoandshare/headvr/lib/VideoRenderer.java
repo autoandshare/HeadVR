@@ -113,11 +113,15 @@ public class VideoRenderer {
 
     private VideoProperties videoProperties;
     private Uri uri;
+    private Activity activity;
+    private float videoSize;
 
     @RequiresApi(api = Build.VERSION_CODES.ICE_CREAM_SANDWICH)
     public VideoRenderer(Activity activity, Uri uri, float videoSize) {
+        this.activity = activity;
+        this.videoSize = videoSize;
         this.uri = uri;
-        
+
         videoProperties = new VideoProperties(activity);
 
         videoScreen = new VRTexture2D();
@@ -125,10 +129,18 @@ public class VideoRenderer {
         mPlayer.setSurface(new Surface(videoScreen.getSurfaceTexture()));
         mPlayer.setLooping(false);
 
+        playUri(uri);
+
+    }
+
+    public void playUri(Uri uri) {
+        mPlayer.reset();
+
         if (uri == null) {
             this.state.errorMessage = "No url provided";
             return;
         }
+
         try {
 
             mPlayer.setDataSource(activity.getApplicationContext(), uri);
@@ -180,9 +192,9 @@ public class VideoRenderer {
             }
 
         } catch (IOException ex) {
-            state.errorMessage = "Unable to play the file";
+            String url = uri.toString();
+            state.errorMessage = "error with " + url.substring(url.lastIndexOf('/') + 1, url.length());
         }
-
     }
 
     @RequiresApi(api = Build.VERSION_CODES.HONEYCOMB)

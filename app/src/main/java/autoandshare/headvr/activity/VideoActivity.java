@@ -24,6 +24,7 @@ import autoandshare.headvr.R;
 import autoandshare.headvr.lib.BasicUI;
 import autoandshare.headvr.lib.Setting;
 import autoandshare.headvr.lib.VideoRenderer;
+import autoandshare.headvr.lib.browse.LocalFileList;
 import autoandshare.headvr.lib.headcontrol.HeadControl;
 import autoandshare.headvr.lib.headcontrol.HeadMotion;
 import autoandshare.headvr.lib.headcontrol.HeadMotion.Motion;
@@ -40,6 +41,7 @@ public class VideoActivity extends GvrActivity implements
 
     Uri uri;
     GvrView cardboardView;
+    LocalFileList fileList;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -61,7 +63,7 @@ public class VideoActivity extends GvrActivity implements
             Log.i("intent", uri.toString());
         }
 
-
+        fileList = new LocalFileList(uri);
     }
 
     private HeadControl headControl = new HeadControl();
@@ -72,6 +74,8 @@ public class VideoActivity extends GvrActivity implements
     private static final List<Motion> Idles = Arrays.asList(Motion.IDLE, Motion.IDLE, Motion.IDLE);
     private static final List<Motion> Any = Collections.singletonList(Motion.ANY);
     private static final List<Motion> Home = Arrays.asList(Motion.UP, Motion.LEFT, Motion.RIGHT, Motion.DOWN);
+    private static final List<Motion> Next = Arrays.asList(Motion.DOWN, Motion.RIGHT, Motion.LEFT);
+    private static final List<Motion> Prev = Arrays.asList(Motion.DOWN, Motion.LEFT, Motion.RIGHT);
 
     private void setupMotionActionTable() {
         headControl.addMotionAction(Any, () -> {
@@ -88,6 +92,27 @@ public class VideoActivity extends GvrActivity implements
             return false;
         });
         headControl.addMotionAction(Home, this::returnHome);
+        headControl.addMotionAction(Next, this::nextFile);
+        headControl.addMotionAction(Prev, this::prevFile);
+    }
+
+    private Boolean prevFile() {
+        Uri uri = fileList.previous(this.uri);
+        playUri(uri);
+        return true;
+    }
+
+    private Boolean nextFile() {
+        Uri uri = fileList.next(this.uri);
+        playUri(uri);
+        return true;
+    }
+
+    private void playUri(Uri uri) {
+        if (uri != null) {
+            this.uri = uri;
+            videoRenderer.playUri(uri);
+        }
     }
 
     private Boolean returnHome() {
@@ -207,6 +232,10 @@ public class VideoActivity extends GvrActivity implements
     private boolean uiVisible;
 
     private void checkUIVisibility(Motion motion) {
+        if (videoRenderer.getState().errorMessage != null) {
+            uiVisible = true;
+            return;
+        }
         if (motion == Motion.ANY) {
             if (headControl.notIdle()) {
                 uiVisible = true;

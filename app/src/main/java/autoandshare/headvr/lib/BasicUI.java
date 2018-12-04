@@ -20,6 +20,7 @@ public class BasicUI {
     private Paint progressPaint;
     private Paint progressLinePaint1;
     private Paint progressLinePaint2;
+    private Paint errorPaint;
     private static final float textSize = 30;
     private static final float strokeWidth = 16;
     private static final float margin = 10;
@@ -48,6 +49,12 @@ public class BasicUI {
         progressLinePaint2.setColor(Color.DKGRAY);
         progressLinePaint2.setStrokeWidth(strokeWidth);
 
+        errorPaint = new Paint();
+        errorPaint.setColor(Color.LTGRAY);
+        errorPaint.setTextSize(textSize);
+        errorPaint.setTextAlign(Paint.Align.CENTER);
+
+
     }
 
     public void glDraw(Eye eye, VideoRenderer.State videoState, HeadControl control) {
@@ -57,7 +64,8 @@ public class BasicUI {
             canvas.drawColor(Color.BLACK);
 
             if (videoState.errorMessage != null) {
-                drawString(canvas, videoState.errorMessage, canvas.getWidth() / 2, 0, progressPaint);
+                drawMotions(canvas, control);
+                drawString(canvas, videoState.errorMessage, canvas.getWidth() / 2, 18, errorPaint);
             } else {
                 drawMotions(canvas, control);
                 drawStateIcon(canvas, videoState);
