@@ -43,10 +43,8 @@ public class LocalFileList {
     private Uri next(Uri uri, int offset) {
         int pos = find(uri);
         if (pos >= 0) {
-            int newPos = pos + offset;
-            if ((newPos >= 0) && (newPos < fileList.length)) {
-                return Uri.fromFile(fileList[newPos]);
-            }
+            int newPos = (pos + offset + fileList.length) % fileList.length;
+            return Uri.fromFile(fileList[newPos]);
         }
         return null;
     }

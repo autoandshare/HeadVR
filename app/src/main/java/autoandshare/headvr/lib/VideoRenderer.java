@@ -191,8 +191,10 @@ public class VideoRenderer {
 
             }
 
+            state.errorMessage = null;
+
         } catch (IOException ex) {
-            String url = uri.toString();
+            String url = uri.getPath().toString();
             state.errorMessage = "error with " + url.substring(url.lastIndexOf('/') + 1, url.length());
         }
     }

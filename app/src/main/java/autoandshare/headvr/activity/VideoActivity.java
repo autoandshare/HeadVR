@@ -111,6 +111,7 @@ public class VideoActivity extends GvrActivity implements
     private void playUri(Uri uri) {
         if (uri != null) {
             this.uri = uri;
+            videoRenderer.savePosition();
             videoRenderer.playUri(uri);
         }
     }
