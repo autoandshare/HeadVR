@@ -120,7 +120,6 @@ public class VideoRenderer {
     public VideoRenderer(Activity activity, Uri uri, float videoSize) {
         this.activity = activity;
         this.videoSize = videoSize;
-        this.uri = uri;
 
         videoProperties = new VideoProperties(activity);
 
@@ -134,6 +133,8 @@ public class VideoRenderer {
     }
 
     public void playUri(Uri uri) {
+
+        this.uri = uri;
         mPlayer.reset();
 
         if (uri == null) {
