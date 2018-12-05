@@ -48,18 +48,35 @@ public class VideoRenderer {
         return true;
     }
 
+    private boolean cancelSeek(HeadControl control) {
+        Motion motion = control.getMotions().get(0);
+        return ((state.forward && !motion.equals(Motion.LEFT))) ||
+                (((!state.forward) && !motion.equals(Motion.RIGHT)));
+    }
+
+    private int seekCount = 0;
+
     public Boolean handleSeeking(Motion motion, HeadControl control) {
-        int offset = 60;
+        int offset = 30;
 
         if (motion.equals(Motion.ANY)) {
             if (state.seeking) {
-                mPlayer.seekTo(state.newPosition);
+                if (!cancelSeek(control)) {
+                    mPlayer.seekTo(state.newPosition);
+                }
                 state.seeking = false;
+                seekCount = 0;
                 control.waitForIdle();
                 return true;
             }
         } else if (motion.equals(Motion.IDLE)) {
             if (state.seeking) {
+                seekCount += 1;
+                if (seekCount > 2) {
+                    seekCount = 2;
+                }
+                offset *= 2 * seekCount;
+
                 state.newPosition = newPosition(state.newPosition,
                         state.forward ? offset : -offset);
                 return true;
@@ -68,7 +85,7 @@ public class VideoRenderer {
             if (!state.seeking) {
                 state.seeking = true;
                 state.forward = motion.equals(Motion.RIGHT);
-                state.newPosition = newPosition((state.forward ? offset : -offset) / 2);
+                state.newPosition = newPosition(state.forward ? offset : -offset);
                 return true;
             }
         }
