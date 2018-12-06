@@ -3,6 +3,7 @@ package autoandshare.headvr.lib;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.PointF;
 
 import com.google.vr.sdk.base.Eye;
 
@@ -16,30 +17,52 @@ import autoandshare.headvr.lib.rendering.VRSurface;
 
 public class BasicUI {
     private VRSurface uiVRSurface;
-    private Paint iconPaint;
-    private Paint progressPaint;
+    private Paint leftAlignTextPaint;
+    private Paint rightAlignTextPaint;
+    private Paint centerAlignTextPaint;
     private Paint progressLinePaint1;
     private Paint progressLinePaint2;
-    private Paint errorPaint;
-    private static final float textSize = 30;
-    private static final float strokeWidth = 16;
-    private static final float margin = 10;
-    private static final float textY = -6;
-    private static final float lineY = 45;
-    private static final float uiWidth = 1.2f;
+    private Paint progressLinePaint3;
+
+    // UI has two rows
+    private float row1Y;
+    private float row2Y;
+    private float beginX;
+    private float endX;
+    private float motionsX;
 
     public BasicUI() {
+        float uiWidth = 1.2f;
+        uiVRSurface = new VRSurface(uiWidth, 0.18f, 3f,
+                new PointF(-uiWidth / 2, -0.4f));
 
-        uiVRSurface = new VRSurface(uiWidth, 0.15f, 3f, null);
+        float textSize = 30;
+        float strokeWidth = 16;
+        float margin = 10;
 
-        iconPaint = new Paint();
-        iconPaint.setColor(Color.LTGRAY);
-        iconPaint.setTextSize(textSize);
+        float heightPixel = uiVRSurface.getHeightPixel();
+        float widthPixel = uiVRSurface.getWidthPixel();
 
-        progressPaint = new Paint();
-        progressPaint.setColor(Color.LTGRAY);
-        progressPaint.setTextSize(textSize);
-        progressPaint.setTextAlign(Paint.Align.RIGHT);
+        row1Y = heightPixel / 4;
+        row2Y = heightPixel * 3 / 4;
+        beginX = margin;
+        motionsX = margin + 1.5f * textSize;
+        endX = widthPixel - margin;
+
+        leftAlignTextPaint = new Paint();
+        leftAlignTextPaint.setColor(Color.LTGRAY);
+        leftAlignTextPaint.setTextSize(textSize);
+        leftAlignTextPaint.setTextAlign(Paint.Align.LEFT);
+
+        rightAlignTextPaint = new Paint();
+        rightAlignTextPaint.setColor(Color.LTGRAY);
+        rightAlignTextPaint.setTextSize(textSize);
+        rightAlignTextPaint.setTextAlign(Paint.Align.RIGHT);
+
+        centerAlignTextPaint = new Paint();
+        centerAlignTextPaint.setColor(Color.LTGRAY);
+        centerAlignTextPaint.setTextSize(textSize);
+        centerAlignTextPaint.setTextAlign(Paint.Align.LEFT);
 
         progressLinePaint1 = new Paint();
         progressLinePaint1.setColor(Color.LTGRAY);
@@ -49,11 +72,9 @@ public class BasicUI {
         progressLinePaint2.setColor(Color.DKGRAY);
         progressLinePaint2.setStrokeWidth(strokeWidth);
 
-        errorPaint = new Paint();
-        errorPaint.setColor(Color.LTGRAY);
-        errorPaint.setTextSize(textSize);
-        errorPaint.setTextAlign(Paint.Align.CENTER);
-
+        progressLinePaint3 = new Paint();
+        progressLinePaint3.setColor(Color.GREEN);
+        progressLinePaint3.setStrokeWidth(strokeWidth / 2);
 
     }
 
@@ -65,7 +86,8 @@ public class BasicUI {
 
             if (videoState.errorMessage != null) {
                 drawMotions(canvas, control);
-                drawString(canvas, videoState.errorMessage, canvas.getWidth() / 2, 18, errorPaint);
+                drawString(canvas, "Error", endX, row1Y, rightAlignTextPaint);
+                drawString(canvas, videoState.errorMessage, beginX, row2Y, leftAlignTextPaint);
             } else {
                 drawMotions(canvas, control);
                 drawStateIcon(canvas, videoState);
@@ -95,13 +117,13 @@ public class BasicUI {
     }
 
     private void drawStateString(Canvas canvas, String s) {
-        drawString(canvas, s, margin, textY, iconPaint);
+        drawString(canvas, s, beginX, row1Y, leftAlignTextPaint);
     }
 
     private void drawString(Canvas canvas, String s, float x, float y, Paint paint) {
 
         canvas.drawText(s, x,
-                y + canvas.getHeight() / 2 - (paint.descent() + paint.ascent()) / 2,
+                y - (paint.descent() + paint.ascent()) / 2,
                 paint);
     }
 
@@ -112,22 +134,25 @@ public class BasicUI {
         } else if (control.notIdle()) {
             string = motionString(control.getMotions());
         }
-        drawString(canvas, string, 45, textY, iconPaint);
+        drawString(canvas, string, motionsX, row1Y, leftAlignTextPaint);
     }
 
     private void drawProgress(Canvas canvas, VideoRenderer.State videoState) {
-        int showPosition = videoState.seeking ? videoState.newPosition : videoState.currentPosition;
-        drawString(canvas, formatTime(showPosition) + " / " +
+        drawString(canvas, formatTime(videoState.currentPosition) + " / " +
                         formatTime(videoState.videoLength),
-                canvas.getWidth() - margin, textY, progressPaint);
+                endX, row1Y, rightAlignTextPaint);
 
-        float begin = margin;
-        float end = canvas.getWidth() - begin;
-        float middle = begin + (end - begin) * showPosition / videoState.videoLength;
-        float y = lineY;
+        float middle = beginX + (endX - beginX) *
+                videoState.currentPosition / videoState.videoLength;
 
-        canvas.drawLine(begin, y, middle, y, progressLinePaint1);
-        canvas.drawLine(middle, y, end, y, progressLinePaint2);
+        canvas.drawLine(beginX, row2Y, middle, row2Y, progressLinePaint1);
+        canvas.drawLine(middle, row2Y, endX, row2Y, progressLinePaint2);
+
+        if (videoState.seeking) {
+            float newMiddle = beginX + (endX - beginX) *
+                    videoState.newPosition / videoState.videoLength;
+            canvas.drawLine(beginX, row2Y, newMiddle, row2Y, progressLinePaint3);
+        }
     }
 
     private String formatTime(int ms) {

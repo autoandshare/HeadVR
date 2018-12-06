@@ -213,7 +213,7 @@ public class VideoRenderer {
 
         } catch (IOException ex) {
             String url = uri.getPath().toString();
-            state.errorMessage = "error with " + url.substring(url.lastIndexOf('/') + 1, url.length());
+            state.errorMessage = "can't play: " + url.substring(url.lastIndexOf('/') + 1, url.length());
         }
     }
 

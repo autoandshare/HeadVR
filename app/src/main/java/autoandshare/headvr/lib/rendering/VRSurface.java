@@ -12,6 +12,14 @@ public class VRSurface {
     private int widthPixel;
     private int heightPixel;
 
+    public int getWidthPixel() {
+        return widthPixel;
+    }
+
+    public int getHeightPixel() {
+        return heightPixel;
+    }
+
     public VRSurface(float width, float height, float distance,
                      PointF topLeft) {
         vrTexture2D = new VRTexture2D();
