@@ -24,6 +24,12 @@ public class SettingActivity extends AppCompatActivity implements View.OnClickLi
         setting.apply();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        initSeekBars();
+    }
+
     private static final String[] permissions = new String[]{
             Manifest.permission.INTERNET,
             Manifest.permission.READ_EXTERNAL_STORAGE};
