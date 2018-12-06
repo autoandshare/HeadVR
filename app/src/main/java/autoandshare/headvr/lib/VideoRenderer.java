@@ -57,7 +57,6 @@ public class VideoRenderer {
     private int seekCount = 0;
 
     public Boolean handleSeeking(Motion motion, HeadControl control) {
-        int offset = 30;
 
         if (motion.equals(Motion.ANY)) {
             if (state.seeking) {
@@ -65,32 +64,46 @@ public class VideoRenderer {
                     mPlayer.seekTo(state.newPosition);
                 }
                 state.seeking = false;
-                seekCount = 0;
                 control.waitForIdle();
                 return true;
             }
         } else if (motion.equals(Motion.IDLE)) {
             if (state.seeking) {
                 seekCount += 1;
-                if (seekCount > 2) {
-                    seekCount = 2;
-                }
-                offset *= 2 * seekCount;
-
                 state.newPosition = newPosition(state.newPosition,
-                        state.forward ? offset : -offset);
+                        getOffset());
                 return true;
             }
         } else {
             if (!state.seeking) {
                 state.seeking = true;
+                seekCount = 0;
                 state.forward = motion.equals(Motion.RIGHT);
-                state.newPosition = newPosition(state.forward ? offset : -offset);
+                state.newPosition = newPosition(getOffset());
                 return true;
             }
         }
 
         return false;
+    }
+
+    private int getOffset() {
+        int offset = 30; // at lease seek 30 seconds
+
+        int max = state.videoLength / (30 * 1000); // at most finish in 30 seeks
+
+        if (max > offset) {
+            int stage = (seekCount / 3);
+            if (stage > 2) {
+                stage = 2;
+            }
+            offset = offset + (max - offset) * stage/2;
+        }
+
+        if (!state.forward) {
+            offset = -offset;
+        }
+        return offset;
     }
 
     public static class State {
