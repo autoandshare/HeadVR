@@ -15,14 +15,14 @@ import static autoandshare.headvr.lib.rendering.Utils.checkGlError;
 public class VRTexture2D {
     // settings
     private static float eyeDistance;
-    private static float eyeDistance3D;
     private static float verticalDistance;
 
-    public static void setParameters(float eyeDistance,
-                                     float eyeDistance3D,
-                                     float verticalDistance) {
+    public static void setEyeDistance(float eyeDistance)
+    {
         VRTexture2D.eyeDistance = eyeDistance;
-        VRTexture2D.eyeDistance3D = eyeDistance3D;
+    }
+
+    public static void setVerticalDistance(float verticalDistance) {
         VRTexture2D.verticalDistance = verticalDistance;
     }
 
@@ -186,8 +186,7 @@ public class VRTexture2D {
     private float[] getMVP(Eye eye) {
 
         // use different distance for mono and stereo content
-        float eyeDistance = (textureCoordsBuffer[0] == textureCoordsBuffer[1]) ?
-                VRTexture2D.eyeDistance : VRTexture2D.eyeDistance3D;
+        float eyeDistance = VRTexture2D.eyeDistance;
 
         Matrix.setIdentityM(mvp, 0);
         Matrix.translateM(mvp, 0,

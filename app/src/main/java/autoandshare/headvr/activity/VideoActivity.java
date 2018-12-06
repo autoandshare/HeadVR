@@ -76,6 +76,8 @@ public class VideoActivity extends GvrActivity implements
     private static final List<Motion> Home = Arrays.asList(Motion.UP, Motion.LEFT, Motion.RIGHT, Motion.DOWN);
     private static final List<Motion> Next = Arrays.asList(Motion.DOWN, Motion.RIGHT, Motion.LEFT);
     private static final List<Motion> Prev = Arrays.asList(Motion.DOWN, Motion.LEFT, Motion.RIGHT);
+    private static final List<Motion> Round = Arrays.asList(Motion.RIGHT, Motion.DOWN, Motion.LEFT, Motion.UP);
+    private static final List<Motion> ReverseRound = Arrays.asList(Motion.DOWN, Motion.RIGHT, Motion.UP, Motion.LEFT);
 
     private void setupMotionActionTable() {
         headControl.addMotionAction(Any, () -> {
@@ -94,6 +96,29 @@ public class VideoActivity extends GvrActivity implements
         headControl.addMotionAction(Home, this::returnHome);
         headControl.addMotionAction(Next, this::nextFile);
         headControl.addMotionAction(Prev, this::prevFile);
+        headControl.addMotionAction(Round, () -> updateEyeDistance(1));
+        headControl.addMotionAction(ReverseRound, () -> updateEyeDistance(-1));
+    }
+
+    private Boolean updateEyeDistance(int i) {
+        if (videoRenderer.getState().playing) {
+            return true;
+        }
+
+        int eyeDistance = setting.get(Setting.id.EyeDistance) + i;
+        if (eyeDistance > setting.getMax(Setting.id.EyeDistance)) {
+            eyeDistance = setting.getMax(Setting.id.EyeDistance);
+        }
+        if (eyeDistance < setting.getMin(Setting.id.EyeDistance)) {
+            eyeDistance = setting.getMin(Setting.id.EyeDistance);
+        }
+
+        setting.set(Setting.id.EyeDistance, eyeDistance);
+        setting.apply();
+
+        VRTexture2D.setEyeDistance(setting.getFloat(Setting.id.EyeDistance));
+
+        return true;
     }
 
     private Boolean prevFile() {
@@ -132,11 +157,8 @@ public class VideoActivity extends GvrActivity implements
 
     private void updateSettings() {
         HeadMotion.setMotionSensitivity(setting.getFloat(Setting.id.MotionSensitivity));
-
-        VRTexture2D.setParameters(
-                setting.getFloat(Setting.id.EyeDistance),
-                setting.getFloat(Setting.id.EyeDistance3D),
-                setting.getFloat(Setting.id.VerticalDistance));
+        VRTexture2D.setEyeDistance(setting.getFloat(Setting.id.EyeDistance));
+        VRTexture2D.setVerticalDistance(setting.getFloat(Setting.id.VerticalDistance));
 
         setBrightness();
     }
