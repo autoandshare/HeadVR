@@ -11,6 +11,7 @@ import android.view.Surface;
 import com.google.vr.sdk.base.Eye;
 
 import java.io.IOException;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import autoandshare.headvr.lib.headcontrol.HeadControl;
@@ -97,7 +98,7 @@ public class VideoRenderer {
             if (stage > 2) {
                 stage = 2;
             }
-            offset = offset + (max - offset) * stage/2;
+            offset = offset + (max - offset) * stage / 2;
         }
 
         if (!state.forward) {
@@ -120,25 +121,38 @@ public class VideoRenderer {
     private MediaPlayer mPlayer;
     private VRTexture2D videoScreen;
 
-    private Pattern sideBySidePattern =
-            Pattern.compile("[^A-Za-z0-9](h?)sbs[^A-Za-z0-9]",
-                    Pattern.CASE_INSENSITIVE);
-
-    private Pattern overUnderPattern =
-            Pattern.compile("[^A-Za-z0-9](h?)ou[^A-Za-z0-9]",
-                    Pattern.CASE_INSENSITIVE);
-
-    private Pattern topAndBottomPattern =
-            Pattern.compile("[^A-Za-z0-9](h?)tab[^A-Za-z0-9]",
-                    Pattern.CASE_INSENSITIVE);
-
-    private boolean isSideBySide(String path) {
-        return sideBySidePattern.matcher(path).find();
+    class VideoType {
+        boolean half;
+        boolean full;
+        boolean sbs;
+        boolean tab;
     }
 
-    private boolean isOverUnder(String path) {
-        return overUnderPattern.matcher(path).find() ||
-                topAndBottomPattern.matcher(path).find();
+    private Pattern fileNamePattern =
+            Pattern.compile("([^A-Za-z0-9]|^)(half|h|full|f|)[^A-Za-z0-9]?(3d)?(sbs|ou|tab)([^A-Za-z0-9]|$)",
+                    Pattern.CASE_INSENSITIVE);
+
+    private VideoType getVideoType(Uri uri) {
+        VideoType videoType = new VideoType();
+
+        String[] path = uri.getPath().split("/");
+        if (path != null) {
+            String fileName = path[path.length - 1];
+            Matcher matcher = fileNamePattern.matcher(fileName);
+            if (matcher.find()) {
+                if (matcher.group(2).toLowerCase().startsWith("h")) {
+                    videoType.half = true;
+                } else if (matcher.group(2).toLowerCase().startsWith("f")) {
+                    videoType.full = true;
+                }
+                if (matcher.group(4).toLowerCase().startsWith("s")) {
+                    videoType.sbs = true;
+                } else {
+                    videoType.tab = true;
+                }
+            }
+        }
+        return videoType;
     }
 
     private VideoProperties videoProperties;
@@ -184,10 +198,14 @@ public class VideoRenderer {
 
             float heightWidthRatio = (float) mPlayer.getVideoHeight() / mPlayer.getVideoWidth();
 
-            if (isSideBySide(uri.getPath())) {
-                // auto detect half and full
+            VideoType videoType = getVideoType(uri);
+
+            if (videoType.sbs) {
+                // auto detect half and full if not specified
                 // 4:3 - 21:9 | (4*2):3 - (21*2):9
-                if (heightWidthRatio < (3f / 8 + 9f / 21) / 2) {
+                if (videoType.full ||
+                        ((!videoType.half) && (!videoType.full)
+                                && (heightWidthRatio < (3f / 8 + 9f / 21) / 2))) {
                     heightWidthRatio *= 2;
                 }
                 videoScreen.updatePositions(videoSize,
@@ -198,10 +216,12 @@ public class VideoRenderer {
                         new PointF(0.5f, 1), new PointF(1, 0)
                 );
 
-            } else if (isOverUnder(uri.getPath())) {
-                // auto detect half and full
+            } else if (videoType.tab) {
+                // auto detect half and full if not specified
                 // 21:9 - 4:3 | 21:(9*2) - 4:(3*2)
-                if (heightWidthRatio > (3f / 4 + 18f / 21) / 2) {
+                if (videoType.full ||
+                        ((!videoType.half) && (!videoType.full)
+                                && (heightWidthRatio > (3f / 4 + 18f / 21) / 2))) {
                     heightWidthRatio /= 2;
                 }
 

@@ -44,7 +44,7 @@ public class VRTexture2D {
 
         textureCoordsBuffer[0] = createTextureCoordsBuffers(textureEye1TopLeft, textureEye1DownRight);
         textureCoordsBuffer[1] = (textureEye2TopLeft == null) ? textureCoordsBuffer[0] :
-                createTextureCoordsBuffers(textureEye1TopLeft, textureEye1DownRight);
+                createTextureCoordsBuffers(textureEye2TopLeft, textureEye2DownRight);
     }
 
     // gl resources
