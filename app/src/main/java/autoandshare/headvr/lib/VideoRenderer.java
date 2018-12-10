@@ -115,6 +115,8 @@ public class VideoRenderer {
         public int currentPosition;
         public int newPosition;
         public String errorMessage;
+        public String fileName;
+        public String message;
     }
 
     private State state = new State();
@@ -138,6 +140,8 @@ public class VideoRenderer {
         String[] path = uri.getPath().split("/");
         if (path != null) {
             String fileName = path[path.length - 1];
+            state.fileName = fileName;
+
             Matcher matcher = fileNamePattern.matcher(fileName);
             if (matcher.find()) {
                 if (matcher.group(2).toLowerCase().startsWith("h")) {
@@ -171,12 +175,28 @@ public class VideoRenderer {
         mPlayer = new MediaPlayer();
         mPlayer.setSurface(new Surface(videoScreen.getSurfaceTexture()));
         mPlayer.setLooping(false);
+        mPlayer.setOnInfoListener(new MediaPlayer.OnInfoListener() {
+            @Override
+            public boolean onInfo(MediaPlayer mp, int what, int extra) {
+                if (what == MediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START) {
+                    // video started; hide the placeholder.
+                    preparing = false;
+                    return true;
+                }
+                return false;
+            }
+        });
 
         playUri(uri);
 
     }
 
+    private boolean preparing = true;
+
     public void playUri(Uri uri) {
+        preparing = true;
+
+        this.state.fileName = "";
 
         this.uri = uri;
         mPlayer.reset();
@@ -187,18 +207,16 @@ public class VideoRenderer {
         }
 
         try {
+            VideoType videoType = getVideoType(uri);
 
             mPlayer.setDataSource(activity.getApplicationContext(), uri);
             mPlayer.prepare();
             mPlayer.seekTo(videoProperties.getPosition(uri));
             mPlayer.start();
-            state.playing = true;
             state.currentPosition = mPlayer.getCurrentPosition();
             state.videoLength = mPlayer.getDuration();
 
             float heightWidthRatio = (float) mPlayer.getVideoHeight() / mPlayer.getVideoWidth();
-
-            VideoType videoType = getVideoType(uri);
 
             if (videoType.sbs) {
                 // auto detect half and full if not specified
@@ -243,15 +261,19 @@ public class VideoRenderer {
             }
 
             state.errorMessage = null;
+            state.playing = true;
 
         } catch (IOException ex) {
-            String url = uri.getPath().toString();
-            state.errorMessage = "can't play: " + url.substring(url.lastIndexOf('/') + 1, url.length());
+            state.errorMessage = ex.getMessage();
         }
     }
 
     @RequiresApi(api = Build.VERSION_CODES.HONEYCOMB)
     public void glDraw(Eye eye) {
+        if (preparing) {
+            return;
+        }
+
         if (state.errorMessage != null) {
             return;
         }
@@ -279,6 +301,7 @@ public class VideoRenderer {
     }
 
     public boolean normalPlaying() {
-        return state.playing && (!state.seeking);
+        return (state.errorMessage == null) &&
+                state.playing && (!state.seeking);
     }
 }

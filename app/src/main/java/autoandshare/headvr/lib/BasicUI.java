@@ -24,7 +24,8 @@ public class BasicUI {
     private Paint progressLinePaint2;
     private Paint progressLinePaint3;
 
-    // UI has two rows
+    // UI has 3 rows
+    private float row0Y;
     private float row1Y;
     private float row2Y;
     private float beginX;
@@ -33,8 +34,8 @@ public class BasicUI {
 
     public BasicUI() {
         float uiWidth = 1.2f;
-        uiVRSurface = new VRSurface(uiWidth, 0.18f, 3f,
-                new PointF(-uiWidth / 2, -0.4f));
+        uiVRSurface = new VRSurface(uiWidth, 0.27f, 3f,
+                new PointF(-uiWidth / 2, -1f));
 
         float textSize = 30;
         float strokeWidth = 16;
@@ -43,8 +44,9 @@ public class BasicUI {
         float heightPixel = uiVRSurface.getHeightPixel();
         float widthPixel = uiVRSurface.getWidthPixel();
 
-        row1Y = heightPixel / 4;
-        row2Y = heightPixel * 3 / 4;
+        row0Y = heightPixel / 6;
+        row1Y = heightPixel * 3 / 6;
+        row2Y = heightPixel * 5 / 6;
         beginX = margin;
         motionsX = margin + 1.5f * textSize;
         endX = widthPixel - margin;
@@ -84,12 +86,16 @@ public class BasicUI {
 
             canvas.drawColor(Color.BLACK);
 
+            drawString(canvas,
+                    (videoState.message != null) ? videoState.message : videoState.fileName,
+                    beginX, row0Y, leftAlignTextPaint);
+
+            drawMotions(canvas, control);
+
             if (videoState.errorMessage != null) {
-                drawMotions(canvas, control);
                 drawString(canvas, "Error", endX, row1Y, rightAlignTextPaint);
                 drawString(canvas, videoState.errorMessage, beginX, row2Y, leftAlignTextPaint);
             } else {
-                drawMotions(canvas, control);
                 drawStateIcon(canvas, videoState);
                 drawProgress(canvas, videoState);
             }

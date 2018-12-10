@@ -67,7 +67,6 @@ public class VRTexture2D {
             "varying vec2 v_TextureCoordinate;",
             "void main () {",
             "    gl_FragColor = texture2D(u_Texture, v_TextureCoordinate);",
-            "    gl_FragColor.a = 0.5;",
             "}",
     };
     private static int shaderProgram;

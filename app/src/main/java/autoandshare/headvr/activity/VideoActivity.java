@@ -13,7 +13,6 @@ import com.google.vr.sdk.base.GvrView;
 import com.google.vr.sdk.base.HeadTransform;
 import com.google.vr.sdk.base.Viewport;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -81,7 +80,7 @@ public class VideoActivity extends GvrActivity implements
 
     private void setupMotionActionTable() {
         headControl.addMotionAction(Any, () -> {
-            checkUIVisibility(Motion.ANY);
+            updateUIVisibility(Motion.ANY);
             return false;
         });
         headControl.addMotionAction(PlayPause, () -> videoRenderer.pauseOrPlay());
@@ -90,7 +89,7 @@ public class VideoActivity extends GvrActivity implements
         headControl.addMotionAction(Idle, () -> videoRenderer.handleSeeking(Motion.IDLE, headControl));
         headControl.addMotionAction(Any, () -> videoRenderer.handleSeeking(Motion.ANY, headControl));
         headControl.addMotionAction(Idles, () -> {
-            checkUIVisibility(Motion.IDLE);
+            updateUIVisibility(Motion.IDLE);
             return false;
         });
         headControl.addMotionAction(Home, this::returnHome);
@@ -118,6 +117,7 @@ public class VideoActivity extends GvrActivity implements
 
         VRTexture2D.setEyeDistance(setting.getFloat(Setting.id.EyeDistance));
 
+        videoRenderer.getState().message = "setting " + Setting.id.EyeDistance + " to " + eyeDistance;
         return true;
     }
 
@@ -254,7 +254,7 @@ public class VideoActivity extends GvrActivity implements
 
     private boolean uiVisible;
 
-    private void checkUIVisibility(Motion motion) {
+    private void updateUIVisibility(Motion motion) {
         if (videoRenderer.getState().errorMessage != null) {
             uiVisible = true;
             return;
@@ -266,6 +266,7 @@ public class VideoActivity extends GvrActivity implements
         } else if (motion == Motion.IDLE) {
             if (videoRenderer.normalPlaying()) {
                 uiVisible = false;
+                videoRenderer.getState().message = null;
             }
         }
     }
