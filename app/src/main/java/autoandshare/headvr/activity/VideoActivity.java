@@ -76,7 +76,7 @@ public class VideoActivity extends GvrActivity implements
     private static final List<Motion> Next = Arrays.asList(Motion.DOWN, Motion.RIGHT, Motion.LEFT);
     private static final List<Motion> Prev = Arrays.asList(Motion.DOWN, Motion.LEFT, Motion.RIGHT);
     private static final List<Motion> Round = Arrays.asList(Motion.RIGHT, Motion.DOWN, Motion.LEFT, Motion.UP);
-    private static final List<Motion> ReverseRound = Arrays.asList(Motion.DOWN, Motion.RIGHT, Motion.UP, Motion.LEFT);
+    private static final List<Motion> ReverseRound = Arrays.asList(Motion.LEFT, Motion.DOWN, Motion.RIGHT, Motion.UP);
 
     private void setupMotionActionTable() {
         headControl.addMotionAction(Any, () -> {
@@ -95,8 +95,8 @@ public class VideoActivity extends GvrActivity implements
         headControl.addMotionAction(Home, this::returnHome);
         headControl.addMotionAction(Next, this::nextFile);
         headControl.addMotionAction(Prev, this::prevFile);
-        headControl.addMotionAction(Round, () -> updateEyeDistance(1));
-        headControl.addMotionAction(ReverseRound, () -> updateEyeDistance(-1));
+        headControl.addMotionAction(Round, () -> updateEyeDistance(3));
+        headControl.addMotionAction(ReverseRound, () -> updateEyeDistance(-3));
     }
 
     private Boolean updateEyeDistance(int i) {
@@ -167,8 +167,10 @@ public class VideoActivity extends GvrActivity implements
     public void onPause() {
         super.onPause();
         Log.i(TAG, "onPause()");
-        videoRenderer.pause();
-        videoRenderer.savePosition();
+        if ((videoRenderer != null) && (!videoRenderer.hasError())) {
+            videoRenderer.pause();
+            videoRenderer.savePosition();
+        }
     }
 
     @Override
@@ -255,7 +257,7 @@ public class VideoActivity extends GvrActivity implements
     private boolean uiVisible;
 
     private void updateUIVisibility(Motion motion) {
-        if (videoRenderer.getState().errorMessage != null) {
+        if (videoRenderer.hasError()) {
             uiVisible = true;
             return;
         }

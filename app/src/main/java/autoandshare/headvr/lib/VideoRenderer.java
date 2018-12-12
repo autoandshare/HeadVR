@@ -58,6 +58,9 @@ public class VideoRenderer {
     private int seekCount = 0;
 
     public Boolean handleSeeking(Motion motion, HeadControl control) {
+        if (!state.playing) {
+            return false;
+        }
 
         if (motion.equals(Motion.ANY)) {
             if (state.seeking) {
@@ -138,24 +141,24 @@ public class VideoRenderer {
         VideoType videoType = new VideoType();
 
         String[] path = uri.getPath().split("/");
-        if (path != null) {
-            String fileName = path[path.length - 1];
-            state.fileName = fileName;
 
-            Matcher matcher = fileNamePattern.matcher(fileName);
-            if (matcher.find()) {
-                if (matcher.group(2).toLowerCase().startsWith("h")) {
-                    videoType.half = true;
-                } else if (matcher.group(2).toLowerCase().startsWith("f")) {
-                    videoType.full = true;
-                }
-                if (matcher.group(4).toLowerCase().startsWith("s")) {
-                    videoType.sbs = true;
-                } else {
-                    videoType.tab = true;
-                }
+        String fileName = path[path.length - 1];
+        state.fileName = fileName;
+
+        Matcher matcher = fileNamePattern.matcher(fileName);
+        if (matcher.find()) {
+            if (matcher.group(2).toLowerCase().startsWith("h")) {
+                videoType.half = true;
+            } else if (matcher.group(2).toLowerCase().startsWith("f")) {
+                videoType.full = true;
+            }
+            if (matcher.group(4).toLowerCase().startsWith("s")) {
+                videoType.sbs = true;
+            } else {
+                videoType.tab = true;
             }
         }
+
         return videoType;
     }
 
@@ -175,16 +178,13 @@ public class VideoRenderer {
         mPlayer = new MediaPlayer();
         mPlayer.setSurface(new Surface(videoScreen.getSurfaceTexture()));
         mPlayer.setLooping(false);
-        mPlayer.setOnInfoListener(new MediaPlayer.OnInfoListener() {
-            @Override
-            public boolean onInfo(MediaPlayer mp, int what, int extra) {
-                if (what == MediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START) {
-                    // video started; hide the placeholder.
-                    preparing = false;
-                    return true;
-                }
-                return false;
+        mPlayer.setOnInfoListener((mp, what, extra) -> {
+            if (what == MediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START) {
+                // video started; hide the placeholder.
+                preparing = false;
+                return true;
             }
+            return false;
         });
 
         playUri(uri);
@@ -222,7 +222,7 @@ public class VideoRenderer {
                 // auto detect half and full if not specified
                 // 4:3 - 21:9 | (4*2):3 - (21*2):9
                 if (videoType.full ||
-                        ((!videoType.half) && (!videoType.full)
+                        ((!videoType.half)
                                 && (heightWidthRatio < (3f / 8 + 9f / 21) / 2))) {
                     heightWidthRatio *= 2;
                 }
@@ -238,7 +238,7 @@ public class VideoRenderer {
                 // auto detect half and full if not specified
                 // 21:9 - 4:3 | 21:(9*2) - 4:(3*2)
                 if (videoType.full ||
-                        ((!videoType.half) && (!videoType.full)
+                        ((!videoType.half)
                                 && (heightWidthRatio > (3f / 4 + 18f / 21) / 2))) {
                     heightWidthRatio /= 2;
                 }
@@ -303,5 +303,9 @@ public class VideoRenderer {
     public boolean normalPlaying() {
         return (state.errorMessage == null) &&
                 state.playing && (!state.seeking);
+    }
+
+    public boolean hasError() {
+        return state.errorMessage != null;
     }
 }

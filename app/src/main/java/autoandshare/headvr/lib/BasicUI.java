@@ -33,7 +33,7 @@ public class BasicUI {
     private float motionsX;
 
     public BasicUI() {
-        float uiWidth = 1.2f;
+        float uiWidth = 1.8f;
         uiVRSurface = new VRSurface(uiWidth, 0.27f, 3f,
                 new PointF(-uiWidth / 2, -1f));
 

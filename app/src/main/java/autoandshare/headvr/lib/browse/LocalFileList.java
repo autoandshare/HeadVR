@@ -52,6 +52,9 @@ public class LocalFileList {
     }
 
     public LocalFileList(Uri uri) {
+        if (uri == null) {
+            return;
+        }
 
         String uriString = uri.toString();
         if (!uriString.startsWith("file://")) {
