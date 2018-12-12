@@ -72,7 +72,7 @@ public class VideoActivity extends GvrActivity implements
     private static final List<Motion> Idle = Collections.singletonList(Motion.IDLE);
     private static final List<Motion> Idles = Arrays.asList(Motion.IDLE, Motion.IDLE, Motion.IDLE);
     private static final List<Motion> Any = Collections.singletonList(Motion.ANY);
-    private static final List<Motion> Home = Arrays.asList(Motion.UP, Motion.LEFT, Motion.RIGHT, Motion.DOWN);
+    private static final List<Motion> Return = Arrays.asList(Motion.UP, Motion.LEFT, Motion.RIGHT, Motion.DOWN);
     private static final List<Motion> Next = Arrays.asList(Motion.DOWN, Motion.RIGHT, Motion.LEFT);
     private static final List<Motion> Prev = Arrays.asList(Motion.DOWN, Motion.LEFT, Motion.RIGHT);
     private static final List<Motion> Round = Arrays.asList(Motion.RIGHT, Motion.DOWN, Motion.LEFT, Motion.UP);
@@ -92,7 +92,7 @@ public class VideoActivity extends GvrActivity implements
             updateUIVisibility(Motion.IDLE);
             return false;
         });
-        headControl.addMotionAction(Home, this::returnHome);
+        headControl.addMotionAction(Return, this::returnHome);
         headControl.addMotionAction(Next, this::nextFile);
         headControl.addMotionAction(Prev, this::prevFile);
         headControl.addMotionAction(Round, () -> updateEyeDistance(3));
@@ -142,10 +142,7 @@ public class VideoActivity extends GvrActivity implements
     }
 
     private Boolean returnHome() {
-        Intent startMain = new Intent(Intent.ACTION_MAIN);
-        startMain.addCategory(Intent.CATEGORY_HOME);
-        startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(startMain);
+        finish();
         return true;
     }
 
