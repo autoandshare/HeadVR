@@ -15,11 +15,15 @@ import static autoandshare.headvr.lib.rendering.Utils.checkGlError;
 public class VRTexture2D {
     // settings
     private static float eyeDistance;
+    private static float eyeDistance3D;
     private static float verticalDistance;
 
-    public static void setEyeDistance(float eyeDistance)
-    {
+    public static void setEyeDistance(float eyeDistance) {
         VRTexture2D.eyeDistance = eyeDistance;
+    }
+
+    public static void setEyeDistance3D(float eyeDistance3D) {
+        VRTexture2D.eyeDistance3D = eyeDistance3D;
     }
 
     public static void setVerticalDistance(float verticalDistance) {
