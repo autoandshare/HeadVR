@@ -58,7 +58,7 @@ public class HeadMotion {
             float upDistance = vec3Dot(delta, upVector);
             float leftDistance = vec3Dot(delta, leftVector);
 
-            if ((Math.abs(upDistance) > moveCritieria) &&
+            if ((Math.abs(upDistance) > (moveCritieria*0.7)) &&
                     (Math.abs(upDistance) > Math.abs(leftDistance))) {
                 detectedMotion = (upDistance > 0 ? Motion.UP : Motion.DOWN);
             } else if (Math.abs(leftDistance) > moveCritieria) {
