@@ -110,15 +110,35 @@ public class VideoRenderer {
         return offset;
     }
 
+    public Boolean toggleForce2D() {
+        if ((this.uri != null) && (!hasError()) && is3D()) {
+            state.force2D = !state.force2D;
+            videoProperties.setForce2D(this.uri, state.force2D);
+            updateVideoPosition();
+            state.message = (state.force2D ? "Enable" : "Disable") + "  Force2D";
+        }
+
+        return true;
+    }
+
     public static class State {
+        // error info
+        public String errorMessage;
+
+        // basic info
+        public String fileName;
+        public VideoType videoType;
+        public boolean force2D;
+
+        // playing info
         public boolean playing;
         public boolean seeking;
         public boolean forward;
         public int videoLength;
         public int currentPosition;
         public int newPosition;
-        public String errorMessage;
-        public String fileName;
+
+        // optional info
         public String message;
     }
 
@@ -137,7 +157,7 @@ public class VideoRenderer {
             Pattern.compile("([^A-Za-z0-9]|^)(half|h|full|f|)[^A-Za-z0-9]?(3d)?(sbs|ou|tab)([^A-Za-z0-9]|$)",
                     Pattern.CASE_INSENSITIVE);
 
-    private VideoType getVideoType(Uri uri) {
+    private void getVideoType(Uri uri) {
         VideoType videoType = new VideoType();
 
         String[] path = uri.getPath().split("/");
@@ -158,8 +178,9 @@ public class VideoRenderer {
                 videoType.tab = true;
             }
         }
-
-        return videoType;
+        state.videoType = videoType;
+        state.force2D = videoProperties.getForce2D(uri);
+        
     }
 
     private VideoProperties videoProperties;
@@ -196,8 +217,6 @@ public class VideoRenderer {
     public void playUri(Uri uri) {
         preparing = true;
 
-        this.state.fileName = "";
-
         this.uri = uri;
         mPlayer.reset();
 
@@ -206,9 +225,9 @@ public class VideoRenderer {
             return;
         }
 
-        try {
-            VideoType videoType = getVideoType(uri);
+        getVideoType(uri);
 
+        try {
             mPlayer.setDataSource(activity.getApplicationContext(), uri);
             mPlayer.prepare();
             mPlayer.seekTo(videoProperties.getPosition(uri));
@@ -216,55 +235,62 @@ public class VideoRenderer {
             state.currentPosition = mPlayer.getCurrentPosition();
             state.videoLength = mPlayer.getDuration();
 
-            float heightWidthRatio = (float) mPlayer.getVideoHeight() / mPlayer.getVideoWidth();
-
-            if (videoType.sbs) {
-                // auto detect half and full if not specified
-                // 4:3 - 21:9 | (4*2):3 - (21*2):9
-                if (videoType.full ||
-                        ((!videoType.half)
-                                && (heightWidthRatio < (3f / 8 + 9f / 21) / 2))) {
-                    heightWidthRatio *= 2;
-                }
-                videoScreen.updatePositions(videoSize,
-                        videoSize * heightWidthRatio,
-                        3.1f,
-                        null,
-                        new PointF(0, 1), new PointF(0.5f, 0),
-                        new PointF(0.5f, 1), new PointF(1, 0)
-                );
-
-            } else if (videoType.tab) {
-                // auto detect half and full if not specified
-                // 21:9 - 4:3 | 21:(9*2) - 4:(3*2)
-                if (videoType.full ||
-                        ((!videoType.half)
-                                && (heightWidthRatio > (3f / 4 + 18f / 21) / 2))) {
-                    heightWidthRatio /= 2;
-                }
-
-                videoScreen.updatePositions(videoSize,
-                        videoSize * heightWidthRatio,
-                        3.1f,
-                        null,
-                        new PointF(0, 1), new PointF(1, 0.5f),
-                        new PointF(0, 0.5f), new PointF(1, 0)
-                );
-
-            } else {
-
-                videoScreen.updatePositions(videoSize,
-                        videoSize * heightWidthRatio,
-                        3.1f,
-                        null);
-
-            }
+            updateVideoPosition();
 
             state.errorMessage = null;
             state.playing = true;
 
         } catch (IOException ex) {
             state.errorMessage = ex.getMessage();
+        }
+    }
+
+    private void updateVideoPosition() {
+        float heightWidthRatio = (float) mPlayer.getVideoHeight() / mPlayer.getVideoWidth();
+
+        if (state.videoType.sbs) {
+            // auto detect half and full if not specified
+            // 4:3 - 21:9 | (4*2):3 - (21*2):9
+            if (state.videoType.full ||
+                    ((!state.videoType.half)
+                            && (heightWidthRatio < (3f / 8 + 9f / 21) / 2))) {
+                heightWidthRatio *= 2;
+            }
+            PointF texture2TopLeft = state.force2D ? null : new PointF(0.5f, 1);
+            PointF texture2BottomRight = state.force2D ? null : new PointF(1, 0);
+            videoScreen.updatePositions(videoSize,
+                    videoSize * heightWidthRatio,
+                    3.1f,
+                    null,
+                    new PointF(0, 1), new PointF(0.5f, 0),
+                    texture2TopLeft, texture2BottomRight
+            );
+
+        } else if (state.videoType.tab) {
+            // auto detect half and full if not specified
+            // 21:9 - 4:3 | 21:(9*2) - 4:(3*2)
+            if (state.videoType.full ||
+                    ((!state.videoType.half)
+                            && (heightWidthRatio > (3f / 4 + 18f / 21) / 2))) {
+                heightWidthRatio /= 2;
+            }
+            PointF texture2TopLeft = state.force2D ? null : new PointF(0, 0.5f);
+            PointF texture2BottomRight = state.force2D ? null : new PointF(1, 0);
+            videoScreen.updatePositions(videoSize,
+                    videoSize * heightWidthRatio,
+                    3.1f,
+                    null,
+                    new PointF(0, 1), new PointF(1, 0.5f),
+                    texture2TopLeft, texture2BottomRight
+            );
+
+        } else {
+
+            videoScreen.updatePositions(videoSize,
+                    videoSize * heightWidthRatio,
+                    3.1f,
+                    null);
+
         }
     }
 
@@ -307,5 +333,9 @@ public class VideoRenderer {
 
     public boolean hasError() {
         return state.errorMessage != null;
+    }
+
+    public boolean is3D() {
+        return state.videoType.sbs || state.videoType.tab;
     }
 }

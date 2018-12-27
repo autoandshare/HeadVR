@@ -144,7 +144,8 @@ public class BasicUI {
     }
 
     private void drawProgress(Canvas canvas, VideoRenderer.State videoState) {
-        drawString(canvas, formatTime(videoState.currentPosition) + " / " +
+        drawString(canvas, (videoState.force2D ? "2D   " : "") +
+                        formatTime(videoState.currentPosition) + " / " +
                         formatTime(videoState.videoLength),
                 endX, row1Y, rightAlignTextPaint);
 

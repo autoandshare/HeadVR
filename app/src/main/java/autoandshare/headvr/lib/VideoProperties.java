@@ -5,20 +5,37 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 
 public class VideoProperties {
-    private SharedPreferences pref;
-    private SharedPreferences.Editor editor;
+    private SharedPreferences prefPostion;
+    private SharedPreferences.Editor editorPosition;
+    private SharedPreferences prefForce2D;
+    private SharedPreferences.Editor editorForce2D;
 
     public VideoProperties(Activity activity) {
-        pref = activity.getSharedPreferences("VideoProperties", 0);
-        editor = pref.edit();
+        prefPostion = activity.getSharedPreferences("VideoProperties", 0);
+        editorPosition = prefPostion.edit();
+        prefForce2D = activity.getSharedPreferences("VideoProperties-Force2D", 0);
+        editorForce2D = prefForce2D.edit();
     }
 
     public int getPosition(Uri uri) {
-        return pref.getInt(uri.toString(), 0);
+        return prefPostion.getInt(uri.toString(), 0);
     }
 
     public void setPosition(Uri uri, int positon) {
-        editor.putInt(uri.toString(), positon);
-        editor.apply();
+        editorPosition.putInt(uri.toString(), positon);
+        editorPosition.apply();
+    }
+
+    public boolean getForce2D(Uri uri) {
+        return prefForce2D.getBoolean(uri.toString(), false);
+    }
+    public void setForce2D(Uri uri, boolean force2D) {
+        if (force2D) {
+            editorForce2D.putBoolean(uri.toString(), true);
+        }
+        else {
+            editorForce2D.remove(uri.toString());
+        }
+        editorForce2D.apply();
     }
 }

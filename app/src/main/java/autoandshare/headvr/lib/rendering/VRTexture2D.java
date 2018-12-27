@@ -41,14 +41,14 @@ public class VRTexture2D {
     }
 
     public void updatePositions(float width, float height, float distance, PointF topLeft,
-                                PointF textureEye1TopLeft, PointF textureEye1DownRight,
-                                PointF textureEye2TopLeft, PointF textureEye2DownRight
+                                PointF textureEye1TopLeft, PointF textureEye1BottomRight,
+                                PointF textureEye2TopLeft, PointF textureEye2BottomRight
     ) {
         createVertexCoordsBuffer(width, height, distance, topLeft);
 
-        textureCoordsBuffer[0] = createTextureCoordsBuffers(textureEye1TopLeft, textureEye1DownRight);
+        textureCoordsBuffer[0] = createTextureCoordsBuffers(textureEye1TopLeft, textureEye1BottomRight);
         textureCoordsBuffer[1] = (textureEye2TopLeft == null) ? textureCoordsBuffer[0] :
-                createTextureCoordsBuffers(textureEye2TopLeft, textureEye2DownRight);
+                createTextureCoordsBuffers(textureEye2TopLeft, textureEye2BottomRight);
     }
 
     // gl resources
@@ -116,20 +116,20 @@ public class VRTexture2D {
 
     }
 
-    private FloatBuffer createTextureCoordsBuffers(PointF textureTopLeft, PointF textureDownRight
+    private FloatBuffer createTextureCoordsBuffers(PointF textureTopLeft, PointF textureBottomRight
     ) {
 
         if (textureTopLeft == null) {
             textureTopLeft = new PointF(0, 1);
         }
-        if (textureDownRight == null) {
-            textureDownRight = new PointF(1, 0);
+        if (textureBottomRight == null) {
+            textureBottomRight = new PointF(1, 0);
         }
         float[] textureCoords = {
                 textureTopLeft.x, textureTopLeft.y,
-                textureDownRight.x, textureTopLeft.y,
-                textureTopLeft.x, textureDownRight.y,
-                textureDownRight.x, textureDownRight.y,
+                textureBottomRight.x, textureTopLeft.y,
+                textureTopLeft.x, textureBottomRight.y,
+                textureBottomRight.x, textureBottomRight.y,
         };
         return Utils.createBuffer(textureCoords);
     }
@@ -189,7 +189,8 @@ public class VRTexture2D {
     private float[] getMVP(Eye eye) {
 
         // use different distance for mono and stereo content
-        float eyeDistance = VRTexture2D.eyeDistance;
+        float eyeDistance = (textureCoordsBuffer[0] == textureCoordsBuffer[1]) ?
+                VRTexture2D.eyeDistance : VRTexture2D.eyeDistance3D;
 
         Matrix.setIdentityM(mvp, 0);
         Matrix.translateM(mvp, 0,

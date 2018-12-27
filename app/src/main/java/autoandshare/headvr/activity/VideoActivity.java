@@ -1,6 +1,5 @@
 package autoandshare.headvr.activity;
 
-import android.content.Intent;
 import android.net.Uri;
 import android.opengl.GLES20;
 import android.os.Bundle;
@@ -77,6 +76,7 @@ public class VideoActivity extends GvrActivity implements
     private static final List<Motion> Prev = Arrays.asList(Motion.UP, Motion.DOWN, Motion.LEFT, Motion.RIGHT);
     private static final List<Motion> Round = Arrays.asList(Motion.RIGHT, Motion.DOWN, Motion.LEFT, Motion.UP);
     private static final List<Motion> ReverseRound = Arrays.asList(Motion.LEFT, Motion.DOWN, Motion.RIGHT, Motion.UP);
+    private static final List<Motion> Force2D = Arrays.asList(Motion.RIGHT, Motion.LEFT, Motion.IDLE, Motion.RIGHT, Motion.LEFT);
 
     private void setupMotionActionTable() {
         headControl.addMotionAction(Any, () -> {
@@ -97,28 +97,37 @@ public class VideoActivity extends GvrActivity implements
         headControl.addMotionAction(Prev, this::prevFile);
         headControl.addMotionAction(Round, () -> updateEyeDistance(3));
         headControl.addMotionAction(ReverseRound, () -> updateEyeDistance(-3));
+        headControl.addMotionAction(Force2D, () -> videoRenderer.toggleForce2D());
     }
 
     private Boolean updateEyeDistance(int i) {
-        if (videoRenderer.getState().playing) {
-            return true;
+        Setting.id id = ((!videoRenderer.is3D()) || videoRenderer.getState().force2D) ?
+                Setting.id.EyeDistance : Setting.id.EyeDistance3D;
+
+        updateEyeDistanceWithId(i, id);
+        return true;
+    }
+
+    private void updateEyeDistanceWithId(int i, Setting.id id) {
+        int eyeDistance = setting.get(id) + i;
+        if (eyeDistance > setting.getMax(id)) {
+            eyeDistance = setting.getMax(id);
+        }
+        if (eyeDistance < setting.getMin(id)) {
+            eyeDistance = setting.getMin(id);
         }
 
-        int eyeDistance = setting.get(Setting.id.EyeDistance) + i;
-        if (eyeDistance > setting.getMax(Setting.id.EyeDistance)) {
-            eyeDistance = setting.getMax(Setting.id.EyeDistance);
-        }
-        if (eyeDistance < setting.getMin(Setting.id.EyeDistance)) {
-            eyeDistance = setting.getMin(Setting.id.EyeDistance);
-        }
-
-        setting.set(Setting.id.EyeDistance, eyeDistance);
+        setting.set(id, eyeDistance);
         setting.apply();
 
-        VRTexture2D.setEyeDistance(setting.getFloat(Setting.id.EyeDistance));
+        if (id == Setting.id.EyeDistance) {
+            VRTexture2D.setEyeDistance(setting.getFloat(id));
+        }
+        if (id == Setting.id.EyeDistance3D){
+            VRTexture2D.setEyeDistance3D(setting.getFloat(id));
+        }
 
-        videoRenderer.getState().message = "setting " + Setting.id.EyeDistance + " to " + eyeDistance;
-        return true;
+        videoRenderer.getState().message = "setting " + id + " to " + eyeDistance;
     }
 
     private Boolean prevFile() {
@@ -155,6 +164,7 @@ public class VideoActivity extends GvrActivity implements
     private void updateSettings() {
         HeadMotion.setMotionSensitivity(setting.getFloat(Setting.id.MotionSensitivity));
         VRTexture2D.setEyeDistance(setting.getFloat(Setting.id.EyeDistance));
+        VRTexture2D.setEyeDistance3D(setting.getFloat(Setting.id.EyeDistance3D));
         VRTexture2D.setVerticalDistance(setting.getFloat(Setting.id.VerticalDistance));
 
         setBrightness();
