@@ -18,6 +18,8 @@ import autoandshare.headvr.lib.headcontrol.HeadControl;
 import autoandshare.headvr.lib.headcontrol.HeadMotion.Motion;
 import autoandshare.headvr.lib.rendering.VRTexture2D;
 
+import static java.lang.Math.min;
+
 public class VideoRenderer {
 
     public Boolean pauseOrPlay() {
@@ -92,7 +94,10 @@ public class VideoRenderer {
     }
 
     private int getOffset() {
-        int offset = 30; // at lease seek 30 seconds
+        int offset = min(state.videoLength / (10*1000), 30); // at lease seek (length/10 <-> 30) seconds
+        if (offset == 0) {
+            offset = 1;
+        }
 
         int max = state.videoLength / (30 * 1000); // at most finish in 30 seeks
 
