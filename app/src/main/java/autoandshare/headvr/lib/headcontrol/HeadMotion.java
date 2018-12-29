@@ -3,6 +3,8 @@ package autoandshare.headvr.lib.headcontrol;
 import android.support.v4.util.CircularArray;
 import android.util.Log;
 
+import autoandshare.headvr.lib.Setting;
+
 public class HeadMotion {
     private static final String TAG = "HeadMotion";
 
@@ -14,13 +16,6 @@ public class HeadMotion {
         RIGHT,
         ANY,
     }
-
-    public static void setMotionSensitivity(float sensitivity) {
-        moveCritieria = sensitivity;
-    }
-
-    private static float moveCritieria = 0.04f;
-
 
     private int maxSize = 128;
     private CircularArray<float[]> upVectors = new CircularArray<>(maxSize);
@@ -58,10 +53,10 @@ public class HeadMotion {
             float upDistance = vec3Dot(delta, upVector);
             float leftDistance = vec3Dot(delta, leftVector);
 
-            if ((Math.abs(upDistance) > (moveCritieria*0.7)) &&
+            if ((Math.abs(upDistance) > (Setting.MotionSensitivity*0.7)) &&
                     (Math.abs(upDistance) > Math.abs(leftDistance))) {
                 detectedMotion = (upDistance > 0 ? Motion.UP : Motion.DOWN);
-            } else if (Math.abs(leftDistance) > moveCritieria) {
+            } else if (Math.abs(leftDistance) > Setting.MotionSensitivity) {
                 detectedMotion = (leftDistance > 0 ? Motion.LEFT : Motion.RIGHT);
             } else {
                 long curTime = System.nanoTime() / 1000000;

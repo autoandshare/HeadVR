@@ -21,7 +21,6 @@ public class SettingActivity extends AppCompatActivity implements View.OnClickLi
     @Override
     protected void onPause() {
         super.onPause();
-        setting.apply();
     }
 
     @Override
@@ -84,11 +83,13 @@ public class SettingActivity extends AppCompatActivity implements View.OnClickLi
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        setting = new Setting(this);
+
         setContentView(R.layout.setting_ui);
 
         Button button = findViewById(R.id.buttonReset);
         button.setOnClickListener(this);
-        setting = new Setting(this);
 
         initSeekBars();
 

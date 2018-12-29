@@ -10,25 +10,11 @@ import com.google.vr.sdk.base.Eye;
 
 import java.nio.FloatBuffer;
 
+import autoandshare.headvr.lib.Setting;
+
 import static autoandshare.headvr.lib.rendering.Utils.checkGlError;
 
 public class VRTexture2D {
-    // settings
-    private static float eyeDistance;
-    private static float eyeDistance3D;
-    private static float verticalDistance;
-
-    public static void setEyeDistance(float eyeDistance) {
-        VRTexture2D.eyeDistance = eyeDistance;
-    }
-
-    public static void setEyeDistance3D(float eyeDistance3D) {
-        VRTexture2D.eyeDistance3D = eyeDistance3D;
-    }
-
-    public static void setVerticalDistance(float verticalDistance) {
-        VRTexture2D.verticalDistance = verticalDistance;
-    }
 
     // constructors
     public VRTexture2D() {
@@ -190,12 +176,12 @@ public class VRTexture2D {
 
         // use different distance for mono and stereo content
         float eyeDistance = (textureCoordsBuffer[0] == textureCoordsBuffer[1]) ?
-                VRTexture2D.eyeDistance : VRTexture2D.eyeDistance3D;
+                Setting.EyeDistance : Setting.EyeDistance3D;
 
         Matrix.setIdentityM(mvp, 0);
         Matrix.translateM(mvp, 0,
                 eye.getType() == 1 ? -eyeDistance : eyeDistance,
-                verticalDistance,
+                Setting.VerticalDistance,
                 0);
 
         float CAMERA_Z = 0.01f;
@@ -211,6 +197,4 @@ public class VRTexture2D {
 
         return videoMVP;
     }
-
-
 }

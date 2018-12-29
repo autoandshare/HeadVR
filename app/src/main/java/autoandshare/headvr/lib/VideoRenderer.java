@@ -94,7 +94,7 @@ public class VideoRenderer {
     }
 
     private int getOffset() {
-        int offset = min(state.videoLength / (10*1000), 30); // at lease seek (length/10 <-> 30) seconds
+        int offset = min(state.videoLength / (10 * 1000), 30); // at lease seek (length/10 <-> 30) seconds
         if (offset == 0) {
             offset = 1;
         }
@@ -185,18 +185,16 @@ public class VideoRenderer {
         }
         state.videoType = videoType;
         state.force2D = videoProperties.getForce2D(uri);
-        
+
     }
 
     private VideoProperties videoProperties;
     private Uri uri;
     private Activity activity;
-    private float videoSize;
 
     @RequiresApi(api = Build.VERSION_CODES.ICE_CREAM_SANDWICH)
-    public VideoRenderer(Activity activity, Uri uri, float videoSize) {
+    public VideoRenderer(Activity activity, Uri uri) {
         this.activity = activity;
-        this.videoSize = videoSize;
 
         videoProperties = new VideoProperties(activity);
 
@@ -250,7 +248,11 @@ public class VideoRenderer {
         }
     }
 
-    private void updateVideoPosition() {
+    public void updateVideoPosition() {
+        if (hasError()) {
+            return;
+        }
+
         float heightWidthRatio = (float) mPlayer.getVideoHeight() / mPlayer.getVideoWidth();
 
         if (state.videoType.sbs) {
@@ -263,8 +265,8 @@ public class VideoRenderer {
             }
             PointF texture2TopLeft = state.force2D ? null : new PointF(0.5f, 1);
             PointF texture2BottomRight = state.force2D ? null : new PointF(1, 0);
-            videoScreen.updatePositions(videoSize,
-                    videoSize * heightWidthRatio,
+            videoScreen.updatePositions(Setting.VideoSize,
+                    Setting.VideoSize * heightWidthRatio,
                     3.1f,
                     null,
                     new PointF(0, 1), new PointF(0.5f, 0),
@@ -281,8 +283,8 @@ public class VideoRenderer {
             }
             PointF texture2TopLeft = state.force2D ? null : new PointF(0, 0.5f);
             PointF texture2BottomRight = state.force2D ? null : new PointF(1, 0);
-            videoScreen.updatePositions(videoSize,
-                    videoSize * heightWidthRatio,
+            videoScreen.updatePositions(Setting.VideoSize,
+                    Setting.VideoSize * heightWidthRatio,
                     3.1f,
                     null,
                     new PointF(0, 1), new PointF(1, 0.5f),
@@ -291,8 +293,8 @@ public class VideoRenderer {
 
         } else {
 
-            videoScreen.updatePositions(videoSize,
-                    videoSize * heightWidthRatio,
+            videoScreen.updatePositions(Setting.VideoSize,
+                    Setting.VideoSize * heightWidthRatio,
                     3.1f,
                     null);
 

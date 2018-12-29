@@ -45,15 +45,13 @@ public class VideoActivity extends GvrActivity implements
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        setting = new Setting(this);
+
         setContentView(R.layout.video_ui);
         cardboardView = findViewById(R.id.cardboard_view);
         cardboardView.setRenderer(this);
         this.setGvrView(cardboardView);
         cardboardView.setDistortionCorrectionEnabled(false);
-
-        setting = new Setting(this);
-
-        updateSettings();
 
         Log.i("intent", "start");
         uri = this.getIntent().getData();
@@ -118,14 +116,6 @@ public class VideoActivity extends GvrActivity implements
         }
 
         setting.set(id, eyeDistance);
-        setting.apply();
-
-        if (id == Setting.id.EyeDistance) {
-            VRTexture2D.setEyeDistance(setting.getFloat(id));
-        }
-        if (id == Setting.id.EyeDistance3D){
-            VRTexture2D.setEyeDistance3D(setting.getFloat(id));
-        }
 
         videoRenderer.getState().message = "setting " + id + " to " + eyeDistance;
     }
@@ -157,17 +147,8 @@ public class VideoActivity extends GvrActivity implements
 
     private void setBrightness() {
         WindowManager.LayoutParams layout = getWindow().getAttributes();
-        layout.screenBrightness = setting.getFloat(Setting.id.Brightness);
+        layout.screenBrightness = Setting.Brightness;
         getWindow().setAttributes(layout);
-    }
-
-    private void updateSettings() {
-        HeadMotion.setMotionSensitivity(setting.getFloat(Setting.id.MotionSensitivity));
-        VRTexture2D.setEyeDistance(setting.getFloat(Setting.id.EyeDistance));
-        VRTexture2D.setEyeDistance3D(setting.getFloat(Setting.id.EyeDistance3D));
-        VRTexture2D.setVerticalDistance(setting.getFloat(Setting.id.VerticalDistance));
-
-        setBrightness();
     }
 
     @Override
@@ -184,6 +165,11 @@ public class VideoActivity extends GvrActivity implements
     public void onResume() {
         super.onResume();
         Log.i(TAG, "onResume()");
+
+        setBrightness();
+        if (videoRenderer != null) {
+            videoRenderer.updateVideoPosition();
+        }
     }
 
     @Override
@@ -256,7 +242,7 @@ public class VideoActivity extends GvrActivity implements
 
         basicUI = new BasicUI();
 
-        videoRenderer = new VideoRenderer(this, uri, setting.getFloat(Setting.id.VideoSize));
+        videoRenderer = new VideoRenderer(this, uri);
 
         setupMotionActionTable();
     }

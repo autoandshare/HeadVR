@@ -6,6 +6,14 @@ import android.content.SharedPreferences;
 import java.util.HashMap;
 
 public class Setting {
+    public static float Brightness;
+    public static float EyeDistance;
+    public static float EyeDistance3D;
+    public static float VerticalDistance;
+    public static float VideoSize;
+    public static float MotionSensitivity;
+
+
     public enum id {
         Brightness,
         EyeDistance,
@@ -43,7 +51,7 @@ public class Setting {
         items.put(id.MotionSensitivity, new Item(-10, 10, 0, 0.09f, 0.01f));
     }
 
-    public float getFloat(id name) {
+    private float getFloat(id name) {
         Item item = items.get(name);
         return item.minF + (item.maxF - item.minF) * (get(name) - item.min) / (item.max - item.min);
     }
@@ -55,9 +63,19 @@ public class Setting {
         editor.clear().commit();
     }
 
+    private void loadValues() {
+        Brightness = getFloat(id.Brightness);
+        EyeDistance = getFloat(id.EyeDistance);
+        EyeDistance3D = getFloat(id.EyeDistance3D);
+        VerticalDistance = getFloat(id.VerticalDistance);
+        VideoSize = getFloat(id.VideoSize);
+        MotionSensitivity = getFloat(id.MotionSensitivity);
+    }
+
     public Setting(Activity activity) {
         pref = activity.getSharedPreferences("Setting", 0);
         editor = pref.edit();
+        loadValues();
     }
 
     public int getMin(id name) {
@@ -74,9 +92,27 @@ public class Setting {
 
     public void set(id name, int value) {
         editor.putInt(name.toString(), value);
-    }
-
-    public void apply() {
         editor.apply();
+
+        switch (name) {
+            case Brightness:
+                Brightness = getFloat(name);
+                break;
+            case EyeDistance:
+                EyeDistance = getFloat(name);
+                break;
+            case EyeDistance3D:
+                EyeDistance3D = getFloat(name);
+                break;
+            case VerticalDistance:
+                VerticalDistance = getFloat(name);
+                break;
+            case VideoSize:
+                VideoSize = getFloat(name);
+                break;
+            case MotionSensitivity:
+                MotionSensitivity = getFloat(name);
+                break;
+        }
     }
 }
