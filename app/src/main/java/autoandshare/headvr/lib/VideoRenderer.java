@@ -222,6 +222,7 @@ public class VideoRenderer {
 
         this.uri = uri;
         mPlayer.reset();
+        resetState();
 
         if (uri == null) {
             this.state.errorMessage = "No url provided";
@@ -240,12 +241,27 @@ public class VideoRenderer {
 
             updateVideoPosition();
 
-            state.errorMessage = null;
             state.playing = true;
 
         } catch (IOException ex) {
             state.errorMessage = ex.getMessage();
         }
+    }
+
+    private void resetState() {
+        state.errorMessage = null;
+
+        state.fileName = "";
+        state.force2D = false;
+
+        state.playing = false;
+        state.seeking = false;
+        state.forward = false;
+        state.videoLength = 1000;
+        state.currentPosition = 0;
+        state.newPosition = 0;
+
+        state.message = null;
     }
 
     public void updateVideoPosition() {
