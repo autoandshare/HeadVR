@@ -204,7 +204,6 @@ public class VideoRenderer {
         mPlayer.setLooping(false);
         mPlayer.setOnInfoListener((mp, what, extra) -> {
             if (what == MediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START) {
-                // video started; hide the placeholder.
                 preparing = false;
                 return true;
             }
@@ -216,9 +215,11 @@ public class VideoRenderer {
     }
 
     private boolean preparing = true;
+    private boolean firstFrame = true;
 
     public void playUri(Uri uri) {
         preparing = true;
+        firstFrame = true;
 
         this.uri = uri;
         mPlayer.reset();
@@ -319,16 +320,19 @@ public class VideoRenderer {
 
     @RequiresApi(api = Build.VERSION_CODES.HONEYCOMB)
     public void glDraw(Eye eye) {
-        if (preparing) {
+        if (preparing || hasError()) {
             return;
         }
 
-        if (state.errorMessage != null) {
+        if (firstFrame && (eye.getType() != 1)) {
             return;
         }
-        if ((eye.getType() == 1) && state.playing) {
+
+        if (((eye.getType() == 1) && state.playing) || firstFrame) {
             videoScreen.getSurfaceTexture().updateTexImage();
+            firstFrame = false;
         }
+
         videoScreen.draw(eye);
     }
 
