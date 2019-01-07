@@ -29,13 +29,15 @@ public class Setting {
         int defaultValue;
         float minF;
         float maxF;
+        String description;
 
-        Item(int min, int max, int defaultValue, float minF, float maxF) {
+        Item(int min, int max, int defaultValue, float minF, float maxF, String description) {
             this.min = min;
             this.max = max;
             this.defaultValue = defaultValue;
             this.minF = minF;
             this.maxF = maxF;
+            this.description = description;
         }
     }
 
@@ -43,12 +45,12 @@ public class Setting {
 
     static {
         items = new HashMap<>();
-        items.put(id.Brightness, new Item(0, 100, 50, 0f, 0.5f));
-        items.put(id.EyeDistance, new Item(-50, 50, 0, -0.4f, 0.4f));
-        items.put(id.EyeDistance3D, new Item(-50, 50, 0, -0.4f, 0.4f));
-        items.put(id.VerticalDistance, new Item(-50, 50, 0, -0.6f, 0.6f));
-        items.put(id.VideoSize, new Item(50, 150, 100, 1.5f, 4.5f));
-        items.put(id.MotionSensitivity, new Item(-10, 10, 0, 0.09f, 0.01f));
+        items.put(id.Brightness, new Item(0, 100, 50, 0f, 0.5f, "Brightness"));
+        items.put(id.EyeDistance, new Item(-50, 50, 0, -0.4f, 0.4f, "Eye to eye distance"));
+        items.put(id.EyeDistance3D, new Item(-50, 50, 0, -0.4f, 0.4f, "Eye to eye distance for 3D content"));
+        items.put(id.VerticalDistance, new Item(-50, 50, 0, -0.6f, 0.6f, "Vertical offset"));
+        items.put(id.VideoSize, new Item(50, 150, 100, 1.5f, 4.5f, "Video size"));
+        items.put(id.MotionSensitivity, new Item(-10, 10, 0, 0.09f, 0.01f, "Head motion sensitivity"));
     }
 
     private float getFloat(id name) {
@@ -88,6 +90,10 @@ public class Setting {
 
     public int get(id name) {
         return pref.getInt(name.toString(), items.get(name).defaultValue);
+    }
+
+    public String getDescription(id name) {
+        return items.get(name).description;
     }
 
     public void set(id name, int value) {

@@ -60,14 +60,14 @@ public class SettingActivity extends AppCompatActivity implements View.OnClickLi
         seekBar.setMax(setting.getMax(propertyName) - setting.getMin(propertyName));
 
         seekBar.setProgress(setting.get(propertyName) - setting.getMin(propertyName));
-        textView.setText(String.format("%s (%d)", propertyName, setting.get(propertyName)));
+        textView.setText(String.format("%s (%d)", setting.getDescription(propertyName), setting.get(propertyName)));
 
 
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 int newValue = progress + setting.getMin(propertyName);
                 setting.set(propertyName, newValue);
-                textView.setText(String.format("%s (%d)", propertyName, newValue));
+                textView.setText(String.format("%s (%d)", setting.getDescription(propertyName), newValue));
             }
 
             @Override
