@@ -7,9 +7,15 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 import autoandshare.headvr.R;
 import autoandshare.headvr.lib.Setting;
@@ -80,6 +86,23 @@ public class SettingActivity extends AppCompatActivity implements View.OnClickLi
         });
     }
 
+    private String readAsset(String name) {
+        StringBuilder buf = new StringBuilder();
+
+        try (InputStream stream = getAssets().open(name)) {
+            BufferedReader in =
+                    new BufferedReader(new InputStreamReader(stream, "UTF-8"));
+            String line;
+            while ((line = in.readLine()) != null) {
+                buf.append(line).append("\n");
+            }
+            in.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return buf.toString();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -95,6 +118,8 @@ public class SettingActivity extends AppCompatActivity implements View.OnClickLi
 
         verifyPermissions(this, permissions);
 
+        WebView help = findViewById(R.id.help);
+        help.loadData(readAsset("help.html"), "text/html", "utf-8");
     }
 
     private void initSeekBars() {
