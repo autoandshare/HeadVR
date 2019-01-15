@@ -196,7 +196,7 @@ public class VideoRenderer {
     public VideoRenderer(Activity activity, Uri uri) {
         this.activity = activity;
 
-        videoProperties = new VideoProperties(activity);
+        videoProperties = new VideoProperties();
 
         videoScreen = new VRTexture2D();
         mPlayer = new MediaPlayer();

@@ -3,17 +3,19 @@ package autoandshare.headvr.lib;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import com.tencent.mmkv.MMKV;
 
 public class VideoProperties {
-    private SharedPreferences prefPostion;
+    private MMKV prefPostion;
     private SharedPreferences.Editor editorPosition;
-    private SharedPreferences prefForce2D;
+    private MMKV prefForce2D;
     private SharedPreferences.Editor editorForce2D;
 
-    public VideoProperties(Activity activity) {
-        prefPostion = activity.getSharedPreferences("VideoProperties", 0);
+    public VideoProperties() {
+
+        prefPostion = MMKV.mmkvWithID("VideoProperties-Position");
         editorPosition = prefPostion.edit();
-        prefForce2D = activity.getSharedPreferences("VideoProperties-Force2D", 0);
+        prefForce2D = MMKV.mmkvWithID("VideoProperties-Force2D");
         editorForce2D = prefForce2D.edit();
     }
 

@@ -27,7 +27,7 @@ import autoandshare.headvr.lib.headcontrol.HeadControl;
 import autoandshare.headvr.lib.headcontrol.HeadMotion;
 import autoandshare.headvr.lib.headcontrol.HeadMotion.Motion;
 import autoandshare.headvr.lib.rendering.VRTexture2D;
-
+import com.tencent.mmkv.MMKV;
 
 public class VideoActivity extends GvrActivity implements
         GvrView.StereoRenderer {
@@ -48,6 +48,9 @@ public class VideoActivity extends GvrActivity implements
         setting = new Setting(this);
 
         setContentView(R.layout.video_ui);
+
+        MMKV.initialize(this);
+
         cardboardView = findViewById(R.id.cardboard_view);
         cardboardView.setRenderer(this);
         this.setGvrView(cardboardView);
