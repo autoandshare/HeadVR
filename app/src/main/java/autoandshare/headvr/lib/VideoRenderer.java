@@ -193,7 +193,7 @@ public class VideoRenderer {
     private Activity activity;
 
     @RequiresApi(api = Build.VERSION_CODES.ICE_CREAM_SANDWICH)
-    public VideoRenderer(Activity activity, Uri uri) {
+    public VideoRenderer(Activity activity) {
         this.activity = activity;
 
         videoProperties = new VideoProperties();
@@ -209,26 +209,19 @@ public class VideoRenderer {
             }
             return false;
         });
-
-        playUri(uri);
-
     }
 
     private boolean preparing = true;
     private boolean firstFrame = true;
 
     public void playUri(Uri uri) {
+
         preparing = true;
         firstFrame = true;
 
         this.uri = uri;
         mPlayer.reset();
         resetState();
-
-        if (uri == null) {
-            this.state.errorMessage = "No url provided";
-            return;
-        }
 
         getVideoType(uri);
 
@@ -348,7 +341,7 @@ public class VideoRenderer {
     }
 
     public void savePosition() {
-        if (state.errorMessage == null) {
+        if ((!hasError()) && (!preparing)) {
             videoProperties.setPosition(uri, mPlayer.getCurrentPosition());
         }
     }

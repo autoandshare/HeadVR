@@ -11,6 +11,7 @@ import com.google.vr.sdk.base.GvrActivity;
 import com.google.vr.sdk.base.GvrView;
 import com.google.vr.sdk.base.HeadTransform;
 import com.google.vr.sdk.base.Viewport;
+import com.tencent.mmkv.MMKV;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -22,12 +23,10 @@ import autoandshare.headvr.R;
 import autoandshare.headvr.lib.BasicUI;
 import autoandshare.headvr.lib.Setting;
 import autoandshare.headvr.lib.VideoRenderer;
-import autoandshare.headvr.lib.browse.LocalFileList;
+import autoandshare.headvr.lib.browse.PlayList;
 import autoandshare.headvr.lib.headcontrol.HeadControl;
-import autoandshare.headvr.lib.headcontrol.HeadMotion;
 import autoandshare.headvr.lib.headcontrol.HeadMotion.Motion;
 import autoandshare.headvr.lib.rendering.VRTexture2D;
-import com.tencent.mmkv.MMKV;
 
 public class VideoActivity extends GvrActivity implements
         GvrView.StereoRenderer {
@@ -37,9 +36,9 @@ public class VideoActivity extends GvrActivity implements
 
     private Setting setting;
 
-    Uri uri;
-    GvrView cardboardView;
-    LocalFileList fileList;
+    private Uri uri;
+    private GvrView cardboardView;
+    private PlayList.IPlayList playList;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -62,7 +61,7 @@ public class VideoActivity extends GvrActivity implements
             Log.i("intent", uri.toString());
         }
 
-        fileList = new LocalFileList(uri);
+        playList = PlayList.getPlayList(uri);
     }
 
     private HeadControl headControl = new HeadControl();
@@ -123,21 +122,60 @@ public class VideoActivity extends GvrActivity implements
         videoRenderer.getState().message = "setting " + id + " to " + eyeDistance;
     }
 
-    private Boolean prevFile() {
-        Uri uri = fileList.previous(this.uri);
-        playUri(uri);
+    private Boolean nextFile(int offset) {
+        if (playList != null) {
+            if (!playList.isReady()) {
+                videoRenderer.getState().message = "Loading play list";
+            } else {
+                Uri uri = playList.next(offset);
+                if (uri == null) {
+                    videoRenderer.getState().errorMessage = "Invalid play list";
+                } else {
+                    playUri(uri);
+                }
+            }
+        } else {
+            videoRenderer.getState().message = "No play list";
+        }
         return true;
     }
 
+    private Boolean prevFile() {
+        return nextFile(-1);
+    }
+
     private Boolean nextFile() {
-        Uri uri = fileList.next(this.uri);
-        playUri(uri);
-        return true;
+        return nextFile(1);
+    }
+
+
+    private boolean loaded = false;
+
+    private void loadFirstVideo() {
+        if (loaded) {
+            return;
+        }
+
+        if (!PlayList.isListFile(uri.getPath())) {
+            loaded = true;
+            playUri(this.uri);
+        } else {
+            if (!playList.isReady()) {
+                videoRenderer.getState().message = "Loading play list";
+            } else {
+                loaded = true;
+                Uri current = playList.current();
+                if (current != null) {
+                    playUri(current);
+                } else {
+                    videoRenderer.getState().errorMessage = "Invalid play list";
+                }
+            }
+        }
     }
 
     private void playUri(Uri uri) {
         if (uri != null) {
-            this.uri = uri;
             videoRenderer.savePosition();
             videoRenderer.playUri(uri);
         }
@@ -201,6 +239,8 @@ public class VideoActivity extends GvrActivity implements
 
     @Override
     public void onNewFrame(HeadTransform headTransform) {
+        loadFirstVideo();
+
         float[] upVector = new float[3];
         headTransform.getUpVector(upVector, 0);
 
@@ -245,7 +285,7 @@ public class VideoActivity extends GvrActivity implements
 
         basicUI = new BasicUI();
 
-        videoRenderer = new VideoRenderer(this, uri);
+        videoRenderer = new VideoRenderer(this);
 
         setupMotionActionTable();
     }
