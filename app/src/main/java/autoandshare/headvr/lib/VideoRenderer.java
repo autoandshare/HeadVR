@@ -2,7 +2,6 @@ package autoandshare.headvr.lib;
 
 import android.app.Activity;
 import android.graphics.PointF;
-import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
@@ -10,7 +9,12 @@ import android.view.Surface;
 
 import com.google.vr.sdk.base.Eye;
 
-import java.io.IOException;
+import org.videolan.libvlc.IVLCVout;
+import org.videolan.libvlc.LibVLC;
+import org.videolan.libvlc.Media;
+import org.videolan.libvlc.MediaPlayer;
+
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,13 +24,18 @@ import autoandshare.headvr.lib.rendering.VRTexture2D;
 
 import static java.lang.Math.min;
 
-public class VideoRenderer {
+public class VideoRenderer implements IVLCVout.OnNewVideoLayoutListener {
+
 
     public Boolean pauseOrPlay() {
+        if (hasError()) {
+            return true;
+        }
+
         if (state.playing) {
             mPlayer.pause();
         } else {
-            mPlayer.start();
+            mPlayer.play();
         }
         state.playing = !state.playing;
 
@@ -43,12 +52,7 @@ public class VideoRenderer {
     }
 
     private int newPosition(int offset) {
-        return newPosition(mPlayer.getCurrentPosition(), offset);
-    }
-
-    public Boolean seek(int offset) {
-        mPlayer.seekTo(newPosition(offset));
-        return true;
+        return newPosition((int) mPlayer.getTime(), offset);
     }
 
     private boolean cancelSeek(HeadControl control) {
@@ -67,7 +71,7 @@ public class VideoRenderer {
         if (motion.equals(Motion.ANY)) {
             if (state.seeking) {
                 if (!cancelSeek(control)) {
-                    mPlayer.seekTo(state.newPosition);
+                    mPlayer.setTime(state.newPosition);
                 }
                 state.seeking = false;
                 control.waitForIdle();
@@ -126,6 +130,11 @@ public class VideoRenderer {
         return true;
     }
 
+    @Override
+    public void onNewVideoLayout(IVLCVout vlcVout, int width, int height, int visibleWidth, int visibleHeight, int sarNum, int sarDen) {
+        return;
+    }
+
     public static class State {
         // error info
         public String errorMessage;
@@ -147,6 +156,7 @@ public class VideoRenderer {
         public String message;
     }
 
+    private LibVLC mLibVLC = null;
     private State state = new State();
     private MediaPlayer mPlayer;
     private VRTexture2D videoScreen;
@@ -199,47 +209,56 @@ public class VideoRenderer {
         videoProperties = new VideoProperties();
 
         videoScreen = new VRTexture2D();
-        mPlayer = new MediaPlayer();
-        mPlayer.setSurface(new Surface(videoScreen.getSurfaceTexture()));
-        mPlayer.setLooping(false);
-        mPlayer.setOnInfoListener((mp, what, extra) -> {
-            if (what == MediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START) {
-                preparing = false;
-                return true;
+
+        mLibVLC = new LibVLC(activity);
+        mPlayer = new MediaPlayer(mLibVLC);
+
+        IVLCVout mVlcVout = mPlayer.getVLCVout();
+
+        mVlcVout.setVideoSurface(videoScreen.getSurfaceTexture());
+        mVlcVout.attachViews(this);
+
+        videoScreen.getSurfaceTexture().setOnFrameAvailableListener((t) -> {
+            if (loading) {
+                return;
             }
-            return false;
+            preparing = false;
         });
     }
 
+    private int videosPlayedCount = 0;
+    private boolean loading = true;
     private boolean preparing = true;
     private boolean firstFrame = true;
 
     public void playUri(Uri uri) {
 
+        videosPlayedCount += 1;
+
+        loading = true;
         preparing = true;
         firstFrame = true;
 
         this.uri = uri;
-        mPlayer.reset();
+        //mPlayer.reset();
         resetState();
 
         getVideoType(uri);
 
         try {
-            mPlayer.setDataSource(activity.getApplicationContext(), uri);
-            mPlayer.prepare();
-            mPlayer.seekTo(videoProperties.getPosition(uri));
-            mPlayer.start();
-            state.currentPosition = mPlayer.getCurrentPosition();
-            state.videoLength = mPlayer.getDuration();
+            Media m = new Media(mLibVLC, uri);
+            mPlayer.setMedia(m);
+            m.release();
 
-            updateVideoPosition();
-
+            mPlayer.play();
+            int pos = videoProperties.getPosition(uri);
+            mPlayer.setTime(pos);
             state.playing = true;
 
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             state.errorMessage = ex.getMessage();
         }
+        loading = false;
     }
 
     private void resetState() {
@@ -262,8 +281,15 @@ public class VideoRenderer {
         if (hasError()) {
             return;
         }
+        Media.VideoTrack vtrack = mPlayer.getCurrentVideoTrack();
+        if (vtrack == null) {
+            state.errorMessage = "Unable to get video track info";
+            return;
+        }
 
-        float heightWidthRatio = (float) mPlayer.getVideoHeight() / mPlayer.getVideoWidth();
+        videoScreen.getSurfaceTexture().setDefaultBufferSize(vtrack.width, vtrack.height);
+        float heightWidthRatio = ((float)vtrack.height)/vtrack.width;
+        state.videoType.sbs = state.videoType.tab = false;
 
         if (state.videoType.sbs) {
             // auto detect half and full if not specified
@@ -313,6 +339,8 @@ public class VideoRenderer {
 
     @RequiresApi(api = Build.VERSION_CODES.HONEYCOMB)
     public void glDraw(Eye eye) {
+        videoScreen.getSurfaceTexture().updateTexImage();
+
         if (preparing || hasError()) {
             return;
         }
@@ -321,16 +349,27 @@ public class VideoRenderer {
             return;
         }
 
-        if (((eye.getType() == 1) && state.playing) || firstFrame) {
-            videoScreen.getSurfaceTexture().updateTexImage();
+        if (firstFrame) {
+            state.videoLength = (int) mPlayer.getLength();
+            updateVideoPosition();
             firstFrame = false;
+
+            if (videosPlayedCount == 1) {
+                pause();
+            }
         }
 
         videoScreen.draw(eye);
     }
 
+    private boolean videoLoaded() {
+        return (!hasError()) && (!preparing);
+    }
+
     public State getState() {
-        state.currentPosition = mPlayer.getCurrentPosition();
+        if (videoLoaded()) {
+            state.currentPosition = (int) mPlayer.getTime();
+        }
         return state;
     }
 
@@ -341,8 +380,8 @@ public class VideoRenderer {
     }
 
     public void savePosition() {
-        if ((!hasError()) && (!preparing)) {
-            videoProperties.setPosition(uri, mPlayer.getCurrentPosition());
+        if (videoLoaded()) {
+            videoProperties.setPosition(uri, (int) mPlayer.getTime());
         }
     }
 

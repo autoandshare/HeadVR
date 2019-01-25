@@ -30,4 +30,5 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     implementation 'com.google.vr:sdk-base:1.170.0'
     implementation 'com.tencent:mmkv:1.0.16'
+    implementation 'com.github.masterwok:libvlc-android-sdk:3.0.13'
 }

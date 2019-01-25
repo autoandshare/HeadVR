@@ -290,7 +290,7 @@ public class VideoActivity extends GvrActivity implements
         setupMotionActionTable();
     }
 
-    private boolean uiVisible;
+    private boolean uiVisible = true;
 
     private void updateUIVisibility(Motion motion) {
         if (videoRenderer.hasError()) {
