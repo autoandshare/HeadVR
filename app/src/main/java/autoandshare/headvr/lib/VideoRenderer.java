@@ -288,8 +288,11 @@ public class VideoRenderer implements IVLCVout.OnNewVideoLayoutListener {
         }
 
         videoScreen.getSurfaceTexture().setDefaultBufferSize(vtrack.width, vtrack.height);
+        mPlayer.getVLCVout().setWindowSize(vtrack.width, vtrack.height);
+        mPlayer.setAspectRatio(null);
+        mPlayer.setScale(1);
+
         float heightWidthRatio = ((float)vtrack.height)/vtrack.width;
-        state.videoType.sbs = state.videoType.tab = false;
 
         if (state.videoType.sbs) {
             // auto detect half and full if not specified
