@@ -72,11 +72,7 @@ public class VideoRenderer {
         if (motion.equals(Motion.ANY)) {
             if (state.seeking) {
                 if (!cancelSeek(control)) {
-                    if (ended) {
-                        ended = false;
-                        mPlayer.stop();
-                        mPlayer.play();
-                    }
+                    restartIfNeeded();
                     mPlayer.setTime(state.newPosition);
                 }
                 state.seeking = false;
@@ -101,6 +97,14 @@ public class VideoRenderer {
         }
 
         return false;
+    }
+
+    private void restartIfNeeded() {
+        if (ended) {
+            ended = false;
+            mPlayer.stop();
+            mPlayer.play();
+        }
     }
 
     private int getOffset() {
@@ -231,12 +235,14 @@ public class VideoRenderer {
     private int videosPlayedCount = 0;
     private boolean switchingVideo = true;
     private boolean firstFrame = true;
+    private boolean ended = false;
 
     public void playUri(Uri uri) {
 
         videosPlayedCount += 1;
         switchingVideo = true;
         firstFrame = true;
+        ended = false;
         resetState();
 
         this.uri = uri;
@@ -352,6 +358,10 @@ public class VideoRenderer {
 
     @RequiresApi(api = Build.VERSION_CODES.HONEYCOMB)
     public void glDraw(Eye eye) {
+        if (ended && (!state.videoLoaded) && (mPlayer.getLength() != 0)) {
+            restartIfNeeded();
+        }
+
         videoScreen.getSurfaceTexture().updateTexImage();
 
         if (!state.videoLoaded) {
@@ -392,7 +402,7 @@ public class VideoRenderer {
 
     public void savePosition() {
         if (state.videoLoaded) {
-            videoProperties.setPosition(uri, (int) mPlayer.getTime());
+            videoProperties.setPosition(uri, ended ? 0 : (int) mPlayer.getTime());
         }
     }
 
@@ -401,15 +411,11 @@ public class VideoRenderer {
                 state.playing && (!state.seeking);
     }
 
-    public boolean hasError() {
-        return state.errorMessage != null;
-    }
-
     public boolean is3D() {
         return state.videoType.sbs || state.videoType.tab;
     }
 
-    private boolean ended = false;
+
 
     public void onEvent(MediaPlayer.Event event) {
 
@@ -420,7 +426,7 @@ public class VideoRenderer {
                 break;
 
             case MediaPlayer.Event.Buffering:
-                state.playerState = "Buffering " + (int)event.getBuffering() + "%";
+                state.playerState = "Buffering " + (int) event.getBuffering() + "%";
                 break;
 
             case MediaPlayer.Event.Playing:
@@ -433,6 +439,9 @@ public class VideoRenderer {
 
             case MediaPlayer.Event.Stopped:
                 state.playerState = "Stopped";
+                if ((!state.videoLoaded) && (mPlayer.getLength() == 0)) {
+                    state.playerState = "Not supported";
+                }
                 break;
 
             case MediaPlayer.Event.Opening:
