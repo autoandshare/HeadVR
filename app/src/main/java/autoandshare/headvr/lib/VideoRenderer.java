@@ -5,7 +5,6 @@ import android.graphics.PointF;
 import android.net.Uri;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
-import android.view.Surface;
 
 import com.google.vr.sdk.base.Eye;
 
@@ -14,7 +13,6 @@ import org.videolan.libvlc.LibVLC;
 import org.videolan.libvlc.Media;
 import org.videolan.libvlc.MediaPlayer;
 
-import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -24,12 +22,11 @@ import autoandshare.headvr.lib.rendering.VRTexture2D;
 
 import static java.lang.Math.min;
 
-public class VideoRenderer implements IVLCVout.OnNewVideoLayoutListener {
-
+public class VideoRenderer {
 
     public Boolean pauseOrPlay() {
-        if (hasError()) {
-            return true;
+        if (!state.videoLoaded) {
+            return false;
         }
 
         if (state.playing) {
@@ -64,6 +61,10 @@ public class VideoRenderer implements IVLCVout.OnNewVideoLayoutListener {
     private int seekCount = 0;
 
     public Boolean handleSeeking(Motion motion, HeadControl control) {
+        if (!state.videoLoaded) {
+            return false;
+        }
+
         if (!state.playing) {
             return false;
         }
@@ -120,7 +121,11 @@ public class VideoRenderer implements IVLCVout.OnNewVideoLayoutListener {
     }
 
     public Boolean toggleForce2D() {
-        if ((this.uri != null) && (!hasError()) && is3D()) {
+        if (!state.videoLoaded) {
+            return false;
+        }
+
+        if ((this.uri != null) && is3D()) {
             state.force2D = !state.force2D;
             videoProperties.setForce2D(this.uri, state.force2D);
             updateVideoPosition();
@@ -130,12 +135,10 @@ public class VideoRenderer implements IVLCVout.OnNewVideoLayoutListener {
         return true;
     }
 
-    @Override
-    public void onNewVideoLayout(IVLCVout vlcVout, int width, int height, int visibleWidth, int visibleHeight, int sarNum, int sarDen) {
-        return;
-    }
-
     public static class State {
+        // player ready
+        public boolean videoLoaded;
+
         // error info
         public String errorMessage;
 
@@ -154,6 +157,7 @@ public class VideoRenderer implements IVLCVout.OnNewVideoLayoutListener {
 
         // optional info
         public String message;
+        public String playerState;
     }
 
     private LibVLC mLibVLC = null;
@@ -209,59 +213,57 @@ public class VideoRenderer implements IVLCVout.OnNewVideoLayoutListener {
         videoProperties = new VideoProperties();
 
         videoScreen = new VRTexture2D();
-
-        mLibVLC = new LibVLC(activity);
-        mPlayer = new MediaPlayer(mLibVLC);
-
-        IVLCVout mVlcVout = mPlayer.getVLCVout();
-
-        mVlcVout.setVideoSurface(videoScreen.getSurfaceTexture());
-        mVlcVout.attachViews(this);
-
         videoScreen.getSurfaceTexture().setOnFrameAvailableListener((t) -> {
-            if (loading) {
+            if (switchingVideo) {
                 return;
             }
-            preparing = false;
+            state.videoLoaded = true;
         });
+
+        mLibVLC = new LibVLC(activity);
     }
 
     private int videosPlayedCount = 0;
-    private boolean loading = true;
-    private boolean preparing = true;
+    private boolean switchingVideo = true;
     private boolean firstFrame = true;
 
     public void playUri(Uri uri) {
 
         videosPlayedCount += 1;
-
-        loading = true;
-        preparing = true;
+        switchingVideo = true;
         firstFrame = true;
-
-        this.uri = uri;
-        //mPlayer.reset();
         resetState();
 
+        this.uri = uri;
         getVideoType(uri);
 
-        try {
-            Media m = new Media(mLibVLC, uri);
-            mPlayer.setMedia(m);
-            m.release();
-
-            mPlayer.play();
-            int pos = videoProperties.getPosition(uri);
-            mPlayer.setTime(pos);
-            state.playing = true;
-
-        } catch (Exception ex) {
-            state.errorMessage = ex.getMessage();
+        if (mPlayer != null) {
+            mPlayer.getVLCVout().detachViews();
+            mPlayer.release();
         }
-        loading = false;
+
+        videoScreen.getSurfaceTexture().setDefaultBufferSize(1, 1);
+
+        mPlayer = new MediaPlayer(mLibVLC);
+
+        IVLCVout vlcVout = mPlayer.getVLCVout();
+        vlcVout.setVideoSurface(videoScreen.getSurfaceTexture());
+        vlcVout.attachViews();
+
+        Media m = new Media(mLibVLC, uri);
+        mPlayer.setMedia(m);
+        m.release();
+
+        mPlayer.play();
+        int pos = videoProperties.getPosition(uri);
+        mPlayer.setTime(pos);
+        state.playing = true;
+
+        switchingVideo = false;
     }
 
     private void resetState() {
+        state.videoLoaded = false;
         state.errorMessage = null;
 
         state.fileName = "";
@@ -270,7 +272,7 @@ public class VideoRenderer implements IVLCVout.OnNewVideoLayoutListener {
         state.playing = false;
         state.seeking = false;
         state.forward = false;
-        state.videoLength = 1000;
+        state.videoLength = 0;
         state.currentPosition = 0;
         state.newPosition = 0;
 
@@ -278,9 +280,10 @@ public class VideoRenderer implements IVLCVout.OnNewVideoLayoutListener {
     }
 
     public void updateVideoPosition() {
-        if (hasError()) {
+        if (!state.videoLoaded) {
             return;
         }
+
         Media.VideoTrack vtrack = mPlayer.getCurrentVideoTrack();
         if (vtrack == null) {
             state.errorMessage = "Unable to get video track info";
@@ -289,10 +292,10 @@ public class VideoRenderer implements IVLCVout.OnNewVideoLayoutListener {
 
         videoScreen.getSurfaceTexture().setDefaultBufferSize(vtrack.width, vtrack.height);
         mPlayer.getVLCVout().setWindowSize(vtrack.width, vtrack.height);
-        mPlayer.setAspectRatio(null);
-        mPlayer.setScale(1);
+        mPlayer.setAspectRatio("" + vtrack.width + ":" + vtrack.height);
+        mPlayer.setScale(0);
 
-        float heightWidthRatio = ((float)vtrack.height)/vtrack.width;
+        float heightWidthRatio = ((float) vtrack.height) / vtrack.width;
 
         if (state.videoType.sbs) {
             // auto detect half and full if not specified
@@ -344,7 +347,7 @@ public class VideoRenderer implements IVLCVout.OnNewVideoLayoutListener {
     public void glDraw(Eye eye) {
         videoScreen.getSurfaceTexture().updateTexImage();
 
-        if (preparing || hasError()) {
+        if (!state.videoLoaded) {
             return;
         }
 
@@ -365,31 +368,29 @@ public class VideoRenderer implements IVLCVout.OnNewVideoLayoutListener {
         videoScreen.draw(eye);
     }
 
-    private boolean videoLoaded() {
-        return (!hasError()) && (!preparing);
-    }
-
     public State getState() {
-        if (videoLoaded()) {
+        if (state.videoLoaded) {
             state.currentPosition = (int) mPlayer.getTime();
         }
         return state;
     }
 
     public void pause() {
-        if (state.playing) {
-            pauseOrPlay();
+        if (state.videoLoaded) {
+            if (state.playing) {
+                pauseOrPlay();
+            }
         }
     }
 
     public void savePosition() {
-        if (videoLoaded()) {
+        if (state.videoLoaded) {
             videoProperties.setPosition(uri, (int) mPlayer.getTime());
         }
     }
 
     public boolean normalPlaying() {
-        return (state.errorMessage == null) &&
+        return state.videoLoaded &&
                 state.playing && (!state.seeking);
     }
 

@@ -48,8 +48,8 @@ public class BasicUI {
         row1Y = heightPixel * 3 / 6;
         row2Y = heightPixel * 5 / 6;
         beginX = margin;
-        motionsX = margin + 1.5f * textSize;
         endX = widthPixel - margin;
+        motionsX = margin + (endX - beginX) / 4;
 
         leftAlignTextPaint = new Paint();
         leftAlignTextPaint.setColor(Color.LTGRAY);
@@ -93,12 +93,15 @@ public class BasicUI {
             drawMotions(canvas, control);
 
             if (videoState.errorMessage != null) {
-                drawString(canvas, "Error", endX, row1Y, rightAlignTextPaint);
+                drawString(canvas, "Error", beginX, row1Y, leftAlignTextPaint);
                 drawString(canvas, videoState.errorMessage, beginX, row2Y, leftAlignTextPaint);
-            } else {
+            } else if (videoState.videoLoaded) {
                 drawStateIcon(canvas, videoState);
                 drawProgress(canvas, videoState);
+            } else {
+                drawString(canvas, "Loading", beginX, row1Y, leftAlignTextPaint);
             }
+
             uiVRSurface.releaseCanvas(canvas);
         }
         uiVRSurface.draw(eye);

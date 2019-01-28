@@ -196,10 +196,9 @@ public class VideoActivity extends GvrActivity implements
     public void onPause() {
         super.onPause();
         Log.i(TAG, "onPause()");
-        if ((videoRenderer != null) && (!videoRenderer.hasError())) {
-            videoRenderer.pause();
-            videoRenderer.savePosition();
-        }
+
+        videoRenderer.pause();
+        videoRenderer.savePosition();
     }
 
     @Override
@@ -293,7 +292,7 @@ public class VideoActivity extends GvrActivity implements
     private boolean uiVisible = true;
 
     private void updateUIVisibility(Motion motion) {
-        if (videoRenderer.hasError()) {
+        if (!videoRenderer.normalPlaying()) {
             uiVisible = true;
             return;
         }
