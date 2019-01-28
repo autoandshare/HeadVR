@@ -49,7 +49,7 @@ public class BasicUI {
         row2Y = heightPixel * 5 / 6;
         beginX = margin;
         endX = widthPixel - margin;
-        motionsX = margin + (endX - beginX) / 4;
+        motionsX = margin + (endX - beginX) / 3;
 
         leftAlignTextPaint = new Paint();
         leftAlignTextPaint.setColor(Color.LTGRAY);
@@ -99,7 +99,9 @@ public class BasicUI {
                 drawStateIcon(canvas, videoState);
                 drawProgress(canvas, videoState);
             } else {
-                drawString(canvas, "Loading", beginX, row1Y, leftAlignTextPaint);
+                drawString(canvas,
+                        (videoState.playerState != null) ? videoState.playerState : "Loading",
+                        beginX, row1Y, leftAlignTextPaint);
             }
 
             uiVRSurface.releaseCanvas(canvas);

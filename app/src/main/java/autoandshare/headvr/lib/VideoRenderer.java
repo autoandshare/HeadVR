@@ -72,6 +72,11 @@ public class VideoRenderer {
         if (motion.equals(Motion.ANY)) {
             if (state.seeking) {
                 if (!cancelSeek(control)) {
+                    if (ended) {
+                        ended = false;
+                        mPlayer.stop();
+                        mPlayer.play();
+                    }
                     mPlayer.setTime(state.newPosition);
                 }
                 state.seeking = false;
@@ -246,6 +251,8 @@ public class VideoRenderer {
 
         mPlayer = new MediaPlayer(mLibVLC);
 
+        mPlayer.setEventListener(this::onEvent);
+
         IVLCVout vlcVout = mPlayer.getVLCVout();
         vlcVout.setVideoSurface(videoScreen.getSurfaceTexture());
         vlcVout.attachViews();
@@ -400,5 +407,47 @@ public class VideoRenderer {
 
     public boolean is3D() {
         return state.videoType.sbs || state.videoType.tab;
+    }
+
+    private boolean ended = false;
+
+    public void onEvent(MediaPlayer.Event event) {
+
+        switch (event.type) {
+            case MediaPlayer.Event.EndReached:
+                state.playerState = "Ended";
+                ended = true;
+                break;
+
+            case MediaPlayer.Event.Buffering:
+                state.playerState = "Buffering " + (int)event.getBuffering() + "%";
+                break;
+
+            case MediaPlayer.Event.Playing:
+                state.playerState = "Playing";
+                break;
+
+            case MediaPlayer.Event.Paused:
+                state.playerState = "Paused";
+                break;
+
+            case MediaPlayer.Event.Stopped:
+                state.playerState = "Stopped";
+                break;
+
+            case MediaPlayer.Event.Opening:
+                state.playerState = "Opening";
+                break;
+
+            case MediaPlayer.Event.PositionChanged:
+                break;
+
+            case MediaPlayer.Event.EncounteredError:
+                state.playerState = "Encountered error";
+                break;
+
+            default:
+                break;
+        }
     }
 }
