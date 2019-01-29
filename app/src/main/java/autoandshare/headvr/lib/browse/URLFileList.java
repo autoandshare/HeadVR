@@ -37,16 +37,26 @@ public class URLFileList implements PlayList.IPlayList {
     private static final byte[] BOM_UTF16_BE = {(byte) 0xFE, (byte) 0xFF};
     private static final byte[] BOM_UTF16_LE = {(byte) 0xFF, (byte) 0xFE};
 
-    private int skipBOM(byte[] bytes, Charset charset) {
-        if (charset == StandardCharsets.UTF_8) {
-            if (hasPrefix(bytes, BOM_UTF8)) {
-                return 3;
-            }
+    private Charset getCharset(byte[] bytes) {
+        if (hasPrefix(bytes, BOM_UTF8)) {
+            return StandardCharsets.UTF_8;
         }
-        if (charset == StandardCharsets.UTF_16) {
-            if (hasPrefix(bytes, BOM_UTF16_BE) || hasPrefix(bytes, BOM_UTF16_LE)) {
-                return 2;
-            }
+        if (hasPrefix(bytes, BOM_UTF16_LE)) {
+            return StandardCharsets.UTF_16LE;
+        }
+        if (hasPrefix(bytes, BOM_UTF16_BE)) {
+            return StandardCharsets.UTF_16BE;
+        }
+        return null;
+    }
+
+    private int skipBOM(byte[] bytes, Charset charset) {
+        if ((charset == StandardCharsets.UTF_8) && (hasPrefix(bytes, BOM_UTF8))) {
+            return 3;
+        } else if ((charset == StandardCharsets.UTF_16BE) && hasPrefix(bytes, BOM_UTF16_BE)) {
+            return 2;
+        } else if ((charset == StandardCharsets.UTF_16LE) && hasPrefix(bytes, BOM_UTF16_LE)) {
+            return 2;
         }
         return 0;
     }
@@ -99,19 +109,31 @@ public class URLFileList implements PlayList.IPlayList {
                     }
                 }
 
-                String fileContent = decodeBytes(buf, total, StandardCharsets.UTF_8);
-                if (fileContent == null) {
-                    fileContent = decodeBytes(buf, total, StandardCharsets.UTF_16);
+                String fileContent;
+
+                Charset charset = getCharset(buf);
+                if (charset != null) {
+                    fileContent = decodeBytes(buf, total, charset);
+                }
+                else {
+                    fileContent = decodeBytes(buf, total, StandardCharsets.UTF_8);
+                    if (fileContent == null) {
+                        fileContent = decodeBytes(buf, total, StandardCharsets.UTF_16LE);
+                    }
+                    if (fileContent == null) {
+                        fileContent = decodeBytes(buf, total, StandardCharsets.UTF_16BE);
+                    }
                 }
                 if (fileContent == null) {
                     return;
                 }
 
                 processFileList(fileContent);
-                isReady = true;
+
             }
         } catch (Exception ex) {
         }
+        isReady = true;
     }
 
     private void processFileList(String fileContent) {
@@ -160,7 +182,7 @@ public class URLFileList implements PlayList.IPlayList {
         if (URLUtil.isValidUrl(fileName)) {
             return Uri.parse(fileName);
         } else {
-            return Uri.parse(baseURL + fileName);
+            return Uri.parse(baseURL + Uri.encode(fileName));
         }
     }
 }

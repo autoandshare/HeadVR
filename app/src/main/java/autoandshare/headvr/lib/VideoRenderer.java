@@ -448,7 +448,7 @@ public class VideoRenderer {
             case MediaPlayer.Event.Stopped:
                 state.playerState = "Stopped";
                 if ((!state.videoLoaded) && (mPlayer.getLength() == 0)) {
-                    state.playerState = "Not supported";
+                    state.playerState = "Failed to open";
                 }
                 break;
 
