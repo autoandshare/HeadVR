@@ -25,7 +25,7 @@ public class PlayList {
     }
 
     private static Pattern fileNamePattern =
-            Pattern.compile("[.](3gp|mkv|mp4|ts|webm)$",
+            Pattern.compile("[.](3gp|mkv|mp4|ts|webm|asf|wmv|avi|flv|mov|mpg|rmvb|ogg|ts)$",
                     Pattern.CASE_INSENSITIVE);
 
     public static boolean isKnownExtension(String fileName) {
