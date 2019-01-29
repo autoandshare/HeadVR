@@ -258,7 +258,8 @@ public class VideoActivity extends GvrActivity implements
         videoRenderer.glDraw(eye);
 
         if (uiVisible) {
-            basicUI.glDraw(eye, videoRenderer.getState(), headControl);
+            basicUI.glDraw(eye, videoRenderer.getState(), headControl,
+                    (playList != null) ? playList.currentIndex() : "");
         }
 
     }

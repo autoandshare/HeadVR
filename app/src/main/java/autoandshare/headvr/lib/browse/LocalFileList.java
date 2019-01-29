@@ -56,6 +56,14 @@ public class LocalFileList implements PlayList.IPlayList {
     }
 
     @Override
+    public String currentIndex() {
+        if (fileList == null) {
+            return "";
+        }
+        return "" + (currentPos + 1) + "/" + fileList.size() + " ";
+    }
+
+    @Override
     public Uri current() {
         if (fileList == null) {
             return null;

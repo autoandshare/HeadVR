@@ -80,14 +80,15 @@ public class BasicUI {
 
     }
 
-    public void glDraw(Eye eye, VideoRenderer.State videoState, HeadControl control) {
+    public void glDraw(Eye eye, VideoRenderer.State videoState, HeadControl control, String currentIndex) {
         if (eye.getType() == 1) {
             Canvas canvas = uiVRSurface.getCanvas();
 
             canvas.drawColor(Color.BLACK);
 
             drawString(canvas,
-                    (videoState.message != null) ? videoState.message : videoState.fileName,
+                    (videoState.message != null) ? videoState.message :
+                            currentIndex + videoState.fileName,
                     beginX, row0Y, leftAlignTextPaint);
 
             drawMotions(canvas, control);

@@ -114,8 +114,7 @@ public class URLFileList implements PlayList.IPlayList {
                 Charset charset = getCharset(buf);
                 if (charset != null) {
                     fileContent = decodeBytes(buf, total, charset);
-                }
-                else {
+                } else {
                     fileContent = decodeBytes(buf, total, StandardCharsets.UTF_8);
                     if (fileContent == null) {
                         fileContent = decodeBytes(buf, total, StandardCharsets.UTF_16LE);
@@ -154,6 +153,14 @@ public class URLFileList implements PlayList.IPlayList {
     public Uri next(int offset) {
         currentPos = currentPos + offset;
         return current();
+    }
+
+    @Override
+    public String currentIndex() {
+        if ((!isReady) || (fileList == null)) {
+            return "";
+        }
+        return "" + (currentPos + 1) + "/" + fileList.size() + " ";
     }
 
     public Uri prev(Uri uri) {

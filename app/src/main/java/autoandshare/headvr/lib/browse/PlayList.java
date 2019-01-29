@@ -11,6 +11,8 @@ public class PlayList {
         public Uri current();
 
         public Uri next(int offset);
+
+        public String currentIndex();
     }
 
     public static IPlayList getPlayList(Uri uri) {
