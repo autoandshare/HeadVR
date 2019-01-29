@@ -32,6 +32,9 @@ public class VideoRenderer {
         if (state.playing) {
             mPlayer.pause();
         } else {
+            if (mPlayer.getPlayerState() == Media.State.Ended) {
+                mPlayer.stop();
+            }
             mPlayer.play();
         }
         state.playing = !state.playing;
@@ -234,15 +237,15 @@ public class VideoRenderer {
 
     private int videosPlayedCount = 0;
     private boolean switchingVideo = true;
-    private boolean firstFrame = true;
     private boolean ended = false;
+    private boolean positionUpdated = false;
 
     public void playUri(Uri uri) {
 
         videosPlayedCount += 1;
         switchingVideo = true;
-        firstFrame = true;
         ended = false;
+        positionUpdated = false;
         resetState();
 
         this.uri = uri;
@@ -268,6 +271,7 @@ public class VideoRenderer {
         m.release();
 
         mPlayer.play();
+
         int pos = videoProperties.getPosition(uri);
         mPlayer.setTime(pos);
         state.playing = true;
@@ -356,33 +360,37 @@ public class VideoRenderer {
         }
     }
 
+    boolean readyToDraw = false;
+
     @RequiresApi(api = Build.VERSION_CODES.HONEYCOMB)
     public void glDraw(Eye eye) {
+        updateStates();
+
+        if (eye.getType() == 1) {
+            readyToDraw = state.videoLoaded && positionUpdated;
+            videoScreen.getSurfaceTexture().updateTexImage();
+        }
+
+        if (readyToDraw) {
+            videoScreen.draw(eye);
+        }
+    }
+
+    private void updateStates() {
         if (ended && (!state.videoLoaded) && (mPlayer.getLength() != 0)) {
             restartIfNeeded();
         }
-
-        videoScreen.getSurfaceTexture().updateTexImage();
-
-        if (!state.videoLoaded) {
-            return;
-        }
-
-        if (firstFrame && (eye.getType() != 1)) {
-            return;
-        }
-
-        if (firstFrame) {
+        if (state.videoLoaded && (!positionUpdated)) {
             state.videoLength = (int) mPlayer.getLength();
             updateVideoPosition();
-            firstFrame = false;
 
             if (videosPlayedCount == 1) {
                 pause();
             }
-        }
 
-        videoScreen.draw(eye);
+            positionUpdated = true;
+            state.videoLoaded = false;
+        }
     }
 
     public State getState() {
