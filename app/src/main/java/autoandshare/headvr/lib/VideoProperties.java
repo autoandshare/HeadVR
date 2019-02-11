@@ -1,8 +1,8 @@
 package autoandshare.headvr.lib;
 
-import android.app.Activity;
 import android.content.SharedPreferences;
 import android.net.Uri;
+
 import com.tencent.mmkv.MMKV;
 
 public class VideoProperties {
@@ -19,23 +19,31 @@ public class VideoProperties {
         editorForce2D = prefForce2D.edit();
     }
 
-    public int getPosition(Uri uri) {
-        return prefPostion.getInt(uri.toString(), 0);
+    public float getPosition(Uri uri) {
+        float position = prefPostion.getFloat(uri.toString(), 0);
+        if ((position < 0) || (position > 1)) {
+            position = 0;
+        }
+        return position;
     }
 
-    public void setPosition(Uri uri, int positon) {
-        editorPosition.putInt(uri.toString(), positon);
+    public void setPosition(Uri uri, float position) {
+        if (position == 0) {
+            editorPosition.remove(uri.toString());
+        } else {
+            editorPosition.putFloat(uri.toString(), position);
+        }
         editorPosition.apply();
     }
 
     public boolean getForce2D(Uri uri) {
         return prefForce2D.getBoolean(uri.toString(), false);
     }
+
     public void setForce2D(Uri uri, boolean force2D) {
         if (force2D) {
             editorForce2D.putBoolean(uri.toString(), true);
-        }
-        else {
+        } else {
             editorForce2D.remove(uri.toString());
         }
         editorForce2D.apply();

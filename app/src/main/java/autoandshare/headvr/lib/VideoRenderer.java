@@ -42,17 +42,20 @@ public class VideoRenderer {
         return true;
     }
 
-    private int newPosition(int current, int offset) {
-        int pos = (current + offset * 1000) % state.videoLength;
-        if (pos < 0) {
-            pos += state.videoLength;
+    private float newPosition(float current, float offset) {
+        float pos = (current + offset);
+        while (pos < 0) {
+            pos += 1;
+        }
+        while (pos > 1) {
+            pos -= 1;
         }
         return pos;
 
     }
 
-    private int newPosition(int offset) {
-        return newPosition((int) mPlayer.getTime(), offset);
+    private float newPosition(float offset) {
+        return newPosition(mPlayer.getPosition(), offset);
     }
 
     private boolean cancelSeek(HeadControl control) {
@@ -76,7 +79,7 @@ public class VideoRenderer {
             if (state.seeking) {
                 if (!cancelSeek(control)) {
                     restartIfNeeded();
-                    mPlayer.setTime(state.newPosition);
+                    mPlayer.setPosition(state.newPosition);
                 }
                 state.seeking = false;
                 control.waitForIdle();
@@ -110,13 +113,17 @@ public class VideoRenderer {
         }
     }
 
-    private int getOffset() {
+    private float getOffset() {
+        if (state.videoLength == 0) {
+            return getOffsetWithoutLength();
+        }
+
         int offset = min(state.videoLength / (10 * 1000), 30); // at lease seek (length/10 <-> 30) seconds
         if (offset == 0) {
             offset = 1;
         }
 
-        int max = state.videoLength / (30 * 1000); // at most finish in 30 seeks
+        int max = state.videoLength / (25 * 1000); // at most finish in 25 seeks
 
         if (max > offset) {
             int stage = (seekCount / 3);
@@ -126,6 +133,25 @@ public class VideoRenderer {
             offset = offset + (max - offset) * stage / 2;
         }
 
+        if (!state.forward) {
+            offset = -offset;
+        }
+        return (float)(offset*1000)/state.videoLength;
+    }
+
+    private float getOffsetWithoutLength() {
+        float offset = 0;
+        switch (seekCount / 2) {
+            case 0:
+                offset = 0.01f;
+                break;
+            case 1:
+                offset = 0.02f;
+                break;
+            default:
+                offset = 0.04f;
+                break;
+        }
         if (!state.forward) {
             offset = -offset;
         }
@@ -164,8 +190,9 @@ public class VideoRenderer {
         public boolean seeking;
         public boolean forward;
         public int videoLength;
-        public int currentPosition;
-        public int newPosition;
+        public int currentTime;
+        public float currentPosition;
+        public float newPosition;
 
         // optional info
         public String message;
@@ -272,8 +299,7 @@ public class VideoRenderer {
 
         mPlayer.play();
 
-        int pos = videoProperties.getPosition(uri);
-        mPlayer.setTime(pos);
+        mPlayer.setPosition(videoProperties.getPosition(uri));
         state.playing = true;
 
         switchingVideo = false;
@@ -290,6 +316,7 @@ public class VideoRenderer {
         state.seeking = false;
         state.forward = false;
         state.videoLength = 0;
+        state.currentTime = 0;
         state.currentPosition = 0;
         state.newPosition = 0;
 
@@ -395,7 +422,8 @@ public class VideoRenderer {
 
     public State getState() {
         if (state.videoLoaded) {
-            state.currentPosition = (int) mPlayer.getTime();
+            state.currentTime = (int) mPlayer.getTime();
+            state.currentPosition = mPlayer.getPosition();
         }
         return state;
     }
@@ -410,7 +438,7 @@ public class VideoRenderer {
 
     public void savePosition() {
         if (state.videoLoaded) {
-            videoProperties.setPosition(uri, ended ? 0 : (int) mPlayer.getTime());
+            videoProperties.setPosition(uri, ended ? 0 : mPlayer.getPosition());
         }
     }
 
@@ -422,7 +450,6 @@ public class VideoRenderer {
     public boolean is3D() {
         return state.videoType.sbs || state.videoType.tab;
     }
-
 
 
     public void onEvent(MediaPlayer.Event event) {

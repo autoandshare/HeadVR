@@ -98,6 +98,7 @@ public class BasicUI {
                 drawString(canvas, videoState.errorMessage, beginX, row2Y, leftAlignTextPaint);
             } else if (videoState.videoLoaded) {
                 drawStateIcon(canvas, videoState);
+                drawTagAndTime(canvas, videoState);
                 drawProgress(canvas, videoState);
             } else {
                 drawString(canvas,
@@ -149,21 +150,21 @@ public class BasicUI {
         drawString(canvas, string, motionsX, row1Y, leftAlignTextPaint);
     }
 
-    private void drawProgress(Canvas canvas, VideoRenderer.State videoState) {
+    private void drawTagAndTime(Canvas canvas, VideoRenderer.State videoState) {
         drawString(canvas, (videoState.force2D ? "2D   " : "") +
-                        formatTime(videoState.currentPosition) + " / " +
+                        formatTime(videoState.currentTime) + " / " +
                         formatTime(videoState.videoLength),
                 endX, row1Y, rightAlignTextPaint);
+    }
 
-        float middle = beginX + (endX - beginX) *
-                videoState.currentPosition / videoState.videoLength;
+    private void drawProgress(Canvas canvas, VideoRenderer.State videoState) {
+        float middle = beginX + (endX - beginX) * videoState.currentPosition;
 
         canvas.drawLine(beginX, row2Y, middle, row2Y, progressLinePaint1);
         canvas.drawLine(middle, row2Y, endX, row2Y, progressLinePaint2);
 
         if (videoState.seeking) {
-            float newMiddle = beginX + (endX - beginX) *
-                    videoState.newPosition / videoState.videoLength;
+            float newMiddle = beginX + (endX - beginX) * videoState.newPosition;
             canvas.drawLine(beginX, row2Y, newMiddle, row2Y, progressLinePaint3);
         }
     }
