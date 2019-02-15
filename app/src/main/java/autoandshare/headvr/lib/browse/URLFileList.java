@@ -1,5 +1,6 @@
 package autoandshare.headvr.lib.browse;
 
+import android.app.Activity;
 import android.net.Uri;
 import android.webkit.URLUtil;
 
@@ -23,6 +24,7 @@ public class URLFileList implements PlayList.IPlayList {
     private List<String> fileList;
     private int currentPos = -1;
     private MMKV listPosition;
+    private Activity activity;
 
     private boolean hasPrefix(byte[] a, byte[] b) {
         for (int i = 0; i < b.length; i++) {
@@ -81,8 +83,10 @@ public class URLFileList implements PlayList.IPlayList {
         return uriString.substring(0, end + 1);
     }
 
-    public URLFileList(Uri uri) {
+    public URLFileList(Uri uri, Activity activity) {
         uriString = uri.toString();
+
+        this.activity = activity;
 
         listPosition = MMKV.mmkvWithID("List-Position");
         currentPos = listPosition.getInt(uriString, 0);
@@ -97,7 +101,9 @@ public class URLFileList implements PlayList.IPlayList {
 
     private void loadList(Uri uri) {
         try {
-            try (InputStream stream = new URL(uriString).openConnection().getInputStream()) {
+            try (InputStream stream = uri.getScheme().equals("content") ?
+                    activity.getContentResolver().openInputStream(uri) :
+                    new URL(uriString).openConnection().getInputStream()) {
                 byte[] buf = new byte[128 * 1024];
                 int read;
                 int total = 0;

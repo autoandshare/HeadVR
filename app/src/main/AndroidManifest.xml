@@ -16,13 +16,16 @@
             android:screenOrientation="landscape">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.BROWSABLE" />
                 <category android:name="android.intent.category.DEFAULT" />
 
                 <data android:mimeType="video/*" />
+
                 <data android:scheme="http" />
                 <data android:scheme="https" />
                 <data android:scheme="file" />
                 <data android:scheme="ftp" />
+                <data android:scheme="content" />
             </intent-filter>
         </activity>
         <activity android:name=".activity.SettingActivity">

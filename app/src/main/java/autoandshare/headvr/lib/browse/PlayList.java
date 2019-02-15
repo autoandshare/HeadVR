@@ -1,5 +1,6 @@
 package autoandshare.headvr.lib.browse;
 
+import android.app.Activity;
 import android.net.Uri;
 
 import java.util.regex.Pattern;
@@ -15,9 +16,9 @@ public class PlayList {
         public String currentIndex();
     }
 
-    public static IPlayList getPlayList(Uri uri) {
+    public static IPlayList getPlayList(Uri uri, Activity activity) {
         if (isListFile(uri.getPath())) {
-            return new URLFileList(uri);
+            return new URLFileList(uri, activity);
         } else if (isLocalFile(uri)) {
             return new LocalFileList(uri);
         }

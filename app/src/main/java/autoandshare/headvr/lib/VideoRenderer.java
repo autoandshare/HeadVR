@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.graphics.PointF;
 import android.net.Uri;
 import android.os.Build;
+import android.os.ParcelFileDescriptor;
 import android.support.annotation.RequiresApi;
 
 import com.google.vr.sdk.base.Eye;
@@ -136,7 +137,7 @@ public class VideoRenderer {
         if (!state.forward) {
             offset = -offset;
         }
-        return (float)(offset*1000)/state.videoLength;
+        return (float) (offset * 1000) / state.videoLength;
     }
 
     private float getOffsetWithoutLength() {
@@ -266,6 +267,7 @@ public class VideoRenderer {
     private boolean switchingVideo = true;
     private boolean ended = false;
     private boolean positionUpdated = false;
+    private ParcelFileDescriptor fd;
 
     public void playUri(Uri uri) {
 
@@ -283,6 +285,13 @@ public class VideoRenderer {
             mPlayer.release();
         }
 
+        if (fd != null) {
+            try {
+                fd.close();
+            } catch (Exception e) {
+            }
+            fd = null;
+        }
         videoScreen.getSurfaceTexture().setDefaultBufferSize(1, 1);
 
         mPlayer = new MediaPlayer(mLibVLC);
@@ -293,7 +302,19 @@ public class VideoRenderer {
         vlcVout.setVideoSurface(videoScreen.getSurfaceTexture());
         vlcVout.attachViews();
 
-        Media m = new Media(mLibVLC, uri);
+        Media m;
+        if (uri.getScheme().equals("content")) {
+            try {
+                fd = activity.getContentResolver()
+                        .openFileDescriptor(uri, "r");
+                m = new Media(mLibVLC, fd.getFileDescriptor());
+            } catch (Exception e) {
+                state.errorMessage = e.getMessage();
+                return;
+            }
+        } else {
+            m = new Media(mLibVLC, uri);
+        }
         mPlayer.setMedia(m);
         m.release();
 

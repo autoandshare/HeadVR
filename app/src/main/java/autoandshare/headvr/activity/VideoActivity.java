@@ -61,7 +61,7 @@ public class VideoActivity extends GvrActivity implements
             Log.i("intent", uri.toString());
         }
 
-        playList = PlayList.getPlayList(uri);
+        playList = PlayList.getPlayList(uri, this);
     }
 
     private HeadControl headControl = new HeadControl();
