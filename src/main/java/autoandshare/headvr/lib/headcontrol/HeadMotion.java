@@ -1,6 +1,6 @@
 package autoandshare.headvr.lib.headcontrol;
 
-import android.support.v4.util.CircularArray;
+import androidx.collection.CircularArray;
 import android.util.Log;
 
 import autoandshare.headvr.lib.Setting;

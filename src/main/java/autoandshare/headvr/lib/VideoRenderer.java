@@ -3,9 +3,7 @@ package autoandshare.headvr.lib;
 import android.app.Activity;
 import android.graphics.PointF;
 import android.net.Uri;
-import android.os.Build;
 import android.os.ParcelFileDescriptor;
-import android.support.annotation.RequiresApi;
 
 import com.google.vr.sdk.base.Eye;
 
@@ -17,6 +15,7 @@ import org.videolan.libvlc.MediaPlayer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import autoandshare.headvr.activity.VideoActivity;
 import autoandshare.headvr.lib.headcontrol.HeadControl;
 import autoandshare.headvr.lib.headcontrol.HeadMotion.Motion;
 import autoandshare.headvr.lib.rendering.VRTexture2D;
@@ -246,7 +245,6 @@ public class VideoRenderer {
     private Uri uri;
     private Activity activity;
 
-    @RequiresApi(api = Build.VERSION_CODES.ICE_CREAM_SANDWICH)
     public VideoRenderer(Activity activity) {
         this.activity = activity;
 
@@ -260,7 +258,12 @@ public class VideoRenderer {
             state.videoLoaded = true;
         });
 
-        mLibVLC = new LibVLC(activity);
+        if (VideoActivity.vlcInstance == null) {
+            mLibVLC =  new LibVLC(activity);
+        } else {
+            mLibVLC = VideoActivity.vlcInstance;
+        }
+
     }
 
     private int videosPlayedCount = 0;
@@ -410,7 +413,6 @@ public class VideoRenderer {
 
     boolean readyToDraw = false;
 
-    @RequiresApi(api = Build.VERSION_CODES.HONEYCOMB)
     public void glDraw(Eye eye) {
         updateStates();
 

@@ -3,9 +3,17 @@ package autoandshare.headvr.lib.browse;
 import android.app.Activity;
 import android.net.Uri;
 
+import org.videolan.medialibrary.media.MediaWrapper;
+
+import java.util.List;
 import java.util.regex.Pattern;
 
 public class PlayList {
+
+    public static IPlayList getPlayList(List<MediaWrapper> mediaWrapperList) {
+        return new VlcMediaList(mediaWrapperList);
+    }
+
     public interface IPlayList {
         public boolean isReady();
 
