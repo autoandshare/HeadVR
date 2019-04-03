@@ -1,7 +1,5 @@
 package autoandshare.headvr.activity;
 
-import android.content.Context;
-import android.content.Intent;
 import android.net.Uri;
 import android.opengl.GLES20;
 import android.os.Bundle;
@@ -14,9 +12,6 @@ import com.google.vr.sdk.base.GvrView;
 import com.google.vr.sdk.base.HeadTransform;
 import com.google.vr.sdk.base.Viewport;
 import com.tencent.mmkv.MMKV;
-
-import org.videolan.libvlc.LibVLC;
-import org.videolan.medialibrary.media.MediaWrapper;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -35,17 +30,7 @@ import autoandshare.headvr.lib.rendering.VRTexture2D;
 
 public class VideoActivity extends GvrActivity implements
         GvrView.StereoRenderer {
-    public static void openList(Context context, List<MediaWrapper> list, int position, LibVLC vlc) {
-        vlcInstance = vlc;
-        mediaWrapperList = list;
 
-        Intent i = new Intent(context, VideoActivity.class);
-        i.setData(list.get(0).getUri());
-        context.startActivity(i);
-    }
-
-    public static LibVLC vlcInstance;
-    private static List<MediaWrapper> mediaWrapperList;
 
     private static final String TAG = "VideoActivity";
 
@@ -55,7 +40,7 @@ public class VideoActivity extends GvrActivity implements
 
     private Uri uri;
     private GvrView cardboardView;
-    private PlayList.IPlayList playList;
+    private PlayList playList;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -77,12 +62,7 @@ public class VideoActivity extends GvrActivity implements
         if (uri != null) {
             Log.i("intent", uri.toString());
         }
-
-        if (mediaWrapperList != null) {
-            playList = PlayList.getPlayList(mediaWrapperList);
-        } else {
-            playList = PlayList.getPlayList(uri, this);
-        }
+        playList = PlayList.getPlayList(uri, this);
     }
 
     private HeadControl headControl = new HeadControl();
@@ -177,7 +157,7 @@ public class VideoActivity extends GvrActivity implements
             return;
         }
 
-        if (!PlayList.isListFile(uri.getPath())) {
+        if (playList == null) {
             loaded = true;
             playUri(this.uri);
         } else {

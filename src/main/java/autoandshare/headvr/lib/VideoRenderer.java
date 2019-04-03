@@ -15,7 +15,7 @@ import org.videolan.libvlc.MediaPlayer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import autoandshare.headvr.activity.VideoActivity;
+import autoandshare.headvr.activity.VlcHelper;
 import autoandshare.headvr.lib.headcontrol.HeadControl;
 import autoandshare.headvr.lib.headcontrol.HeadMotion.Motion;
 import autoandshare.headvr.lib.rendering.VRTexture2D;
@@ -165,7 +165,7 @@ public class VideoRenderer {
 
         if ((this.uri != null) && is3D()) {
             state.force2D = !state.force2D;
-            videoProperties.setForce2D(this.uri, state.force2D);
+            videoProperties.setForce2D(propertyKey, state.force2D);
             updateVideoPosition();
             state.message = (state.force2D ? "Enable" : "Disable") + "  Force2D";
         }
@@ -203,6 +203,7 @@ public class VideoRenderer {
     private State state = new State();
     private MediaPlayer mPlayer;
     private VRTexture2D videoScreen;
+    private String propertyKey;
 
     class VideoType {
         boolean half;
@@ -218,12 +219,10 @@ public class VideoRenderer {
     private void getVideoType(Uri uri) {
         VideoType videoType = new VideoType();
 
-        String[] path = uri.getPath().split("/");
+        propertyKey = PathUtil.getKey(uri);
+        state.fileName = PathUtil.getFilename(uri);
 
-        String fileName = path[path.length - 1];
-        state.fileName = fileName;
-
-        Matcher matcher = fileNamePattern.matcher(fileName);
+        Matcher matcher = fileNamePattern.matcher(state.fileName);
         if (matcher.find()) {
             if (matcher.group(2).toLowerCase().startsWith("h")) {
                 videoType.half = true;
@@ -237,7 +236,7 @@ public class VideoRenderer {
             }
         }
         state.videoType = videoType;
-        state.force2D = videoProperties.getForce2D(uri);
+        state.force2D = videoProperties.getForce2D(propertyKey);
 
     }
 
@@ -258,10 +257,10 @@ public class VideoRenderer {
             state.videoLoaded = true;
         });
 
-        if (VideoActivity.vlcInstance == null) {
-            mLibVLC =  new LibVLC(activity);
+        if (VlcHelper.Instance == null) {
+            mLibVLC = new LibVLC(activity);
         } else {
-            mLibVLC = VideoActivity.vlcInstance;
+            mLibVLC = VlcHelper.Instance;
         }
 
     }
@@ -323,7 +322,7 @@ public class VideoRenderer {
 
         mPlayer.play();
 
-        mPlayer.setPosition(videoProperties.getPosition(uri));
+        mPlayer.setPosition(videoProperties.getPosition(propertyKey));
         state.playing = true;
 
         switchingVideo = false;
@@ -461,7 +460,7 @@ public class VideoRenderer {
 
     public void savePosition() {
         if (state.videoLoaded) {
-            videoProperties.setPosition(uri, ended ? 0 : mPlayer.getPosition());
+            videoProperties.setPosition(propertyKey, ended ? 0 : mPlayer.getPosition());
         }
     }
 

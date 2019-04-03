@@ -1,40 +1,79 @@
 package autoandshare.headvr.lib.browse;
 
 import android.net.Uri;
+import android.util.Log;
 
+import org.videolan.libvlc.Media;
+import org.videolan.libvlc.MediaList;
 import org.videolan.medialibrary.media.MediaWrapper;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class VlcMediaList implements PlayList.IPlayList {
+import autoandshare.headvr.activity.VlcHelper;
+import autoandshare.headvr.lib.PathUtil;
 
-    private List<MediaWrapper> list;
-    private int currentPos = 0;
-    public VlcMediaList(List<MediaWrapper> list) {
-        this.list = list;
+public class VlcMediaList implements PlayList.ListSource {
+
+    private static String tag = "VlcMediaList";
+
+
+    private VlcHelper.VlcSelection selection;
+    private String listPositionKey;
+
+    public VlcMediaList(VlcHelper.VlcSelection vlcSelection) {
+        this.selection = vlcSelection;
     }
 
-    @Override
-    public boolean isReady() {
-        return true;
+    public int getPosition() {
+        return selection.position;
     }
 
-    @Override
-    public Uri current() {
-        return list.get(currentPos).getUri();
+    public String getPositionKey() {
+        return listPositionKey;
     }
 
-    @Override
-    public Uri next(int offset) {
-        currentPos = (currentPos + offset) % list.size();
-        return current();
-    }
+    public List<Uri> loadList() {
+        List<Uri> list = new ArrayList<>();
 
-    @Override
-    public String currentIndex() {
-        if (list == null) {
-            return "";
+        if (selection.list != null) {
+            listPositionKey = PathUtil.getKey(Uri.parse(selection.listUrl));
+
+            for (MediaWrapper m : selection.list) {
+                list.add(m.getUri());
+            }
+
+        } else if (selection.mw != null) {
+
+            listPositionKey = PathUtil.getKey(selection.mw.getUri());
+
+            if (selection.mw.getType() == MediaWrapper.TYPE_DIR) {
+                Media m = new Media(VlcHelper.Instance, selection.mw.getUri());
+                expand(m, list);
+            } else {
+                list.add(selection.mw.getUri());
+            }
         }
-        return "" + (currentPos + 1) + "/" + list.size() + " ";
+        return list;
+    }
+
+    private void expand(Media m, List<Uri> list) {
+        m.parse(Media.Parse.ParseNetwork);
+        MediaList ml = m.subItems();
+        m.release();
+        if (ml != null) {
+            Log.d(tag, m.getUri().toString() + " media list size " + ml.getCount());
+            for (int i = 0; i < ml.getCount(); i++) {
+                Media sub_m = ml.getMediaAt(i);
+                Log.d(tag, sub_m.getUri().toString());
+                if ((sub_m.getType() == Media.Type.Directory) || (sub_m.getType() == Media.Type.Playlist)) {
+                    expand(sub_m, list);
+                } else {
+                    list.add(sub_m.getUri());
+                    sub_m.release();
+                }
+            }
+            ml.release();
+        }
     }
 }

@@ -20,12 +20,12 @@ public class HeadControl {
 
     private Motion lastProcessedMotion = null; // prevent overshoot
     private boolean waitForIdle = false;
-    public void waitForIdle()
-    {
+
+    public void waitForIdle() {
         waitForIdle = true;
     }
-    public boolean getWaitForIdle()
-    {
+
+    public boolean getWaitForIdle() {
         return waitForIdle;
     }
 
@@ -100,8 +100,7 @@ public class HeadControl {
         }
         lastProcessedMotion = null;
 
-        if (waitForIdle && (motion != Motion.IDLE))
-        {
+        if (waitForIdle && (motion != Motion.IDLE)) {
             return;
         }
         waitForIdle = false;
