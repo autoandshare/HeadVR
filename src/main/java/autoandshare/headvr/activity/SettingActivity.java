@@ -35,30 +35,6 @@ public class SettingActivity extends AppCompatActivity implements View.OnClickLi
         initSeekBars();
     }
 
-    private static final String[] permissions = new String[]{
-            Manifest.permission.INTERNET,
-            Manifest.permission.READ_EXTERNAL_STORAGE};
-
-    // Internet and Storage Permissions
-    public static void verifyPermissions(Activity activity, String[] permissions) {
-        boolean hasAllPermissions = true;
-        for (String permission : permissions) {
-            if (ActivityCompat.checkSelfPermission(activity, permission)
-                    != PackageManager.PERMISSION_GRANTED) {
-                hasAllPermissions = false;
-                break;
-            }
-        }
-
-        if (!hasAllPermissions) {
-            ActivityCompat.requestPermissions(
-                    activity,
-                    permissions,
-                    1
-            );
-        }
-    }
-
     void initSeekBars(int id, Setting.id propertyName, int textId) {
         SeekBar seekBar = findViewById(id);
         TextView textView = findViewById(textId);
@@ -115,8 +91,6 @@ public class SettingActivity extends AppCompatActivity implements View.OnClickLi
         button.setOnClickListener(this);
 
         initSeekBars();
-
-        verifyPermissions(this, permissions);
 
         WebView help = findViewById(R.id.help);
         help.loadData(readAsset("help.html"), "text/html", "utf-8");

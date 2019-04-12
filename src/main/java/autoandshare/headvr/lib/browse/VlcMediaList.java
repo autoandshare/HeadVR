@@ -47,12 +47,9 @@ public class VlcMediaList implements PlayList.ListSource {
 
             listPositionKey = PathUtil.getKey(selection.mw.getUri());
 
-            if (selection.mw.getType() == MediaWrapper.TYPE_DIR) {
-                Media m = new Media(VlcHelper.Instance, selection.mw.getUri());
-                expand(m, list);
-            } else {
-                list.add(selection.mw.getUri());
-            }
+
+            Media m = new Media(VlcHelper.Instance, selection.mw.getUri());
+            expand(m, list);
         }
         return list;
     }
@@ -60,7 +57,10 @@ public class VlcMediaList implements PlayList.ListSource {
     private void expand(Media m, List<Uri> list) {
         m.parse(Media.Parse.ParseNetwork);
         MediaList ml = m.subItems();
-        m.release();
+        if (ml.getCount() == 0) {
+            ml.release();
+            ml = null;
+        }
         if (ml != null) {
             Log.d(tag, m.getUri().toString() + " media list size " + ml.getCount());
             for (int i = 0; i < ml.getCount(); i++) {
@@ -74,6 +74,9 @@ public class VlcMediaList implements PlayList.ListSource {
                 }
             }
             ml.release();
+        } else {
+            list.add(m.getUri());
         }
+        m.release();
     }
 }

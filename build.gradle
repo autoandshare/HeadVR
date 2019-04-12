@@ -35,8 +35,8 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 
-    api 'com.google.vr:sdk-base:1.190.0'
-    api 'com.tencent:mmkv:1.0.18'
+    implementation 'com.google.vr:sdk-base:1.190.0'
+    implementation 'com.tencent:mmkv:1.0.18'
 
     implementation project(':libvlc')
     implementation project(':medialibrary')
