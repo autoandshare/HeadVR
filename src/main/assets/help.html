@@ -5,116 +5,92 @@
   }
 </style>
 
+
+<b>HeadVR</b> (https://github.com/autoandshare/HeadVR) is an open source VR video player
+for android based on VLC. <br/><br/>
+
+<br/><br/>
+Features:<br/><br/>
+- Use head motion to play/pause, seek, go to next/prev video, ... (Gyroscope sensor is
+necessary) <br/><br/>
+- Support local, network resources.<br/><br/>
+- Rich settings to get a comfortable view.<br/><br/>
+- Force2D mode for problematic 3D video.<br/><br/>
+
+<br/><br/>
+Note:<br/><br/>
+- 360 video is not supported yet.<br/><br/>
+
+<br/><br/>
+Usage:<br/><br/>
+<p>There are 5 basic head motions: Up, Down, Left, Right, Hold still.</p>
+<br/>
+<p>Player basic functions:</p>
 <table class="bordered">
+    <tbody>
     <tr>
-        <td>
-
-            <b>HeadVR</b> (https://github.com/autoandshare/HeadVR) is an open source VR video player
-            for
-            android. <br/><br/>
-
-            <br/><br/>
-            Features:<br/><br/>
-            - Controlled by head motion, e.g., nod to play/pause. (Gyroscope sensor is
-            necessary) <br/><br/>
-            - Support playlist, viewing all the video's without taking off headset. <br/><br/>
-            - Support most multimedia files with underlying libvlc. <br/><br/>
-            - Local and network resources.<br/><br/>
-            - Rich settings to make video comfortable to eyes.<br/><br/>
-            - Force2D mode for stressful 3D video's.<br/><br/>
-
-            <br/><br/>
-            Note:<br/><br/>
-            - Currently there is no browsing function and please open a video with this app from a
-            file manager/explorer.<br/><br/>
-            - 360 video is not supported yet.<br/><br/>
-
-            <br/><br/>
-            Usage:<br/><br/>
-            <p>There are 5 basic head motions: Up, Down, Left, Right, Hold still.</p>
-            <p>&nbsp;</p>
-            <p>Player basic functions:</p>
-            <table class="bordered">
-                <tbody>
-                <tr>
-                    <td>Play/Pause</td>
-                    <td>- Down, Up (Nod)</td>
-                </tr>
-                <tr>
-                    <td>Forward</td>
-                    <td>- Right, Hold still, Left</td>
-                </tr>
-                <tr>
-                    <td>Backward</td>
-                    <td>- Left, Hold still, Right</td>
-                </tr>
-                </tbody>
-            </table>
-            <p>&nbsp;</p>
-            <p>Playlist functions:</p>
-            <p>If the video is a local file, the play list will be video files under the
-                same directory.</p>
-            <p>A play list file (extension ".list") is also supported. For
-                example, "movie.list": <br/><br/>
-                movie.rmvb<br/>
-                dir1/movie1.mp4<br/>
-                dir2/movie2.avi<br/><br/>
-                movie.list, movie.rmvb, dir1 and dir2 should be in the same directory.<br/><br/>
-                If the movies and the play list file are on SMB/FTP/Cloud storage, it may work
-                as well (tested with ES file explorer).
-            </p>
-
-            <table class="bordered">
-                <tbody>
-                <tr>
-                    <td>Next Video</td>
-                    <td>- Up, Down, Right, Left</td>
-                </tr>
-                <tr>
-                    <td>Prev Video</td>
-                    <td>- Up, Down, Left, Right</td>
-                </tr>
-                </tbody>
-            </table>
-            <p>&nbsp;</p>
-            <p>Change settings:</p>
-            <p>Some settings can be adjusted inside player.</p>
-            <table class="bordered">
-                <tbody>
-                <tr>
-                    <td>Increase Eye-to-Eye distance</td>
-                    <td>- Right, Down, Left, Up</td>
-                </tr>
-                <tr>
-                    <td>Decrease&nbsp;Eye-to-Eye distance</td>
-                    <td>- Left, Down, Right, Up</td>
-                </tr>
-                </tbody>
-            </table>
-            <p>&nbsp;</p>
-            <p>Force2D mode:</p>
-            <p>A special mode - Force2D can be enabled if a 3D video is too stressful for eyes.
-                In this mode, same picture will be shown to both eyes.</p>
-
-            <table class="bordered">
-                <tbody>
-                <tr>
-                    <td>Toggle Force2D mode</td>
-                    <td>- Right, Left, Right, Left</td>
-                </tr>
-                </tbody>
-            </table>
-            <p>&nbsp;</p>
-            <p>Other functions:</p>
-            <table class="bordered">
-                <tbody>
-                <tr>
-                    <td>Exit Program</td>
-                    <td>- Up, Left, Right, Down</td>
-                </tr>
-                </tbody>
-            </table>
-
-        </td>
+        <td>Play/Pause</td>
+        <td>- Down, Up (Nod)</td>
     </tr>
+    <tr>
+        <td>Forward</td>
+        <td>- Right, Hold still, Left (Cancel with any other action)</td>
+    </tr>
+    <tr>
+        <td>Rewind</td>
+        <td>- Left, Hold still, Right (Cancel with any other action)</td>
+    </tr>
+    <tr>
+        <td>Next Video</td>
+        <td>- Up, Down, Right, Left</td>
+    </tr>
+    <tr>
+        <td>Prev Video</td>
+        <td>- Up, Down, Left, Right</td>
+    </tr>
+    </tbody>
 </table>
+<p>&nbsp;</p>
+<p>Change settings:</p>
+<p>Eye-to-Eye distance can be adjusted inside player.</p>
+<table class="bordered">
+    <tbody>
+    <tr>
+        <td>Increase Eye-to-Eye distance</td>
+        <td>- Right, Down, Left, Up</td>
+    </tr>
+    <tr>
+        <td>Decrease Eye-to-Eye distance</td>
+        <td>- Left, Down, Right, Up</td>
+    </tr>
+    </tbody>
+</table>
+<p>&nbsp;</p>
+<p>Force2D mode:</p>
+<p>A special mode - Force2D can be enabled if a 3D video is too stressful for eyes.
+    In this mode, same picture will be shown to both eyes.</p>
+
+<table class="bordered">
+    <tbody>
+    <tr>
+        <td>Toggle Force2D mode</td>
+        <td>- Right, Left, Right, Left</td>
+    </tr>
+    </tbody>
+</table>
+<p>&nbsp;</p>
+<p>Other functions:</p>
+<table class="bordered">
+    <tbody>
+    <tr>
+        <td>Exit Program</td>
+        <td>- Up, Left, Right, Down</td>
+    </tr>
+    </tbody>
+</table>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
