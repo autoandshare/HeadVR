@@ -1,6 +1,6 @@
 <b>HeadVR</b> (https://github.com/autoandshare/HeadVR) is an open source VR video player
 for
-android. <br/><br/>
+android based on VLC.<br/><br/>
 
 <br/><br/>
 Features:<br/><br/>
@@ -11,3 +11,6 @@ necessary) <br/><br/>
 - Local and network resources.<br/><br/>
 - Rich settings to make video comfortable to eyes.<br/><br/>
 - Force2D mode for stressful 3D video's.<br/><br/>
+
+To build, get the VLC fork (https://github.com/autoandshare/vlc-android) and
+follow VLC build instructions.
