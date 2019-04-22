@@ -8,7 +8,6 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 
 import org.videolan.libvlc.LibVLC;
-import org.videolan.libvlc.Media;
 import org.videolan.medialibrary.media.MediaWrapper;
 
 import java.util.List;
@@ -69,6 +68,9 @@ public class VlcHelper {
     }
 
     public static void openList(String mrl, Context context, List<MediaWrapper> list, int position, LibVLC vlc) {
+        if (list.size() == 0) {
+            return;
+        }
         Instance = vlc;
         Selection = new VlcSelection(mrl, list, position, null);
         startActivity(context, list.get(0).getUri());
