@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.net.Uri;
 import android.webkit.URLUtil;
 
+import org.videolan.medialibrary.media.MediaWrapper;
+
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.ByteBuffer;
@@ -34,7 +36,7 @@ public class URLFileList implements PlayList.ListSource {
         return PathUtil.getKey(uri);
     }
 
-    public List<Uri> loadList() {
+    public List<MediaWrapper> loadList() {
         return processFileList(readContent(), parseBaseURL(uri.toString()));
     }
 
@@ -74,12 +76,18 @@ public class URLFileList implements PlayList.ListSource {
         return fileContent;
     }
 
-    private List<Uri> processFileList(String fileContent, String baseURL) {
+    private MediaWrapper getMediaWrapper(String line, String baseURL) {
+        return new MediaWrapper(URLUtil.isValidUrl(line) ?
+                Uri.parse(line) :
+                Uri.parse(baseURL + Uri.encode(line)));
+    }
+
+    private List<MediaWrapper> processFileList(String fileContent, String baseURL) {
         if (fileContent == null) {
             return null;
         }
 
-        List<Uri> list = new ArrayList<>();
+        List<MediaWrapper> list = new ArrayList<>();
 
         Scanner scanner = new Scanner(fileContent);
         while (scanner.hasNextLine()) {
@@ -88,10 +96,7 @@ public class URLFileList implements PlayList.ListSource {
                 continue;
             }
             line = line.replace("\\", "/");
-            list.add(
-                    URLUtil.isValidUrl(line) ?
-                            Uri.parse(line) :
-                            Uri.parse(baseURL + Uri.encode(line)));
+            list.add(getMediaWrapper(line, baseURL));
         }
 
         return list;

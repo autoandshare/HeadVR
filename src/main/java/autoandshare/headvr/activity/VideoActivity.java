@@ -13,6 +13,9 @@ import com.google.vr.sdk.base.HeadTransform;
 import com.google.vr.sdk.base.Viewport;
 import com.tencent.mmkv.MMKV;
 
+import org.videolan.libvlc.Media;
+import org.videolan.medialibrary.media.MediaWrapper;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -38,7 +41,6 @@ public class VideoActivity extends GvrActivity implements
 
     private Setting setting;
 
-    private Uri uri;
     private GvrView cardboardView;
     private PlayList playList;
 
@@ -58,10 +60,13 @@ public class VideoActivity extends GvrActivity implements
         cardboardView.setDistortionCorrectionEnabled(false);
 
         Log.i("intent", "start");
-        uri = this.getIntent().getData();
-        if (uri != null) {
-            Log.i("intent", uri.toString());
+        Uri uri = this.getIntent().getData();
+        if (uri == null) {
+            finish();
+            return;
         }
+
+        Log.i("intent", uri.toString());
         playList = PlayList.getPlayList(uri, this);
     }
 
@@ -123,30 +128,28 @@ public class VideoActivity extends GvrActivity implements
         videoRenderer.getState().message = "setting " + id + " to " + eyeDistance;
     }
 
-    private Boolean nextFile(int offset) {
-        if (playList != null) {
-            if (!playList.isReady()) {
-                videoRenderer.getState().message = "Loading play list";
-            } else {
-                Uri uri = playList.next(offset);
-                if (uri == null) {
-                    videoRenderer.getState().errorMessage = "Invalid play list";
-                } else {
-                    playUri(uri);
-                }
-            }
+    private Boolean playMediaFromList(int offset) {
+        if (!playList.isReady()) {
+            videoRenderer.getState().message = "Loading play list";
         } else {
-            videoRenderer.getState().message = "No play list";
+            loaded = true;
+
+            MediaWrapper mw = playList.next(offset);
+            if (mw == null) {
+                videoRenderer.getState().errorMessage = "Invalid play list";
+            } else {
+                videoRenderer.playUri(mw);
+            }
         }
         return true;
     }
 
     private Boolean prevFile() {
-        return nextFile(-1);
+        return playMediaFromList(-1);
     }
 
     private Boolean nextFile() {
-        return nextFile(1);
+        return playMediaFromList(1);
     }
 
 
@@ -157,29 +160,8 @@ public class VideoActivity extends GvrActivity implements
             return;
         }
 
-        if (playList == null) {
-            loaded = true;
-            playUri(this.uri);
-        } else {
-            if (!playList.isReady()) {
-                videoRenderer.getState().message = "Loading play list";
-            } else {
-                loaded = true;
-                Uri current = playList.current();
-                if (current != null) {
-                    playUri(current);
-                } else {
-                    videoRenderer.getState().errorMessage = "Invalid play list";
-                }
-            }
-        }
-    }
+        playMediaFromList(0);
 
-    private void playUri(Uri uri) {
-        if (uri != null) {
-            videoRenderer.savePosition();
-            videoRenderer.playUri(uri);
-        }
     }
 
     private Boolean returnHome() {

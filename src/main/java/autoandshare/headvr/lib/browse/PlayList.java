@@ -5,6 +5,10 @@ import android.net.Uri;
 
 import com.tencent.mmkv.MMKV;
 
+import org.videolan.libvlc.Media;
+import org.videolan.medialibrary.media.MediaWrapper;
+
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -12,7 +16,7 @@ import autoandshare.headvr.activity.VlcHelper;
 
 public class PlayList {
     public interface ListSource {
-        public List<Uri> loadList();
+        public List<MediaWrapper> loadList();
 
         public int getPosition();
 
@@ -30,24 +34,29 @@ public class PlayList {
         return source;
     }
 
+    private static void updatePlayList(PlayList playList, List<MediaWrapper> list, int currentPos, String listPositionKey) {
+        playList.list = list;
+        playList.currentPos = currentPos;
+        playList.listPositionKey = listPositionKey;
+        playList.loadDone();
+        playList.isReady = true;
+    }
+
     public static PlayList getPlayList(Uri uri, Activity activity) {
+        PlayList playList = new PlayList();
+
         ListSource source = getSource(uri, activity);
 
         if (source == null) {
-            return null;
+            List<MediaWrapper> list = new ArrayList<>();
+            list.add(new MediaWrapper(uri));
+            updatePlayList(playList, list, 0, uri.toString());
+        } else {
+            // use thread to work around NetworkOnMainThreadException
+            new Thread(() -> {
+                updatePlayList(playList, source.loadList(), source.getPosition(), source.getPositionKey());
+            }).start();
         }
-
-        PlayList playList = new PlayList();
-
-        // use thread to work around NetworkOnMainThreadException
-        new Thread(() -> {
-            playList.list = source.loadList();
-            playList.currentPos = source.getPosition();
-            playList.listPositionKey = source.getPositionKey();
-            playList.loadDone();
-            playList.isReady = true;
-        }).start();
-
         return playList;
     }
 
@@ -55,7 +64,7 @@ public class PlayList {
         return fileName.endsWith(".list");
     }
 
-    private List<Uri> list;
+    private List<MediaWrapper> list;
     private String listPositionKey;
     private int currentPos = -1;
 
@@ -80,24 +89,18 @@ public class PlayList {
         return isReady;
     }
 
-    public Uri current() {
+    public MediaWrapper next(int offset) {
         if ((!isReady) || (list == null)) {
             return null;
         }
+        currentPos = currentPos + offset;
 
         currentPos = ((currentPos % list.size()) + list.size()) % list.size();
 
         listPosition.putInt(listPositionKey, currentPos);
 
         return list.get(currentPos);
-    }
 
-    public Uri next(int offset) {
-        if ((!isReady) || (list == null)) {
-            return null;
-        }
-        currentPos = currentPos + offset;
-        return current();
     }
 
     public String currentIndex() {

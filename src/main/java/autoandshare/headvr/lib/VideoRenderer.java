@@ -11,6 +11,7 @@ import org.videolan.libvlc.IVLCVout;
 import org.videolan.libvlc.LibVLC;
 import org.videolan.libvlc.Media;
 import org.videolan.libvlc.MediaPlayer;
+import org.videolan.medialibrary.media.MediaWrapper;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -163,7 +164,7 @@ public class VideoRenderer {
             return false;
         }
 
-        if ((this.uri != null) && is3D()) {
+        if ((this.mw != null) && is3D()) {
             state.force2D = !state.force2D;
             videoProperties.setForce2D(propertyKey, state.force2D);
             updateVideoPosition();
@@ -216,11 +217,12 @@ public class VideoRenderer {
             Pattern.compile("([^A-Za-z0-9]|^)(half|h|full|f|)[^A-Za-z0-9]?(3d)?(sbs|ou|tab)([^A-Za-z0-9]|$)",
                     Pattern.CASE_INSENSITIVE);
 
-    private void getVideoType(Uri uri) {
+    private void getVideoType() {
+        Uri uri = mw.getUri();
         VideoType videoType = new VideoType();
 
         propertyKey = PathUtil.getKey(uri);
-        state.fileName = PathUtil.getFilename(uri);
+        state.fileName = mw.getTitle();
 
         Matcher matcher = fileNamePattern.matcher(state.fileName);
         if (matcher.find()) {
@@ -241,7 +243,7 @@ public class VideoRenderer {
     }
 
     private VideoProperties videoProperties;
-    private Uri uri;
+    private MediaWrapper mw;
     private Activity activity;
 
     public VideoRenderer(Activity activity) {
@@ -271,16 +273,19 @@ public class VideoRenderer {
     private boolean positionUpdated = false;
     private ParcelFileDescriptor fd;
 
-    public void playUri(Uri uri) {
+    public void playUri(MediaWrapper mw) {
 
+        if (this.mw != null) {
+            savePosition();
+        }
         videosPlayedCount += 1;
         switchingVideo = true;
         ended = false;
         positionUpdated = false;
         resetState();
 
-        this.uri = uri;
-        getVideoType(uri);
+        this.mw = mw;
+        getVideoType();
 
         if (mPlayer != null) {
             mPlayer.getVLCVout().detachViews();
@@ -305,6 +310,7 @@ public class VideoRenderer {
         vlcVout.attachViews();
 
         Media m;
+        Uri uri = mw.getUri();
         if (uri.getScheme().equals("content")) {
             try {
                 fd = activity.getContentResolver()
