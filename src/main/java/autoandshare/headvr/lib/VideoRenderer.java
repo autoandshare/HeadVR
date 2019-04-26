@@ -160,7 +160,7 @@ public class VideoRenderer {
     }
 
     public Boolean toggleForce2D() {
-        if (!state.videoLoaded) {
+        if (!(frameReady && positionUpdated)) {
             return false;
         }
 
@@ -256,6 +256,7 @@ public class VideoRenderer {
             if (switchingVideo) {
                 return;
             }
+            frameReady = true;
             state.videoLoaded = true;
         });
 
@@ -270,7 +271,9 @@ public class VideoRenderer {
     private int videosPlayedCount = 0;
     private boolean switchingVideo = true;
     private boolean ended = false;
+    private boolean frameReady = false;
     private boolean positionUpdated = false;
+
     private ParcelFileDescriptor fd;
 
     public void playUri(MediaWrapper mw) {
@@ -281,6 +284,7 @@ public class VideoRenderer {
         videosPlayedCount += 1;
         switchingVideo = true;
         ended = false;
+        frameReady = false;
         positionUpdated = false;
         resetState();
 
@@ -353,7 +357,7 @@ public class VideoRenderer {
     }
 
     public void updateVideoPosition() {
-        if (!state.videoLoaded) {
+        if (!frameReady) {
             return;
         }
 
@@ -422,7 +426,7 @@ public class VideoRenderer {
         updateStates();
 
         if (eye.getType() == 1) {
-            readyToDraw = state.videoLoaded && positionUpdated;
+            readyToDraw = frameReady && positionUpdated;
             videoScreen.getSurfaceTexture().updateTexImage();
         }
 
@@ -432,11 +436,10 @@ public class VideoRenderer {
     }
 
     private void updateStates() {
-        if (ended && (!state.videoLoaded) && (mPlayer.getLength() != 0)) {
+        if (ended && (!frameReady) && (mPlayer.getLength() != 0)) {
             restartIfNeeded();
         }
-        if (state.videoLoaded && (!positionUpdated)) {
-            state.videoLength = (int) mPlayer.getLength();
+        if (frameReady && (!positionUpdated)) {
             updateVideoPosition();
 
             if (videosPlayedCount == 1) {
@@ -444,7 +447,12 @@ public class VideoRenderer {
             }
 
             positionUpdated = true;
-            state.videoLoaded = false;
+            frameReady = false;
+        }
+        if ((!state.videoLoaded) && (!switchingVideo)) {
+            if (((int) mPlayer.getTime()) != 0) {
+                state.videoLoaded = true;
+            }
         }
     }
 
@@ -452,6 +460,7 @@ public class VideoRenderer {
         if (state.videoLoaded) {
             state.currentTime = (int) mPlayer.getTime();
             state.currentPosition = mPlayer.getPosition();
+            state.videoLength = (int) mPlayer.getLength();
         }
         return state;
     }
