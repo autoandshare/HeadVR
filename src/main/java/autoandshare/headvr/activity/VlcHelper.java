@@ -10,6 +10,7 @@ import android.net.Uri;
 import org.videolan.libvlc.LibVLC;
 import org.videolan.medialibrary.media.MediaWrapper;
 
+import java.net.URLDecoder;
 import java.util.List;
 
 import androidx.core.app.ActivityCompat;
@@ -57,7 +58,14 @@ public class VlcHelper {
     public static VlcSelection Selection;
 
     public static void openMedia(Context context, Intent intent, LibVLC vlc) {
-        MediaWrapper mw = new MediaWrapper(intent.getData());
+        Uri uri = intent.getData();
+        if (uri.toString().contains("%2F")) {
+            try {
+                uri = Uri.parse(URLDecoder.decode(uri.toString(), "UTF-8"));
+            } catch (Exception ex) {
+            }
+        }
+        MediaWrapper mw = new MediaWrapper(uri);
         openMedia(context, mw, vlc);
     }
 

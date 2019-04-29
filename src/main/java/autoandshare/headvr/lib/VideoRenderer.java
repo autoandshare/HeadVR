@@ -222,7 +222,7 @@ public class VideoRenderer {
         VideoType videoType = new VideoType();
 
         propertyKey = PathUtil.getKey(uri);
-        state.fileName = PathUtil.getFilename(mw.getTitle());
+        state.fileName = mw.getTitle();
 
         Matcher matcher = fileNamePattern.matcher(state.fileName);
         if (matcher.find()) {
