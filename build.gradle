@@ -23,8 +23,11 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+        dev {
+            initWith debug
+            matchingFallbacks = ['debug']
+        }
     }
-
 }
 
 dependencies {
@@ -38,6 +41,8 @@ dependencies {
     implementation 'com.google.vr:sdk-base:1.190.0'
     implementation 'com.tencent:mmkv:1.0.18'
 
-    implementation project(':libvlc')
-    implementation project(':medialibrary')
+    devImplementation project(':libvlc')
+    devImplementation project(':medialibrary')
+    implementation "org.videolan.android:libvlc-all:$rootProject.ext.libvlcVersion"
+    implementation "org.videolan.android:medialibrary-all:$rootProject.ext.medialibraryVersion"
 }
