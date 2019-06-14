@@ -13,7 +13,6 @@ import com.google.vr.sdk.base.HeadTransform;
 import com.google.vr.sdk.base.Viewport;
 import com.tencent.mmkv.MMKV;
 
-import org.videolan.libvlc.Media;
 import org.videolan.medialibrary.media.MediaWrapper;
 
 import java.util.Arrays;
@@ -24,6 +23,7 @@ import javax.microedition.khronos.egl.EGLConfig;
 
 import autoandshare.headvr.R;
 import autoandshare.headvr.lib.BasicUI;
+import autoandshare.headvr.lib.NoDistortionProvider;
 import autoandshare.headvr.lib.Setting;
 import autoandshare.headvr.lib.VideoRenderer;
 import autoandshare.headvr.lib.browse.PlayList;
@@ -48,6 +48,8 @@ public class VideoActivity extends GvrActivity implements
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        NoDistortionProvider.setupProvider(this);
+
         setting = new Setting(this);
 
         setContentView(R.layout.video_ui);
@@ -57,7 +59,6 @@ public class VideoActivity extends GvrActivity implements
         cardboardView = findViewById(R.id.cardboard_view);
         cardboardView.setRenderer(this);
         this.setGvrView(cardboardView);
-        cardboardView.setDistortionCorrectionEnabled(false);
 
         Log.i("intent", "start");
         Uri uri = this.getIntent().getData();
