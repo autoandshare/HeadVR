@@ -9,26 +9,14 @@ import com.google.vr.sdk.base.Eye;
 public class VRSurface {
     private VRTexture2D vrTexture2D;
     private Surface surface;
-    private int widthPixel;
-    private int heightPixel;
-
-    public int getWidthPixel() {
-        return widthPixel;
-    }
-
-    public int getHeightPixel() {
-        return heightPixel;
-    }
 
     public VRSurface(float width, float height, float distance,
-                     PointF topLeft) {
+                     PointF topLeft, int widthPixel, int heightPixel) {
         vrTexture2D = new VRTexture2D();
         vrTexture2D.updatePositions(
                 width, height, distance,
                 topLeft);
 
-        widthPixel = (int) (width * 384);
-        heightPixel = (int) (height * 384);
         vrTexture2D.getSurfaceTexture().setDefaultBufferSize(
                 widthPixel, heightPixel);
 

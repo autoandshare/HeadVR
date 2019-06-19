@@ -108,7 +108,7 @@ public class VideoActivity extends GvrActivity implements
     }
 
     private Boolean updateEyeDistance(int i) {
-        Setting.id id = ((!videoRenderer.is3D()) || videoRenderer.getState().force2D) ?
+        Setting.id id = videoRenderer.getState().drawAs2D() ?
                 Setting.id.EyeDistance : Setting.id.EyeDistance3D;
 
         updateEyeDistanceWithId(i, id);

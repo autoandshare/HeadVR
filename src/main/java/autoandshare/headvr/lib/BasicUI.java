@@ -33,16 +33,16 @@ public class BasicUI {
     private float motionsX;
 
     public BasicUI() {
-        float uiWidth = 1.8f;
-        uiVRSurface = new VRSurface(uiWidth, 0.27f, 3f,
-                new PointF(-uiWidth / 2, -1f));
+
+        float widthPixel = 920;
+        float heightPixel = 138;
+
+        initSurface(widthPixel, heightPixel);
 
         float textSize = 30;
         float strokeWidth = 16;
         float margin = 10;
 
-        float heightPixel = uiVRSurface.getHeightPixel();
-        float widthPixel = uiVRSurface.getWidthPixel();
 
         row0Y = heightPixel / 6;
         row1Y = heightPixel * 3 / 6;
@@ -78,6 +78,15 @@ public class BasicUI {
         progressLinePaint3.setColor(Color.GREEN);
         progressLinePaint3.setStrokeWidth(strokeWidth / 2);
 
+    }
+
+    private void initSurface(float widthPixel, float heightPixel) {
+        float uiWidth = widthPixel / 360;
+        float uiHeight = heightPixel / 360;
+        uiVRSurface = new VRSurface(
+                uiWidth, uiHeight, 3f,
+                new PointF(-uiWidth / 2, -1f * (1 + Setting.VideoSize/3)/2),
+                (int) widthPixel, (int) heightPixel);
     }
 
     public void glDraw(Eye eye, VideoRenderer.State videoState, HeadControl control, String currentIndex) {

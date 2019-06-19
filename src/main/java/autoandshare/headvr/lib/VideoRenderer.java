@@ -164,7 +164,7 @@ public class VideoRenderer {
             return false;
         }
 
-        if ((this.mw != null) && is3D()) {
+        if ((this.mw != null) && state.is3D()) {
             state.force2D = !state.force2D;
             videoProperties.setForce2D(propertyKey, state.force2D);
             updateVideoPosition();
@@ -198,10 +198,18 @@ public class VideoRenderer {
         // optional info
         public String message;
         public String playerState;
+
+        public boolean is3D() {
+            return this.videoType.sbs || this.videoType.tab;
+        }
+
+        public boolean drawAs2D() {
+            return (!is3D()) || force2D;
+        }
     }
 
     private LibVLC mLibVLC = null;
-    private State state = new State();
+    public static State state = new State();
     private MediaPlayer mPlayer;
     private VRTexture2D videoScreen;
     private String propertyKey;
@@ -483,11 +491,6 @@ public class VideoRenderer {
         return state.videoLoaded &&
                 state.playing && (!state.seeking);
     }
-
-    public boolean is3D() {
-        return state.videoType.sbs || state.videoType.tab;
-    }
-
 
     public void onEvent(MediaPlayer.Event event) {
 

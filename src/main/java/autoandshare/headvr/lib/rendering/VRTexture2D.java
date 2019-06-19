@@ -11,6 +11,7 @@ import com.google.vr.sdk.base.Eye;
 import java.nio.FloatBuffer;
 
 import autoandshare.headvr.lib.Setting;
+import autoandshare.headvr.lib.VideoRenderer;
 
 import static autoandshare.headvr.lib.rendering.Utils.checkGlError;
 
@@ -175,7 +176,7 @@ public class VRTexture2D {
     private float[] getMVP(Eye eye) {
 
         // use different distance for mono and stereo content
-        float eyeDistance = (textureCoordsBuffer[0] == textureCoordsBuffer[1]) ?
+        float eyeDistance = VideoRenderer.state.drawAs2D() ?
                 Setting.EyeDistance : Setting.EyeDistance3D;
 
         Matrix.setIdentityM(mvp, 0);
