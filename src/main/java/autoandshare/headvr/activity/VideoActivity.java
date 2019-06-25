@@ -3,6 +3,8 @@ package autoandshare.headvr.activity;
 import android.net.Uri;
 import android.opengl.GLES20;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.WindowManager;
 
@@ -139,11 +141,15 @@ public class VideoActivity extends GvrActivity implements
             if (mw == null) {
                 videoRenderer.getState().errorMessage = "Invalid play list";
             } else {
+                hideUI = true;
                 videoRenderer.playUri(mw);
+                new Handler(Looper.getMainLooper()).postDelayed(() -> hideUI = false, 1000);
             }
         }
         return true;
     }
+
+    private boolean hideUI = false;
 
     private Boolean prevFile() {
         return playMediaFromList(-1);
@@ -243,7 +249,7 @@ public class VideoActivity extends GvrActivity implements
 
         videoRenderer.glDraw(eye);
 
-        if (uiVisible) {
+        if ((!hideUI) && uiVisible) {
             basicUI.glDraw(eye, videoRenderer.getState(), headControl,
                     (playList != null) ? playList.currentIndex() : "");
         }

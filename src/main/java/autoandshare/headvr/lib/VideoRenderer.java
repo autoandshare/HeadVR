@@ -281,6 +281,7 @@ public class VideoRenderer {
     private boolean ended = false;
     private boolean frameReady = false;
     private boolean positionUpdated = false;
+    private int retry = 0;
 
     private ParcelFileDescriptor fd;
 
@@ -294,6 +295,7 @@ public class VideoRenderer {
         ended = false;
         frameReady = false;
         positionUpdated = false;
+        retry = 0;
         resetState();
 
         this.mw = mw;
@@ -338,12 +340,15 @@ public class VideoRenderer {
         mPlayer.setMedia(m);
         m.release();
 
-        mPlayer.play();
-
-        mPlayer.setPosition(videoProperties.getPosition(propertyKey));
-        state.playing = true;
+        playAndSeek();
 
         switchingVideo = false;
+    }
+
+    private void playAndSeek() {
+        mPlayer.play();
+        mPlayer.setPosition(videoProperties.getPosition(propertyKey));
+        state.playing = true;
     }
 
     private void resetState() {
@@ -515,7 +520,12 @@ public class VideoRenderer {
             case MediaPlayer.Event.Stopped:
                 state.playerState = "Stopped";
                 if ((!state.videoLoaded) && (mPlayer.getLength() == 0)) {
-                    state.playerState = "Failed to open";
+                    if (retry < 3) {
+                        mPlayer.stop();
+                        playAndSeek();
+                        retry += 1;
+                    } else
+                        state.playerState = "Failed to open";
                 }
                 break;
 
