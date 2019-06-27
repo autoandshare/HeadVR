@@ -45,7 +45,7 @@ public class Setting {
 
     static {
         items = new HashMap<>();
-        items.put(id.Brightness, new Item(0, 100, 50, 0f, 0.5f, "Brightness"));
+        items.put(id.Brightness, new Item(0, 100, 25, 0f, 0.5f, "Brightness"));
         items.put(id.EyeDistance, new Item(-50, 50, 0, -0.4f, 0.4f, "Eye to eye distance"));
         items.put(id.EyeDistance3D, new Item(-50, 50, 0, -0.4f, 0.4f, "Eye to eye distance for 3D content"));
         items.put(id.VerticalDistance, new Item(-50, 50, 0, -0.6f, 0.6f, "Vertical offset"));

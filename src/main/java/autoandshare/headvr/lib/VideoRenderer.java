@@ -282,6 +282,7 @@ public class VideoRenderer {
     private boolean frameReady = false;
     private boolean positionUpdated = false;
     private int retry = 0;
+    Media.VideoTrack vtrack;
 
     private ParcelFileDescriptor fd;
 
@@ -296,6 +297,7 @@ public class VideoRenderer {
         frameReady = false;
         positionUpdated = false;
         retry = 0;
+        vtrack = null;
         resetState();
 
         this.mw = mw;
@@ -374,7 +376,9 @@ public class VideoRenderer {
             return;
         }
 
-        Media.VideoTrack vtrack = mPlayer.getCurrentVideoTrack();
+        if (vtrack == null) {
+            vtrack = mPlayer.getCurrentVideoTrack();
+        }
         if (vtrack == null) {
             state.errorMessage = "Unable to get video track info";
             return;
