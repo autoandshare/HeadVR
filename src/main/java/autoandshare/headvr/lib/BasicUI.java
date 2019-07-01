@@ -4,9 +4,14 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
+import android.text.TextPaint;
+import android.text.TextUtils;
 
 import com.google.vr.sdk.base.Eye;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -17,7 +22,7 @@ import autoandshare.headvr.lib.rendering.VRSurface;
 
 public class BasicUI {
     private VRSurface uiVRSurface;
-    private Paint leftAlignTextPaint;
+    private TextPaint leftAlignTextPaint;
     private Paint rightAlignTextPaint;
     private Paint centerAlignTextPaint;
     private Paint progressLinePaint1;
@@ -47,11 +52,12 @@ public class BasicUI {
         row0Y = heightPixel / 6;
         row1Y = heightPixel * 3 / 6;
         row2Y = heightPixel * 5 / 6;
+
         beginX = margin;
         endX = widthPixel - margin;
         motionsX = margin + (endX - beginX) / 3;
 
-        leftAlignTextPaint = new Paint();
+        leftAlignTextPaint = new TextPaint();
         leftAlignTextPaint.setColor(Color.LTGRAY);
         leftAlignTextPaint.setTextSize(textSize);
         leftAlignTextPaint.setTextAlign(Paint.Align.LEFT);
@@ -85,7 +91,7 @@ public class BasicUI {
         float uiHeight = heightPixel / 360;
         uiVRSurface = new VRSurface(
                 uiWidth, uiHeight, 3f,
-                new PointF(-uiWidth / 2, -1f * (1 + Setting.VideoSize/3)/2),
+                new PointF(-uiWidth / 2, -1f * (1 + Setting.VideoSize / 3) / 2),
                 (int) widthPixel, (int) heightPixel);
     }
 
@@ -95,10 +101,9 @@ public class BasicUI {
 
             canvas.drawColor(Color.BLACK);
 
-            drawString(canvas,
-                    (videoState.message != null) ? videoState.message :
-                            currentIndex + videoState.fileName,
-                    beginX, row0Y, leftAlignTextPaint);
+            drawFileNameOrMessage(canvas, videoState, currentIndex);
+
+            drawDatetime(canvas);
 
             drawMotions(canvas, control);
 
@@ -120,6 +125,25 @@ public class BasicUI {
         uiVRSurface.draw(eye);
 
     }
+
+    private void drawFileNameOrMessage(Canvas canvas, VideoRenderer.State videoState, String currentIndex) {
+        String fullTxt = (videoState.message != null) ?
+                videoState.message :
+                currentIndex + videoState.fileName;
+
+        drawString(canvas,
+                TextUtils.ellipsize(fullTxt, leftAlignTextPaint, (endX - beginX) * 3 / 4, TextUtils.TruncateAt.END).toString(),
+                beginX, row0Y, leftAlignTextPaint);
+    }
+
+    private SimpleDateFormat sdf = new SimpleDateFormat("hh:mm aa", Locale.US);
+
+    private float drawDatetime(Canvas canvas) {
+        String string = sdf.format(Calendar.getInstance().getTime());
+        drawString(canvas, string, endX, row0Y, rightAlignTextPaint);
+        return rightAlignTextPaint.measureText(string);
+    }
+
 
     private void drawStateIcon(Canvas canvas, VideoRenderer.State videoState) {
 
