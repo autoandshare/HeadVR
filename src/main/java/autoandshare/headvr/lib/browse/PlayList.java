@@ -97,7 +97,9 @@ public class PlayList {
 
         currentPos = ((currentPos % list.size()) + list.size()) % list.size();
 
-        listPosition.putInt(listPositionKey, currentPos);
+        if (list.size() > 1) {
+            listPosition.putInt(listPositionKey, currentPos);
+        }
 
         return list.get(currentPos);
 

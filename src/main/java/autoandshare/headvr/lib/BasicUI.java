@@ -103,7 +103,9 @@ public class BasicUI {
 
             drawFileNameOrMessage(canvas, videoState, currentIndex);
 
-            drawDatetime(canvas);
+            if (!videoState.playing) {
+                drawDatetime(canvas);
+            }
 
             drawMotions(canvas, control);
 
