@@ -10,6 +10,7 @@ import org.videolan.medialibrary.media.MediaWrapper;
 import java.util.ArrayList;
 import java.util.List;
 
+import autoandshare.headvr.BuildConfig;
 import autoandshare.headvr.activity.VlcHelper;
 import autoandshare.headvr.lib.PathUtil;
 
@@ -63,10 +64,14 @@ public class VlcMediaList implements PlayList.ListSource {
 
         MediaList ml = m.subItems();
         if (ml != null) {
-            Log.d(tag, m.getUri().toString() + " media list size " + ml.getCount());
+            if (BuildConfig.DEBUG) {
+                Log.d(tag, m.getUri().toString() + " media list size " + ml.getCount());
+            }
             for (int i = 0; i < ml.getCount(); i++) {
                 Media sub_m = ml.getMediaAt(i);
-                Log.d(tag, sub_m.getUri().toString());
+                if (BuildConfig.DEBUG) {
+                    Log.d(tag, sub_m.getUri().toString());
+                }
                 if ((sub_m.getType() == Media.Type.Directory) || (sub_m.getType() == Media.Type.Playlist)) {
                     expand(sub_m, list);
                 } else {

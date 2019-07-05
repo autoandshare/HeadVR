@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import autoandshare.headvr.BuildConfig;
 import autoandshare.headvr.lib.headcontrol.HeadMotion.Motion;
 
 public class HeadControl {
@@ -35,7 +36,9 @@ public class HeadControl {
             if ((actionMotion.get(0) == Motion.ANY) || (actionMotion.equals(motions))) {
                 try {
                     if (actionTable.get(i).call()) {
-                        Log.d(TAG, "action called: " + i);
+                        if (BuildConfig.DEBUG) {
+                            Log.d(TAG, "action called: " + i);
+                        }
                         setLastMotion();
                         return true;
                     }

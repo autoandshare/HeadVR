@@ -3,6 +3,7 @@ package autoandshare.headvr.lib.headcontrol;
 import androidx.collection.CircularArray;
 import android.util.Log;
 
+import autoandshare.headvr.BuildConfig;
 import autoandshare.headvr.lib.Setting;
 
 public class HeadMotion {
@@ -32,7 +33,9 @@ public class HeadMotion {
     }
 
     private void motionDetected(Motion motion) {
-        Log.d(TAG, "motion detected: " + motion);
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, "motion detected: " + motion);
+        }
         lastActionTime = System.nanoTime() / 1000000;
         if (motion != Motion.IDLE) {
             upVectors.clear();
