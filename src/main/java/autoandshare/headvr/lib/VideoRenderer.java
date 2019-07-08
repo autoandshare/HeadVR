@@ -72,10 +72,6 @@ public class VideoRenderer {
             return false;
         }
 
-        if (!state.playing) {
-            return false;
-        }
-
         if (motion.equals(Motion.ANY)) {
             if (state.seeking) {
                 if (!cancelSeek(control)) {
