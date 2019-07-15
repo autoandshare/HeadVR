@@ -91,7 +91,7 @@ public class BasicUI {
         float uiHeight = heightPixel / 360;
         uiVRSurface = new VRSurface(
                 uiWidth, uiHeight, 3f,
-                new PointF(-uiWidth / 2, -1f * (1 + Setting.VideoSize / 3) / 2),
+                new PointF(-uiWidth / 2, -1.8f),
                 (int) widthPixel, (int) heightPixel);
     }
 

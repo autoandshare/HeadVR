@@ -19,6 +19,8 @@ import java.util.regex.Pattern;
 import autoandshare.headvr.activity.VlcHelper;
 import autoandshare.headvr.lib.headcontrol.HeadControl;
 import autoandshare.headvr.lib.headcontrol.HeadMotion.Motion;
+import autoandshare.headvr.lib.rendering.Mesh;
+import autoandshare.headvr.lib.rendering.MeshExt;
 import autoandshare.headvr.lib.rendering.VRTexture2D;
 
 import static java.lang.Math.min;
@@ -72,6 +74,10 @@ public class VideoRenderer {
             return false;
         }
 
+        if (state.isVR() && state.playing) {
+            return false;
+        }
+
         if (motion.equals(Motion.ANY)) {
             if (state.seeking) {
                 if (!cancelSeek(control)) {
@@ -79,7 +85,6 @@ public class VideoRenderer {
                     mPlayer.setPosition(state.newPosition);
                 }
                 state.seeking = false;
-                control.waitForIdle();
                 return true;
             }
         } else if (motion.equals(Motion.IDLE)) {
@@ -202,12 +207,26 @@ public class VideoRenderer {
         public boolean drawAs2D() {
             return (!is3D()) || force2D;
         }
+
+        public boolean isVR() {
+            return this.videoType.vr180 || this.videoType.vr360;
+        }
     }
 
     private LibVLC mLibVLC = null;
-    public static State state = new State();
+    private static State state = new State();
     private MediaPlayer mPlayer;
     private VRTexture2D videoScreen;
+    private MeshExt mesh;
+
+    public static boolean drawAs2D() {
+        return state.drawAs2D();
+    }
+    public static float getCurrentEyeDistance() {
+        return state.drawAs2D() ?
+                Setting.EyeDistance : Setting.EyeDistance3D;
+    }
+
     private String propertyKey;
 
     class VideoType {
@@ -215,10 +234,16 @@ public class VideoRenderer {
         boolean full;
         boolean sbs;
         boolean tab;
+        boolean vr180;
+        boolean vr360;
     }
 
-    private Pattern fileNamePattern =
+    private Pattern fileNamePattern3D =
             Pattern.compile("([^A-Za-z0-9]|^)(half|h|full|f|)[^A-Za-z0-9]?(3d)?(sbs|ou|tab)([^A-Za-z0-9]|$)",
+                    Pattern.CASE_INSENSITIVE);
+
+    private Pattern fileNamePatternVR =
+            Pattern.compile("([^A-Za-z0-9]|^)(180|360)([^A-Za-z0-9]|$)",
                     Pattern.CASE_INSENSITIVE);
 
     private void getVideoType() {
@@ -228,7 +253,8 @@ public class VideoRenderer {
         propertyKey = PathUtil.getKey(uri);
         state.fileName = mw.getTitle();
 
-        Matcher matcher = fileNamePattern.matcher(state.fileName);
+        int mediaFormat = Mesh.MEDIA_MONOSCOPIC;
+        Matcher matcher = fileNamePattern3D.matcher(state.fileName);
         if (matcher.find()) {
             if (matcher.group(2).toLowerCase().startsWith("h")) {
                 videoType.half = true;
@@ -237,8 +263,20 @@ public class VideoRenderer {
             }
             if (matcher.group(4).toLowerCase().startsWith("s")) {
                 videoType.sbs = true;
+                mediaFormat = Mesh.MEDIA_STEREO_LEFT_RIGHT;
             } else {
                 videoType.tab = true;
+                mediaFormat = Mesh.MEDIA_STEREO_TOP_BOTTOM;
+            }
+        }
+        matcher = fileNamePatternVR.matcher(state.fileName);
+        if (matcher.find()) {
+            if (matcher.group(2).equals("180")) {
+                videoType.vr180 = true;
+                mesh.setMediaType(true, mediaFormat);
+            } else {
+                videoType.vr360 = true;
+                mesh.setMediaType(false, mediaFormat);
             }
         }
         state.videoType = videoType;
@@ -263,6 +301,9 @@ public class VideoRenderer {
             frameReady = true;
             state.videoLoaded = true;
         });
+
+        mesh = new MeshExt();
+        mesh.glInit(videoScreen.getTextureId());
 
         if (VlcHelper.Instance == null) {
             mLibVLC = new LibVLC(activity);
@@ -385,6 +426,12 @@ public class VideoRenderer {
         mPlayer.setAspectRatio("" + vtrack.width + ":" + vtrack.height);
         mPlayer.setScale(0);
 
+        if (!state.isVR()) {
+            setScreenPosition();
+        }
+    }
+
+    private void setScreenPosition() {
         float heightWidthRatio = ((float) vtrack.height) / vtrack.width;
 
         if (state.videoType.sbs) {
@@ -444,7 +491,11 @@ public class VideoRenderer {
         }
 
         if (readyToDraw) {
-            videoScreen.draw(eye);
+            if (state.isVR()) {
+                mesh.draw(eye);
+            } else {
+                videoScreen.draw(eye);
+            }
         }
     }
 

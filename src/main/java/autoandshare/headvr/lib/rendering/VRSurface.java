@@ -13,6 +13,7 @@ public class VRSurface {
     public VRSurface(float width, float height, float distance,
                      PointF topLeft, int widthPixel, int heightPixel) {
         vrTexture2D = new VRTexture2D();
+        vrTexture2D.verticalFixed = true;
         vrTexture2D.updatePositions(
                 width, height, distance,
                 topLeft);

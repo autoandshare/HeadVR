@@ -34,7 +34,7 @@ import static android.opengl.GLU.gluErrorString;
 public class Utils {
     private static final String TAG = "Video360.Utils";
 
-    private static final int BYTES_PER_FLOAT = 4;
+    public static final int BYTES_PER_FLOAT = 4;
 
     /**
      * Debug builds should fail quickly. Release versions of the app should have this disabled.

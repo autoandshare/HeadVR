@@ -2,6 +2,7 @@ package autoandshare.headvr.activity;
 
 import android.net.Uri;
 import android.opengl.GLES20;
+import android.opengl.Matrix;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -31,6 +32,7 @@ import autoandshare.headvr.lib.VideoRenderer;
 import autoandshare.headvr.lib.browse.PlayList;
 import autoandshare.headvr.lib.headcontrol.HeadControl;
 import autoandshare.headvr.lib.headcontrol.HeadMotion.Motion;
+import autoandshare.headvr.lib.rendering.Mesh;
 import autoandshare.headvr.lib.rendering.VRTexture2D;
 
 public class VideoActivity extends GvrActivity implements
@@ -86,6 +88,7 @@ public class VideoActivity extends GvrActivity implements
     private static final List<Motion> Round = Arrays.asList(Motion.RIGHT, Motion.DOWN, Motion.LEFT, Motion.UP);
     private static final List<Motion> ReverseRound = Arrays.asList(Motion.LEFT, Motion.DOWN, Motion.RIGHT, Motion.UP);
     private static final List<Motion> Force2D = Arrays.asList(Motion.RIGHT, Motion.LEFT, Motion.RIGHT, Motion.LEFT);
+    private static final List<Motion> Recenter = Arrays.asList(Motion.LEFT, Motion.RIGHT, Motion.LEFT, Motion.RIGHT);
 
     private void setupMotionActionTable() {
         headControl.addMotionAction(Any, () -> {
@@ -107,6 +110,22 @@ public class VideoActivity extends GvrActivity implements
         headControl.addMotionAction(Round, () -> updateEyeDistance(3));
         headControl.addMotionAction(ReverseRound, () -> updateEyeDistance(-3));
         headControl.addMotionAction(Force2D, () -> videoRenderer.toggleForce2D());
+        headControl.addMotionAction(Recenter, () -> recenter());
+    }
+
+    private boolean resetRotationMatrix = false;
+
+    private Boolean recenter() {
+        if (!videoRenderer.getState().isVR()) {
+            return false;
+        }
+
+        hideAll = true;
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            resetRotationMatrix = true;
+            hideAll = false;
+        }, 1000);
+        return true;
     }
 
     private Boolean updateEyeDistance(int i) {
@@ -141,15 +160,15 @@ public class VideoActivity extends GvrActivity implements
             if (mw == null) {
                 videoRenderer.getState().errorMessage = "Invalid play list";
             } else {
-                hideUI = true;
+                hideAll = true;
                 videoRenderer.playUri(mw);
-                new Handler(Looper.getMainLooper()).postDelayed(() -> hideUI = false, 1000);
+                new Handler(Looper.getMainLooper()).postDelayed(() -> hideAll = false, 1500);
             }
         }
         return true;
     }
 
-    private boolean hideUI = false;
+    private boolean hideAll = false;
 
     private Boolean prevFile() {
         return playMediaFromList(-1);
@@ -239,6 +258,15 @@ public class VideoActivity extends GvrActivity implements
         headTransform.getForwardVector(forwardVector, 0);
 
         headControl.handleMotion(upVector, forwardVector);
+
+        if (resetRotationMatrix) {
+            if (Mesh.recenterMatrix == null) {
+                Mesh.recenterMatrix = new float[16];
+            }
+            Matrix.transposeM(Mesh.recenterMatrix, 0, headTransform.getHeadView(), 0);
+            Mesh.recenterMatrix[3] = Mesh.recenterMatrix[7] = Mesh.recenterMatrix[11] = 0;
+            resetRotationMatrix = false;
+        }
     }
 
     @Override
@@ -247,9 +275,13 @@ public class VideoActivity extends GvrActivity implements
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
+        if (hideAll) {
+            return;
+        }
+
         videoRenderer.glDraw(eye);
 
-        if ((!hideUI) && uiVisible) {
+        if (uiVisible) {
             basicUI.glDraw(eye, videoRenderer.getState(), headControl,
                     (playList != null) ? playList.currentIndex() : "");
         }

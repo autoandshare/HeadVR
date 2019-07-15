@@ -17,6 +17,8 @@ import static autoandshare.headvr.lib.rendering.Utils.checkGlError;
 
 public class VRTexture2D {
 
+    public boolean verticalFixed = false;
+
     // constructors
     public VRTexture2D() {
         createSurfaceTexture();
@@ -134,6 +136,10 @@ public class VRTexture2D {
         return surfaceTexture;
     }
 
+    public int getTextureId() {
+        return textureId;
+    }
+
 
     private float[] textureTransform = new float[16];
 
@@ -176,13 +182,13 @@ public class VRTexture2D {
     private float[] getMVP(Eye eye) {
 
         // use different distance for mono and stereo content
-        float eyeDistance = VideoRenderer.state.drawAs2D() ?
-                Setting.EyeDistance : Setting.EyeDistance3D;
+        float eyeDistance = VideoRenderer.getCurrentEyeDistance();
 
         Matrix.setIdentityM(mvp, 0);
+
         Matrix.translateM(mvp, 0,
                 eye.getType() == 1 ? -eyeDistance : eyeDistance,
-                Setting.VerticalDistance,
+                verticalFixed ? 0 : Setting.VerticalDistance,
                 0);
 
         float CAMERA_Z = 0.01f;
