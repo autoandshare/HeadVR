@@ -272,7 +272,7 @@ public class Mesh {
 
         // Load texture data. Eye.Type.RIGHT uses the left eye's data.
         int textureOffset =
-                VideoRenderer.drawAs2D() || (eyeType == Eye.Type.RIGHT) ?
+                VideoRenderer.useRightTexture(eyeType) ?
                         POSITION_COORDS_PER_VERTEX + 2 : POSITION_COORDS_PER_VERTEX;
         vertexBuffer.position(textureOffset);
         GLES20.glVertexAttribPointer(

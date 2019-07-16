@@ -222,6 +222,11 @@ public class VideoRenderer {
     public static boolean drawAs2D() {
         return state.drawAs2D();
     }
+
+    public static boolean useRightTexture(int eyeType) {
+        return VideoRenderer.drawAs2D() || (eyeType == Eye.Type.RIGHT);
+    }
+
     public static float getCurrentEyeDistance() {
         return state.drawAs2D() ?
                 Setting.EyeDistance : Setting.EyeDistance3D;
@@ -269,6 +274,7 @@ public class VideoRenderer {
                 mediaFormat = Mesh.MEDIA_STEREO_TOP_BOTTOM;
             }
         }
+        videoScreen.setMediaType(mediaFormat);
         matcher = fileNamePatternVR.matcher(state.fileName);
         if (matcher.find()) {
             if (matcher.group(2).equals("180")) {
@@ -427,11 +433,11 @@ public class VideoRenderer {
         mPlayer.setScale(0);
 
         if (!state.isVR()) {
-            setScreenPosition();
+            setScreenSize();
         }
     }
 
-    private void setScreenPosition() {
+    private void setScreenSize() {
         float heightWidthRatio = ((float) vtrack.height) / vtrack.width;
 
         if (state.videoType.sbs) {
@@ -442,15 +448,6 @@ public class VideoRenderer {
                             && (heightWidthRatio < (3f / 8 + 9f / 21) / 2))) {
                 heightWidthRatio *= 2;
             }
-            PointF texture2TopLeft = state.force2D ? null : new PointF(0.5f, 1);
-            PointF texture2BottomRight = state.force2D ? null : new PointF(1, 0);
-            videoScreen.updatePositions(Setting.VideoSize,
-                    Setting.VideoSize * heightWidthRatio,
-                    3.1f,
-                    null,
-                    new PointF(0, 1), new PointF(0.5f, 0),
-                    texture2TopLeft, texture2BottomRight
-            );
 
         } else if (state.videoType.tab) {
             // auto detect half and full if not specified
@@ -460,24 +457,13 @@ public class VideoRenderer {
                             && (heightWidthRatio > (3f / 4 + 18f / 21) / 2))) {
                 heightWidthRatio /= 2;
             }
-            PointF texture2TopLeft = state.force2D ? null : new PointF(0, 0.5f);
-            PointF texture2BottomRight = state.force2D ? null : new PointF(1, 0);
-            videoScreen.updatePositions(Setting.VideoSize,
-                    Setting.VideoSize * heightWidthRatio,
-                    3.1f,
-                    null,
-                    new PointF(0, 1), new PointF(1, 0.5f),
-                    texture2TopLeft, texture2BottomRight
-            );
-
-        } else {
-
-            videoScreen.updatePositions(Setting.VideoSize,
-                    Setting.VideoSize * heightWidthRatio,
-                    3.1f,
-                    null);
-
         }
+
+        videoScreen.updatePositions(Setting.VideoSize,
+                Setting.VideoSize * heightWidthRatio,
+                3.1f,
+                null);
+
     }
 
     boolean readyToDraw = false;

@@ -52,7 +52,7 @@ public class VideoActivity extends GvrActivity implements
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        NoDistortionProvider.setupProvider(this);
+        //NoDistortionProvider.setupProvider(this);
 
         setting = new Setting(this);
 

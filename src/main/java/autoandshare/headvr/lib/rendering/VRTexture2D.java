@@ -16,8 +16,27 @@ import autoandshare.headvr.lib.VideoRenderer;
 import static autoandshare.headvr.lib.rendering.Utils.checkGlError;
 
 public class VRTexture2D {
+    private static FloatBuffer[] textureBufferLeft = new FloatBuffer[3];
+    private static FloatBuffer[] textureBufferRight = new FloatBuffer[3];
+
+    static {
+        textureBufferLeft[0] = createTextureCoordsBuffers(new PointF(0, 1), new PointF(1, 0));
+        textureBufferRight[0] = textureBufferLeft[0];
+
+        textureBufferLeft[1] = createTextureCoordsBuffers(new PointF(0, 1), new PointF(0.5f, 0));
+        textureBufferRight[1] = createTextureCoordsBuffers(new PointF(0.5f, 1), new PointF(1, 0));
+
+        textureBufferLeft[2] = createTextureCoordsBuffers(new PointF(0, 1), new PointF(1, 0.5f));
+        textureBufferRight[2] = createTextureCoordsBuffers(new PointF(0, 0.5f), new PointF(1, 0));
+    }
 
     public boolean verticalFixed = false;
+
+    private int mediaType;
+
+    public void setMediaType(int mediaType) {
+        this.mediaType = mediaType;
+    }
 
     // constructors
     public VRTexture2D() {
@@ -25,19 +44,7 @@ public class VRTexture2D {
     }
 
     public void updatePositions(float width, float height, float distance, PointF topLeft) {
-        updatePositions(width, height, distance, topLeft,
-                null, null, null, null);
-    }
-
-    public void updatePositions(float width, float height, float distance, PointF topLeft,
-                                PointF textureEye1TopLeft, PointF textureEye1BottomRight,
-                                PointF textureEye2TopLeft, PointF textureEye2BottomRight
-    ) {
         createVertexCoordsBuffer(width, height, distance, topLeft);
-
-        textureCoordsBuffer[0] = createTextureCoordsBuffers(textureEye1TopLeft, textureEye1BottomRight);
-        textureCoordsBuffer[1] = (textureEye2TopLeft == null) ? textureCoordsBuffer[0] :
-                createTextureCoordsBuffers(textureEye2TopLeft, textureEye2BottomRight);
     }
 
     // gl resources
@@ -88,7 +95,6 @@ public class VRTexture2D {
     }
 
     private FloatBuffer vertexCoordsBuffer;
-    private FloatBuffer[] textureCoordsBuffer = new FloatBuffer[2];
 
     private void createVertexCoordsBuffer(float width, float height, float distance,
                                           PointF topLeft) {
@@ -105,15 +111,8 @@ public class VRTexture2D {
 
     }
 
-    private FloatBuffer createTextureCoordsBuffers(PointF textureTopLeft, PointF textureBottomRight
+    private static FloatBuffer createTextureCoordsBuffers(PointF textureTopLeft, PointF textureBottomRight
     ) {
-
-        if (textureTopLeft == null) {
-            textureTopLeft = new PointF(0, 1);
-        }
-        if (textureBottomRight == null) {
-            textureBottomRight = new PointF(1, 0);
-        }
         float[] textureCoords = {
                 textureTopLeft.x, textureTopLeft.y,
                 textureBottomRight.x, textureTopLeft.y,
@@ -167,7 +166,10 @@ public class VRTexture2D {
         GLES20.glEnableVertexAttribArray(textureCoordsParam);
         checkGlError();
         GLES20.glVertexAttribPointer(textureCoordsParam, 2, GLES20.GL_FLOAT,
-                false, 0, textureCoordsBuffer[eye.getType() - 1]);
+                false, 0,
+                VideoRenderer.useRightTexture(eye.getType()) ?
+                        textureBufferRight[mediaType] :
+                        textureBufferLeft[mediaType]);
         checkGlError();
 
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
