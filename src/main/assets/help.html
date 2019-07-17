@@ -16,13 +16,12 @@ for android based on VLC. <br/><br/>
 
 Note:<br/>
 - Gyroscope sensor is necessary <br/>
-- 360 video is not supported yet.<br/>
-- 3D video file name should contain [h/f] sbs/tab (https://kodi.wiki/view/3D).
-
+- File name may include "[-. _]sbs | hsbs | fsbs | ou | tab | 180 | 360[-. _]".
 <br/><br/>
 
 Usage:<br/><br/>
-<p>There are 5 basic head motions: Up, Down, Left, Right, Hold still.</p>
+<p>There are 5 basic head motions: Up, Down, Left, Right, Hold still. Each function is
+a combination of these motions.</p>
 
 <p>Basic functions:</p>
 <table class="bordered">
@@ -47,8 +46,15 @@ Usage:<br/><br/>
         <td>Prev Video</td>
         <td>- Up, Down, Left, Right</td>
     </tr>
+    <tr>
+        <td>Recenter VR Video</td>
+        <td>- Left, Right, Left, Right</td>
+    </tr>
     </tbody>
 </table>
+Note:<br/>
+Seeking is only enabled for 360/180 video when it is paused.
+<br/>
 <p>&nbsp;</p>
 <p>Change settings:</p>
 <p>Eye-to-Eye distance can be adjusted inside player.</p>
