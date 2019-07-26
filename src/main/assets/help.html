@@ -1,30 +1,32 @@
 <style>
-  .bordered {
-    padding: 10px;
-    border: 1px solid blue;
-  }
+table {
+  border-collapse: collapse;
+}
+tr {
+  border: solid blue 1px;
+}
 </style>
-
 
 <b>HeadVR</b> (https://github.com/autoandshare/HeadVR) is an open source VR video player
 for android based on VLC. <br/><br/>
 
-<br/>
+<b><i>Features:</i></b><br/><p>
 -- Nodding to play/pause, turning left/right to seek, ... <br/>
--- Support Local and network resources<br/>
+-- Play all video files in a folder<br/>
+-- Support Local and network (SMB, FTP, ...)  resources<br/>
 -- Rich settings and a Force2D mode to make video more comfortable.<br/>
-
+</p>
 Note:<br/>
 - Gyroscope sensor is necessary <br/>
-- File name may include "[-. _]sbs | hsbs | fsbs | ou | tab | 180 | 360[-. _]".
+- 3D/VR file name should include tags like sbs, hsbs, fsbs, ou, tab, 180, 360 to indicate its format.
 <br/><br/>
 
-Usage:<br/><br/>
+<b><i>Usage:</i></b><br/>
 <p>There are 5 basic head motions: Up, Down, Left, Right, Hold still. Each function is
 a combination of these motions.</p>
 
 <p>Basic functions:</p>
-<table class="bordered">
+<table>
     <tbody>
     <tr>
         <td>Play/Pause</td>
@@ -47,7 +49,7 @@ a combination of these motions.</p>
         <td>- Up, Down, Left, Right</td>
     </tr>
     <tr>
-        <td>Recenter VR Video</td>
+        <td>Recenter 360/180 Video</td>
         <td>- Left, Right, Left, Right</td>
     </tr>
     </tbody>
@@ -58,7 +60,7 @@ Seeking is only enabled for 360/180 video when it is paused.
 <p>&nbsp;</p>
 <p>Change settings:</p>
 <p>Eye-to-Eye distance can be adjusted inside player.</p>
-<table class="bordered">
+<table>
     <tbody>
     <tr>
         <td>Increase Eye-to-Eye distance</td>
@@ -75,7 +77,7 @@ Seeking is only enabled for 360/180 video when it is paused.
 <p>A special mode - Force2D can be enabled if a 3D video is too stressful for eyes.
     In this mode, same picture will be shown to both eyes.</p>
 
-<table class="bordered">
+<table>
     <tbody>
     <tr>
         <td>Toggle Force2D mode</td>
@@ -85,7 +87,7 @@ Seeking is only enabled for 360/180 video when it is paused.
 </table>
 <p>&nbsp;</p>
 <p>Other functions:</p>
-<table class="bordered">
+<table>
     <tbody>
     <tr>
         <td>Exit Program</td>
