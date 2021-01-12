@@ -1,4 +1,4 @@
-package autoandshare.headvr.lib.headcontrol;
+package autoandshare.headvr.lib.controller.headcontrol;
 
 import androidx.collection.CircularArray;
 import android.util.Log;

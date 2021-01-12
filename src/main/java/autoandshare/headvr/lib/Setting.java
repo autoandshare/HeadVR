@@ -12,6 +12,8 @@ public class Setting {
     public static float VerticalDistance;
     public static float VideoSize;
     public static float MotionSensitivity;
+    public static boolean DisableDistortionCorrection;
+    public static boolean DisableHeadControl;
 
 
     public enum id {
@@ -21,6 +23,8 @@ public class Setting {
         VerticalDistance,
         VideoSize,
         MotionSensitivity,
+        DisableDistortionCorrection,
+        DisableHeadControl,
     }
 
     private static class Item {
@@ -72,6 +76,10 @@ public class Setting {
         VerticalDistance = getFloat(id.VerticalDistance);
         VideoSize = getFloat(id.VideoSize);
         MotionSensitivity = getFloat(id.MotionSensitivity);
+        DisableDistortionCorrection = pref.getBoolean(
+                id.DisableDistortionCorrection.toString(), true);
+        DisableHeadControl = pref.getBoolean(
+                id.DisableHeadControl.toString(), false);
     }
 
     public Setting(Activity activity) {
@@ -94,6 +102,18 @@ public class Setting {
 
     public String getDescription(id name) {
         return items.get(name).description;
+    }
+
+    public int update(id name, int delta) {
+        int newValue = get(name) + delta;
+        if (newValue > getMax(name)) {
+            newValue = getMax(name);
+        }
+        if (newValue < getMin(name)) {
+            newValue = getMin(name);
+        }
+        set(name, newValue);
+        return newValue;
     }
 
     public void set(id name, int value) {

@@ -9,15 +9,14 @@ import android.text.TextUtils;
 
 import com.google.vr.sdk.base.Eye;
 
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
-import autoandshare.headvr.lib.headcontrol.HeadControl;
-import autoandshare.headvr.lib.headcontrol.HeadMotion.Motion;
+import autoandshare.headvr.lib.controller.headcontrol.HeadControl;
+import autoandshare.headvr.lib.controller.headcontrol.HeadMotion.Motion;
 import autoandshare.headvr.lib.rendering.VRSurface;
 
 public class BasicUI {
@@ -91,7 +90,7 @@ public class BasicUI {
         float uiHeight = heightPixel / 360;
         uiVRSurface = new VRSurface(
                 uiWidth, uiHeight, 3f,
-                new PointF(-uiWidth / 2, -1.8f),
+                new PointF(-uiWidth / 2, -1.55f),
                 (int) widthPixel, (int) heightPixel);
     }
 
@@ -103,9 +102,7 @@ public class BasicUI {
 
             drawFileNameOrMessage(canvas, videoState, currentIndex);
 
-            if (!videoState.playing) {
-                drawDatetime(canvas);
-            }
+            drawDatetime(canvas);
 
             drawMotions(canvas, control);
 
@@ -142,6 +139,9 @@ public class BasicUI {
 
     private float drawDatetime(Canvas canvas) {
         String string = sdf.format(Calendar.getInstance().getTime());
+        if (((System.currentTimeMillis() / 1000) % 2) == 0) {
+            string = string.replace(':', ' ');
+        }
         drawString(canvas, string, endX, row0Y, rightAlignTextPaint);
         return rightAlignTextPaint.measureText(string);
     }
@@ -177,10 +177,11 @@ public class BasicUI {
 
     private void drawMotions(Canvas canvas, HeadControl control) {
         String string = "";
-        if (control.getWaitForIdle()) {
-            string = motionChar.get(Motion.IDLE);
-        } else if (control.notIdle()) {
+        if (control.notIdle()) {
             string = motionString(control.getMotions());
+        }
+        if (HeadControl.HeadControlLocked) {
+            string = "\uD83D\uDD12" + " " + string;
         }
         drawString(canvas, string, motionsX, row1Y, leftAlignTextPaint);
     }

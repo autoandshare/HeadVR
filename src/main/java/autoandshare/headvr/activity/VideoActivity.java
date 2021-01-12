@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.WindowManager;
 
 import com.google.vr.sdk.base.Eye;
@@ -18,26 +19,28 @@ import com.tencent.mmkv.MMKV;
 
 import org.videolan.medialibrary.media.MediaWrapper;
 
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.function.Consumer;
 
 import javax.microedition.khronos.egl.EGLConfig;
 
 import autoandshare.headvr.R;
+import autoandshare.headvr.lib.Actions;
 import autoandshare.headvr.lib.BasicUI;
+import autoandshare.headvr.lib.Event;
 import autoandshare.headvr.lib.NoDistortionProvider;
 import autoandshare.headvr.lib.Setting;
 import autoandshare.headvr.lib.VideoRenderer;
 import autoandshare.headvr.lib.browse.PlayList;
-import autoandshare.headvr.lib.headcontrol.HeadControl;
-import autoandshare.headvr.lib.headcontrol.HeadMotion.Motion;
+import autoandshare.headvr.lib.controller.KeyControl;
+import autoandshare.headvr.lib.controller.headcontrol.HeadControl;
 import autoandshare.headvr.lib.rendering.Mesh;
 import autoandshare.headvr.lib.rendering.VRTexture2D;
 
 public class VideoActivity extends GvrActivity implements
         GvrView.StereoRenderer {
-
 
     private static final String TAG = "VideoActivity";
 
@@ -52,9 +55,12 @@ public class VideoActivity extends GvrActivity implements
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        //NoDistortionProvider.setupProvider(this);
-
+        setupActionTable();
         setting = new Setting(this);
+
+        if (setting.DisableDistortionCorrection) {
+            NoDistortionProvider.setupProvider(this);
+        }
 
         setContentView(R.layout.video_ui);
 
@@ -76,42 +82,6 @@ public class VideoActivity extends GvrActivity implements
     }
 
     private HeadControl headControl = new HeadControl();
-    private static final List<Motion> PlayPause = Arrays.asList(Motion.DOWN, Motion.UP);
-    private static final List<Motion> Left = Arrays.asList(Motion.LEFT, Motion.IDLE);
-    private static final List<Motion> Right = Arrays.asList(Motion.RIGHT, Motion.IDLE);
-    private static final List<Motion> Idle = Collections.singletonList(Motion.IDLE);
-    private static final List<Motion> Idles = Arrays.asList(Motion.IDLE, Motion.IDLE, Motion.IDLE);
-    private static final List<Motion> Any = Collections.singletonList(Motion.ANY);
-    private static final List<Motion> Return = Arrays.asList(Motion.UP, Motion.LEFT, Motion.RIGHT, Motion.DOWN);
-    private static final List<Motion> Next = Arrays.asList(Motion.UP, Motion.DOWN, Motion.RIGHT, Motion.LEFT);
-    private static final List<Motion> Prev = Arrays.asList(Motion.UP, Motion.DOWN, Motion.LEFT, Motion.RIGHT);
-    private static final List<Motion> Round = Arrays.asList(Motion.RIGHT, Motion.DOWN, Motion.LEFT, Motion.UP);
-    private static final List<Motion> ReverseRound = Arrays.asList(Motion.LEFT, Motion.DOWN, Motion.RIGHT, Motion.UP);
-    private static final List<Motion> Force2D = Arrays.asList(Motion.RIGHT, Motion.LEFT, Motion.RIGHT, Motion.LEFT);
-    private static final List<Motion> Recenter = Arrays.asList(Motion.LEFT, Motion.RIGHT, Motion.LEFT, Motion.RIGHT);
-
-    private void setupMotionActionTable() {
-        headControl.addMotionAction(Any, () -> {
-            updateUIVisibility(Motion.ANY);
-            return false;
-        });
-        headControl.addMotionAction(PlayPause, () -> videoRenderer.pauseOrPlay());
-        headControl.addMotionAction(Left, () -> videoRenderer.handleSeeking(Motion.LEFT, headControl));
-        headControl.addMotionAction(Right, () -> videoRenderer.handleSeeking(Motion.RIGHT, headControl));
-        headControl.addMotionAction(Idle, () -> videoRenderer.handleSeeking(Motion.IDLE, headControl));
-        headControl.addMotionAction(Any, () -> videoRenderer.handleSeeking(Motion.ANY, headControl));
-        headControl.addMotionAction(Idles, () -> {
-            updateUIVisibility(Motion.IDLE);
-            return false;
-        });
-        headControl.addMotionAction(Return, this::returnHome);
-        headControl.addMotionAction(Next, this::nextFile);
-        headControl.addMotionAction(Prev, this::prevFile);
-        headControl.addMotionAction(Round, () -> updateEyeDistance(3));
-        headControl.addMotionAction(ReverseRound, () -> updateEyeDistance(-3));
-        headControl.addMotionAction(Force2D, () -> videoRenderer.toggleForce2D());
-        headControl.addMotionAction(Recenter, () -> recenter());
-    }
 
     private boolean resetRotationMatrix = false;
 
@@ -137,17 +107,15 @@ public class VideoActivity extends GvrActivity implements
     }
 
     private void updateEyeDistanceWithId(int i, Setting.id id) {
-        int eyeDistance = setting.get(id) + i;
-        if (eyeDistance > setting.getMax(id)) {
-            eyeDistance = setting.getMax(id);
-        }
-        if (eyeDistance < setting.getMin(id)) {
-            eyeDistance = setting.getMin(id);
-        }
-
-        setting.set(id, eyeDistance);
-
+        int eyeDistance = setting.update(id, i);
         videoRenderer.getState().message = "setting " + id + " to " + eyeDistance;
+    }
+
+    private void updateScreenSize(int i) {
+        int newScreenSize = setting.update(Setting.id.VideoSize, i);
+        videoRenderer.getState().message = "setting " + Setting.id.VideoSize
+                + " to " + newScreenSize;
+        videoRenderer.updateVideoPosition();
     }
 
     private Boolean playMediaFromList(int offset) {
@@ -246,18 +214,15 @@ public class VideoActivity extends GvrActivity implements
         Log.i(TAG, "onRendererShutdown");
     }
 
-
     @Override
     public void onNewFrame(HeadTransform headTransform) {
         loadFirstVideo();
 
-        float[] upVector = new float[3];
-        headTransform.getUpVector(upVector, 0);
+        updateUIVisibility();
 
-        float[] forwardVector = new float[3];
-        headTransform.getForwardVector(forwardVector, 0);
+        processHeadMotion(headTransform);
 
-        headControl.handleMotion(upVector, forwardVector);
+        handleEvents();
 
         if (resetRotationMatrix) {
             if (Mesh.recenterMatrix == null) {
@@ -266,6 +231,18 @@ public class VideoActivity extends GvrActivity implements
             Matrix.transposeM(Mesh.recenterMatrix, 0, headTransform.getHeadView(), 0);
             Mesh.recenterMatrix[3] = Mesh.recenterMatrix[7] = Mesh.recenterMatrix[11] = 0;
             resetRotationMatrix = false;
+        }
+    }
+
+    private void processHeadMotion(HeadTransform headTransform) {
+        if (!setting.DisableHeadControl) {
+            float[] upVector = new float[3];
+            headTransform.getUpVector(upVector, 0);
+
+            float[] forwardVector = new float[3];
+            headTransform.getForwardVector(forwardVector, 0);
+
+            appendEvent(headControl.handleMotion(upVector, forwardVector));
         }
     }
 
@@ -290,7 +267,6 @@ public class VideoActivity extends GvrActivity implements
 
     @Override
     public void onFinishFrame(Viewport viewport) {
-
     }
 
     @Override
@@ -310,26 +286,84 @@ public class VideoActivity extends GvrActivity implements
         basicUI = new BasicUI();
 
         videoRenderer = new VideoRenderer(this);
-
-        setupMotionActionTable();
     }
+
 
     private boolean uiVisible = true;
 
-    private void updateUIVisibility(Motion motion) {
+    private long lastEventTime = 0;
+
+    private void updateUIVisibility() {
         if (!videoRenderer.normalPlaying()) {
             uiVisible = true;
             return;
         }
-        if (motion == Motion.ANY) {
-            if (headControl.notIdle()) {
-                uiVisible = true;
-            }
-        } else if (motion == Motion.IDLE) {
-            if (videoRenderer.normalPlaying()) {
-                uiVisible = false;
-                videoRenderer.getState().message = null;
-            }
+        uiVisible = (System.currentTimeMillis() - lastEventTime) < 6000;
+    }
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        Event e = KeyControl.processKeyEvent(event);
+        if (e.action != Actions.NoAction) {
+            appendEvent(e);
+            return true;
         }
+
+        return super.dispatchKeyEvent(event);
+    }
+
+    List<Event> events;
+
+    void appendEvent(Event e) {
+        if (e == null || e.action == Actions.NoAction) {
+            return;
+        }
+
+        synchronized (this) {
+            if (events == null) {
+                events = new ArrayList<>();
+            }
+            events.add(e);
+        }
+
+        lastEventTime = System.currentTimeMillis();
+    }
+
+    void handleEvents() {
+        List<Event> eventsCopy;
+        synchronized (this) {
+            if (events == null) {
+                return;
+            }
+            eventsCopy = events;
+            events = null;
+        }
+        for (Event e : eventsCopy) {
+            processEvent(e);
+        }
+    }
+
+    private HashMap<Actions, Consumer<Event>> actionTable;
+
+    private void setupActionTable() {
+        actionTable = new HashMap<>();
+        actionTable.put(Actions.PlayOrPause, (e) -> videoRenderer.pauseOrPlay());
+        actionTable.put(Actions.NextFile, (e) -> nextFile());
+        actionTable.put(Actions.PrevFile, (e) -> prevFile());
+        actionTable.put(Actions.BeginSeek, (e) -> videoRenderer.beginSeek(e.seekForward, e.sender));
+        actionTable.put(Actions.ContinueSeek, (e) -> videoRenderer.continueSeek(e.sender));
+        actionTable.put(Actions.CancelSeek, (e) -> videoRenderer.cancelSeek(e.sender));
+        actionTable.put(Actions.ConfirmSeek, (e) -> videoRenderer.confirmSeek(e.sender));
+        actionTable.put(Actions.IncreaseEyeDistance, (e) -> updateEyeDistance(3));
+        actionTable.put(Actions.DecreaseEyeDistance, (e) -> updateEyeDistance(-3));
+        actionTable.put(Actions.Force2D, (e) -> videoRenderer.toggleForce2D());
+        actionTable.put(Actions.Recenter, (e) -> recenter());
+        actionTable.put(Actions.Back, (e) -> returnHome());
+        actionTable.put(Actions.IncreaseScreenSize, (e) -> updateScreenSize(3));
+        actionTable.put(Actions.DecreaseScreenSize, (e) -> updateScreenSize(-3));
+    }
+
+    private void processEvent(Event e) {
+        actionTable.get(e.action).accept(e);
     }
 }

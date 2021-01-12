@@ -1,9 +1,9 @@
 package autoandshare.headvr.lib;
 
 import android.app.Activity;
-import android.graphics.PointF;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
+import android.util.Log;
 
 import com.google.vr.sdk.base.Eye;
 
@@ -17,8 +17,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import autoandshare.headvr.activity.VlcHelper;
-import autoandshare.headvr.lib.headcontrol.HeadControl;
-import autoandshare.headvr.lib.headcontrol.HeadMotion.Motion;
 import autoandshare.headvr.lib.rendering.Mesh;
 import autoandshare.headvr.lib.rendering.MeshExt;
 import autoandshare.headvr.lib.rendering.VRTexture2D;
@@ -61,50 +59,44 @@ public class VideoRenderer {
         return newPosition(mPlayer.getPosition(), offset);
     }
 
-    private boolean cancelSeek(HeadControl control) {
-        Motion motion = control.getMotions().get(0);
-        return ((state.forward && !motion.equals(Motion.LEFT))) ||
-                (((!state.forward) && !motion.equals(Motion.RIGHT)));
-    }
-
     private int seekCount = 0;
 
-    public Boolean handleSeeking(Motion motion, HeadControl control) {
-        if (!state.videoLoaded) {
-            return false;
-        }
+    private String seekController;
 
-        if (state.isVR() && state.playing) {
-            return false;
+    public void beginSeek(boolean forward, String seekController) {
+        if (state.seeking) {
+            return;
         }
+        state.seeking = true;
+        seekCount = 0;
+        state.forward = forward;
+        state.newPosition = newPosition(getOffset());
+        this.seekController = seekController;
+    }
 
-        if (motion.equals(Motion.ANY)) {
-            if (state.seeking) {
-                if (!cancelSeek(control)) {
-                    restartIfNeeded();
-                    mPlayer.setPosition(state.newPosition);
-                }
-                state.seeking = false;
-                return true;
-            }
-        } else if (motion.equals(Motion.IDLE)) {
-            if (state.seeking) {
-                seekCount += 1;
-                state.newPosition = newPosition(state.newPosition,
-                        getOffset());
-                return true;
-            }
-        } else {
-            if (!state.seeking) {
-                state.seeking = true;
-                seekCount = 0;
-                state.forward = motion.equals(Motion.RIGHT);
-                state.newPosition = newPosition(getOffset());
-                return true;
-            }
+    public void continueSeek(String seekController) {
+        if ((!state.seeking) || (!seekController.equals(this.seekController))) {
+            return;
         }
+        seekCount += 1;
+        state.newPosition = newPosition(state.newPosition,
+                getOffset());
+    }
 
-        return false;
+    public void cancelSeek(String seekController) {
+        if (!seekController.equals(this.seekController)) {
+            return;
+        }
+        state.seeking = false;
+    }
+
+    public void confirmSeek(String seekController) {
+        if (!state.seeking || (!seekController.equals(this.seekController))) {
+            return;
+        }
+        restartIfNeeded();
+        mPlayer.setPosition(state.newPosition);
+        state.seeking = false;
     }
 
     private void restartIfNeeded() {
@@ -214,7 +206,7 @@ public class VideoRenderer {
     }
 
     private LibVLC mLibVLC = null;
-    private static State state = new State();
+    public static State state = new State();
     private MediaPlayer mPlayer;
     private VRTexture2D videoScreen;
     private MeshExt mesh;
@@ -296,7 +288,7 @@ public class VideoRenderer {
 
     public VideoRenderer(Activity activity) {
         this.activity = activity;
-
+        resetState();
         videoProperties = new VideoProperties();
 
         videoScreen = new VRTexture2D();
@@ -316,6 +308,7 @@ public class VideoRenderer {
         } else {
             mLibVLC = VlcHelper.Instance;
         }
+
 
     }
 
@@ -440,27 +433,33 @@ public class VideoRenderer {
     private void setScreenSize() {
         float heightWidthRatio = ((float) vtrack.height) / vtrack.width;
 
+        if (vtrack.sarDen != vtrack.sarNum) {
+            heightWidthRatio *= (float) vtrack.sarDen / vtrack.sarNum;
+        }
+
+        // guess half and full if not specified
         if (state.videoType.sbs) {
-            // auto detect half and full if not specified
-            // 4:3 - 21:9 | (4*2):3 - (21*2):9
-            if (state.videoType.full ||
-                    ((!state.videoType.half)
-                            && (heightWidthRatio < (3f / 8 + 9f / 21) / 2))) {
+            if (state.videoType.full
+                    || ((!state.videoType.half) && heightWidthRatio < 1f / 3)) {
                 heightWidthRatio *= 2;
             }
 
         } else if (state.videoType.tab) {
-            // auto detect half and full if not specified
-            // 21:9 - 4:3 | 21:(9*2) - 4:(3*2)
             if (state.videoType.full ||
-                    ((!state.videoType.half)
-                            && (heightWidthRatio > (3f / 4 + 18f / 21) / 2))) {
+                    ((!state.videoType.half) && heightWidthRatio > 3.3f / 4)) {
                 heightWidthRatio /= 2;
             }
         }
 
-        videoScreen.updatePositions(Setting.VideoSize,
-                Setting.VideoSize * heightWidthRatio,
+        float width = Setting.VideoSize;
+        float height = width * heightWidthRatio;
+        float minHeight = Setting.VideoSize * 9.0f / 16.0f;
+        if (height < minHeight) {
+            width = width * minHeight / height;
+            height = minHeight;
+        }
+        videoScreen.updatePositions(width,
+                height,
                 3.1f,
                 null);
 
