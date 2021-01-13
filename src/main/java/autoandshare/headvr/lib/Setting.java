@@ -12,9 +12,6 @@ public class Setting {
     public static float VerticalDistance;
     public static float VideoSize;
     public static float MotionSensitivity;
-    public static boolean DisableDistortionCorrection;
-    public static boolean DisableHeadControl;
-
 
     public enum id {
         Brightness,
@@ -24,7 +21,7 @@ public class Setting {
         VideoSize,
         MotionSensitivity,
         DisableDistortionCorrection,
-        DisableHeadControl,
+        HeadControl,
     }
 
     private static class Item {
@@ -50,11 +47,11 @@ public class Setting {
     static {
         items = new HashMap<>();
         items.put(id.Brightness, new Item(0, 100, 25, 0f, 0.5f, "Brightness"));
-        items.put(id.EyeDistance, new Item(-50, 50, 0, -0.4f, 0.4f, "Eye to eye distance"));
+        items.put(id.EyeDistance, new Item(-50, 50, 0, -0.4f, 0.4f, "Eye to eye distance (near <-> far)"));
         items.put(id.EyeDistance3D, new Item(-50, 50, 0, -0.4f, 0.4f, "Eye to eye distance for 3D content"));
-        items.put(id.VerticalDistance, new Item(-50, 50, 0, -0.6f, 0.6f, "Vertical offset"));
-        items.put(id.VideoSize, new Item(50, 150, 100, 1.5f, 6.5f, "Video size"));
-        items.put(id.MotionSensitivity, new Item(-10, 10, 0, 0.09f, 0.01f, "Head motion sensitivity"));
+        items.put(id.VerticalDistance, new Item(-50, 50, 0, -0.6f, 0.6f, "Vertical offset (low <-> high)"));
+        items.put(id.VideoSize, new Item(50, 150, 100, 1.5f, 6.5f, "Video size (small <-> big)"));
+        items.put(id.MotionSensitivity, new Item(-10, 10, 0, 0.09f, 0.01f, "Head motion sensitivity (less <-> more)"));
     }
 
     private float getFloat(id name) {
@@ -76,12 +73,16 @@ public class Setting {
         VerticalDistance = getFloat(id.VerticalDistance);
         VideoSize = getFloat(id.VideoSize);
         MotionSensitivity = getFloat(id.MotionSensitivity);
-        DisableDistortionCorrection = pref.getBoolean(
-                id.DisableDistortionCorrection.toString(), true);
-        DisableHeadControl = pref.getBoolean(
-                id.DisableHeadControl.toString(), false);
     }
 
+    public boolean getBoolean(id name) {
+        return pref.getBoolean(name.toString(), true);
+    }
+
+    public void putBoolean(id name, boolean value) {
+        editor.putBoolean(name.toString(), value);
+        editor.apply();
+    }
     public Setting(Activity activity) {
         pref = activity.getSharedPreferences("Setting", 0);
         editor = pref.edit();

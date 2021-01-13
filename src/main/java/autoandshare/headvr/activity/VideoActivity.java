@@ -58,7 +58,7 @@ public class VideoActivity extends GvrActivity implements
         setupActionTable();
         setting = new Setting(this);
 
-        if (setting.DisableDistortionCorrection) {
+        if (setting.getBoolean(Setting.id.DisableDistortionCorrection)) {
             NoDistortionProvider.setupProvider(this);
         }
 
@@ -235,7 +235,7 @@ public class VideoActivity extends GvrActivity implements
     }
 
     private void processHeadMotion(HeadTransform headTransform) {
-        if (!setting.DisableHeadControl) {
+        if (setting.getBoolean(Setting.id.HeadControl)) {
             float[] upVector = new float[3];
             headTransform.getUpVector(upVector, 0);
 
@@ -319,6 +319,12 @@ public class VideoActivity extends GvrActivity implements
             return;
         }
 
+        lastEventTime = System.currentTimeMillis();
+
+        if (e.action == Actions.PartialAction) {
+            return;
+        }
+
         synchronized (this) {
             if (events == null) {
                 events = new ArrayList<>();
@@ -326,7 +332,6 @@ public class VideoActivity extends GvrActivity implements
             events.add(e);
         }
 
-        lastEventTime = System.currentTimeMillis();
     }
 
     void handleEvents() {
@@ -347,6 +352,7 @@ public class VideoActivity extends GvrActivity implements
 
     private void setupActionTable() {
         actionTable = new HashMap<>();
+        actionTable.put(Actions.PartialAction, (e) -> {});
         actionTable.put(Actions.PlayOrPause, (e) -> videoRenderer.pauseOrPlay());
         actionTable.put(Actions.NextFile, (e) -> nextFile());
         actionTable.put(Actions.PrevFile, (e) -> prevFile());

@@ -5,10 +5,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.SeekBar;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
+
 import autoandshare.headvr.R;
 import autoandshare.headvr.lib.Setting;
 
@@ -34,8 +37,29 @@ public class SettingFragment extends Fragment implements View.OnClickListener {
         Button button = view.findViewById(R.id.buttonReset);
         button.setOnClickListener(this);
 
-        initSeekBars(view);
+        initUI();
+    }
 
+    private void initUI() {
+        View view = getView();
+        initSeekBars(view);
+        initSwitchs(view);
+    }
+
+    private void initSwitchs(View view) {
+        initSwitch(view, R.id.distortionCorrectionSwitch, Setting.id.DisableDistortionCorrection);
+        initSwitch(view, R.id.headControlSwitch, Setting.id.HeadControl);
+    }
+
+    private void initSwitch(View view, int id, Setting.id settingId) {
+        Switch sw = view.findViewById(id);
+        sw.setChecked(setting.getBoolean(settingId));
+        sw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                setting.putBoolean(settingId, isChecked);
+            }
+        });
     }
 
     private void initSeekBars(View view) {
@@ -79,6 +103,6 @@ public class SettingFragment extends Fragment implements View.OnClickListener {
     public void onClick(View view) {
         // reset values
         setting.clear();
-        initSeekBars(getView());
+        initUI();
     }
 }

@@ -90,7 +90,7 @@
             android:id="@+id/textViewVerticalDistance"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="EyeDistance" />
+            android:text="VerticalDistance" />
 
         <SeekBar
             android:id="@+id/seekBarVerticalDistance"
@@ -114,6 +114,30 @@
             android:id="@+id/seekBarSensitivity"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_margin="10dp"
+            android:background="@android:color/darker_gray" />
+
+        <Switch
+            android:id="@+id/distortionCorrectionSwitch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Disable Distortion Correction" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_margin="10dp"
+            android:background="@android:color/darker_gray" />
+
+        <Switch
+            android:id="@+id/headControlSwitch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Head Control" />
 
         <View
             android:layout_width="match_parent"
