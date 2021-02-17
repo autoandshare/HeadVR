@@ -8,12 +8,13 @@ import autoandshare.headvr.lib.Event;
 import autoandshare.headvr.lib.VideoRenderer;
 
 public class KeyControl {
-    public static Event processKeyEvent(KeyEvent event) {
+
+    public static Event processKeyEvent(KeyEvent event, boolean extraFunction) {
         Event e = new Event(Actions.NoAction, false, "key");
-        if (VideoRenderer.state.playing) {
-            normalFunctions(event, e);
-        } else {
+        if (extraFunction) {
             extraFunction(event, e);
+        } else {
+            normalFunctions(event, e);
         }
         return e;
     }

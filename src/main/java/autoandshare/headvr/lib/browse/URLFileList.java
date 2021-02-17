@@ -4,7 +4,8 @@ import android.app.Activity;
 import android.net.Uri;
 import android.webkit.URLUtil;
 
-import org.videolan.medialibrary.media.MediaWrapper;
+import org.videolan.medialibrary.MLServiceLocator;
+import org.videolan.medialibrary.interfaces.media.MediaWrapper;
 
 import java.io.InputStream;
 import java.net.URL;
@@ -77,7 +78,7 @@ public class URLFileList implements PlayList.ListSource {
     }
 
     private MediaWrapper getMediaWrapper(String line, String baseURL) {
-        return new MediaWrapper(URLUtil.isValidUrl(line) ?
+        return MLServiceLocator.getAbstractMediaWrapper(URLUtil.isValidUrl(line) ?
                 Uri.parse(line) :
                 Uri.parse(baseURL + Uri.encode(line)));
     }

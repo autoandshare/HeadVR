@@ -5,8 +5,8 @@ import android.net.Uri;
 
 import com.tencent.mmkv.MMKV;
 
-import org.videolan.libvlc.Media;
-import org.videolan.medialibrary.media.MediaWrapper;
+import org.videolan.medialibrary.MLServiceLocator;
+import org.videolan.medialibrary.interfaces.media.MediaWrapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +49,7 @@ public class PlayList {
 
         if (source == null) {
             List<MediaWrapper> list = new ArrayList<>();
-            list.add(new MediaWrapper(uri));
+            list.add(MLServiceLocator.getAbstractMediaWrapper(uri));
             updatePlayList(playList, list, 0, uri.toString());
         } else {
             // use thread to work around NetworkOnMainThreadException

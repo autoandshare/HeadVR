@@ -9,7 +9,7 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion 24
+        minSdkVersion 21
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"
@@ -31,18 +31,14 @@ android {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-
-    implementation 'com.android.support:appcompat-v7:28.0.0'
     testImplementation 'junit:junit:4.12'
+
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 
     implementation 'com.google.vr:sdk-base:1.190.0'
     implementation 'com.tencent:mmkv:1.0.18'
 
-    devImplementation project(':libvlc')
-    devImplementation project(':medialibrary')
-    implementation "org.videolan.android:libvlc-all:$rootProject.ext.libvlcVersion"
-    implementation "org.videolan.android:medialibrary-all:$rootProject.ext.medialibraryVersion"
+    api "org.videolan.android:libvlc-all:$rootProject.ext.libvlcVersion"
+    api "org.videolan.android:medialibrary-all:$rootProject.ext.medialibraryVersion"
 }

@@ -10,4 +10,13 @@ public class Event {
         this.seekForward = seekForward;
         this.sender = sender;
     }
+
+    @Override
+    public String toString() {
+        return "Event{" +
+                "action=" + action +
+                ", seekForward=" + seekForward +
+                ", sender='" + sender + '\'' +
+                '}';
+    }
 }

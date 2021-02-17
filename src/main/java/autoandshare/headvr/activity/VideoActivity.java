@@ -17,12 +17,11 @@ import com.google.vr.sdk.base.HeadTransform;
 import com.google.vr.sdk.base.Viewport;
 import com.tencent.mmkv.MMKV;
 
-import org.videolan.medialibrary.media.MediaWrapper;
+import org.videolan.medialibrary.interfaces.media.MediaWrapper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.function.Consumer;
 
 import javax.microedition.khronos.egl.EGLConfig;
 
@@ -199,6 +198,7 @@ public class VideoActivity extends GvrActivity implements
 
     @Override
     public void onStop() {
+        videoRenderer.stop();
         super.onStop();
         Log.i(TAG, "onStop()");
     }
@@ -303,7 +303,8 @@ public class VideoActivity extends GvrActivity implements
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        Event e = KeyControl.processKeyEvent(event);
+        Event e = KeyControl.processKeyEvent(event,
+                (videoRenderer != null) && videoRenderer.paused());
         if (e.action != Actions.NoAction) {
             appendEvent(e);
             return true;
@@ -346,6 +347,10 @@ public class VideoActivity extends GvrActivity implements
         for (Event e : eventsCopy) {
             processEvent(e);
         }
+    }
+
+    public interface Consumer<T> {
+        void accept(T t);
     }
 
     private HashMap<Actions, Consumer<Event>> actionTable;

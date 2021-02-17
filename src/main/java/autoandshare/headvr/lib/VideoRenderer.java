@@ -7,12 +7,13 @@ import android.util.Log;
 
 import com.google.vr.sdk.base.Eye;
 
-import org.videolan.libvlc.IVLCVout;
-import org.videolan.libvlc.LibVLC;
+import org.videolan.libvlc.interfaces.IVLCVout;
+import org.videolan.libvlc.interfaces.ILibVLC;
 import org.videolan.libvlc.Media;
 import org.videolan.libvlc.MediaPlayer;
-import org.videolan.medialibrary.media.MediaWrapper;
+import org.videolan.medialibrary.interfaces.media.MediaWrapper;
 
+import java.text.MessageFormat;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -24,6 +25,11 @@ import autoandshare.headvr.lib.rendering.VRTexture2D;
 import static java.lang.Math.min;
 
 public class VideoRenderer {
+    public void stop() {
+        if (mPlayer != null) {
+            mPlayer.stop();
+        }
+    }
 
     public Boolean pauseOrPlay() {
         if (!state.videoLoaded) {
@@ -205,7 +211,7 @@ public class VideoRenderer {
         }
     }
 
-    private LibVLC mLibVLC = null;
+    private ILibVLC mILibVLC = null;
     public static State state = new State();
     private MediaPlayer mPlayer;
     private VRTexture2D videoScreen;
@@ -303,13 +309,7 @@ public class VideoRenderer {
         mesh = new MeshExt();
         mesh.glInit(videoScreen.getTextureId());
 
-        if (VlcHelper.Instance == null) {
-            mLibVLC = new LibVLC(activity);
-        } else {
-            mLibVLC = VlcHelper.Instance;
-        }
-
-
+        mILibVLC = VlcHelper.Instance;
     }
 
     private int videosPlayedCount = 0;
@@ -353,7 +353,7 @@ public class VideoRenderer {
         }
         videoScreen.getSurfaceTexture().setDefaultBufferSize(1, 1);
 
-        mPlayer = new MediaPlayer(mLibVLC);
+        mPlayer = new MediaPlayer(mILibVLC);
 
         mPlayer.setEventListener(this::onEvent);
 
@@ -367,14 +367,18 @@ public class VideoRenderer {
             try {
                 fd = activity.getContentResolver()
                         .openFileDescriptor(uri, "r");
-                m = new Media(mLibVLC, fd.getFileDescriptor());
+                m = new Media(mILibVLC, fd.getFileDescriptor());
             } catch (Exception e) {
                 state.errorMessage = e.getMessage();
                 return;
             }
         } else {
-            m = new Media(mLibVLC, uri);
+            m = new Media(mILibVLC, uri);
         }
+
+        // disable subtitle
+        m.addOption(MessageFormat.format(":sub-track-id={0}", String.valueOf(Integer.MAX_VALUE)));
+
         mPlayer.setMedia(m);
         m.release();
 
@@ -531,6 +535,11 @@ public class VideoRenderer {
     public boolean normalPlaying() {
         return state.videoLoaded &&
                 state.playing && (!state.seeking);
+    }
+
+    public boolean paused() {
+        return state.videoLoaded && readyToDraw &&
+                (!state.playing);
     }
 
     public void onEvent(MediaPlayer.Event event) {

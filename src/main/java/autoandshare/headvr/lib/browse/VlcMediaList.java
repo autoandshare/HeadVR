@@ -4,8 +4,10 @@ import android.net.Uri;
 import android.util.Log;
 
 import org.videolan.libvlc.Media;
-import org.videolan.libvlc.MediaList;
-import org.videolan.medialibrary.media.MediaWrapper;
+import org.videolan.libvlc.interfaces.IMedia;
+import org.videolan.libvlc.interfaces.IMediaList;
+import org.videolan.medialibrary.MLServiceLocator;
+import org.videolan.medialibrary.interfaces.media.MediaWrapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,10 +41,7 @@ public class VlcMediaList implements PlayList.ListSource {
 
         if (selection.list != null) {
             listPositionKey = PathUtil.getKey(Uri.parse(selection.listUrl));
-
-            for (MediaWrapper m : selection.list) {
-                list.add(m);
-            }
+            return selection.list;
 
         } else if (selection.mw != null) {
 
@@ -59,23 +58,20 @@ public class VlcMediaList implements PlayList.ListSource {
         return list;
     }
 
-    private void expand(Media m, List<MediaWrapper> list) {
+    private void expand(IMedia m, List<MediaWrapper> list) {
         m.parse(Media.Parse.ParseNetwork);
 
-        MediaList ml = m.subItems();
+        IMediaList ml = m.subItems();
         if (ml != null) {
-            if (BuildConfig.DEBUG) {
-                Log.d(tag, m.getUri().toString() + " media list size " + ml.getCount());
-            }
             for (int i = 0; i < ml.getCount(); i++) {
-                Media sub_m = ml.getMediaAt(i);
-                if (BuildConfig.DEBUG) {
-                    Log.d(tag, sub_m.getUri().toString());
-                }
+                IMedia sub_m = ml.getMediaAt(i);
                 if ((sub_m.getType() == Media.Type.Directory) || (sub_m.getType() == Media.Type.Playlist)) {
                     expand(sub_m, list);
                 } else {
-                    list.add(new MediaWrapper(sub_m));
+                    MediaWrapper mw = MLServiceLocator.getAbstractMediaWrapper(sub_m);
+                    if (mw != null && mw.getType() == MediaWrapper.TYPE_VIDEO) {
+                        list.add(mw);
+                    }
                     sub_m.release();
                 }
             }

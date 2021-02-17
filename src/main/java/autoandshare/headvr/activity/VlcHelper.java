@@ -7,8 +7,9 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 
-import org.videolan.libvlc.LibVLC;
-import org.videolan.medialibrary.media.MediaWrapper;
+import org.videolan.libvlc.interfaces.ILibVLC;
+import org.videolan.medialibrary.MLServiceLocator;
+import org.videolan.medialibrary.interfaces.media.MediaWrapper;
 
 import java.net.URLDecoder;
 import java.util.List;
@@ -54,10 +55,10 @@ public class VlcHelper {
         }
     }
 
-    public static LibVLC Instance;
+    public static ILibVLC Instance;
     public static VlcSelection Selection;
 
-    public static void openMedia(Context context, Intent intent, LibVLC vlc) {
+    public static void openMedia(Context context, Intent intent, ILibVLC vlc) {
         Uri uri = intent.getData();
         if (uri.toString().contains("%2F")) {
             try {
@@ -65,17 +66,17 @@ public class VlcHelper {
             } catch (Exception ex) {
             }
         }
-        MediaWrapper mw = new MediaWrapper(uri);
+        MediaWrapper mw = MLServiceLocator.getAbstractMediaWrapper(uri);
         openMedia(context, mw, vlc);
     }
 
-    public static void openMedia(Context context, MediaWrapper mw, LibVLC vlc) {
+    public static void openMedia(Context context, MediaWrapper mw, ILibVLC vlc) {
         Instance = vlc;
         Selection = new VlcSelection(null, null, -1, mw);
         startActivity(context, mw.getUri());
     }
 
-    public static void openList(String mrl, Context context, List<MediaWrapper> list, int position, LibVLC vlc) {
+    public static void openList(String mrl, Context context, List<MediaWrapper> list, int position, ILibVLC vlc) {
         if (list.size() == 0) {
             return;
         }
