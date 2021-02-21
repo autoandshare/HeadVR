@@ -57,15 +57,17 @@ public class VideoActivity extends GvrActivity implements
         setupActionTable();
         setting = new Setting(this);
 
-        if (setting.getBoolean(Setting.id.DisableDistortionCorrection)) {
-            NoDistortionProvider.setupProvider(this);
-        }
-
         setContentView(R.layout.video_ui);
 
         MMKV.initialize(this);
 
         cardboardView = findViewById(R.id.cardboard_view);
+
+        if (setting.getBoolean(Setting.id.DisableDistortionCorrection)) {
+            //NoDistortionProvider.setupProvider(this);
+            cardboardView.setDistortionCorrectionEnabled(false);
+        }
+
         cardboardView.setRenderer(this);
         this.setGvrView(cardboardView);
 
@@ -303,6 +305,7 @@ public class VideoActivity extends GvrActivity implements
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
+        Log.d(TAG, "got key event " + event.toString());
         Event e = KeyControl.processKeyEvent(event,
                 (videoRenderer != null) && videoRenderer.paused());
         if (e.action != Actions.NoAction) {
@@ -327,6 +330,7 @@ public class VideoActivity extends GvrActivity implements
         }
 
         synchronized (this) {
+            Log.d(TAG , "append event " + e.toString());
             if (events == null) {
                 events = new ArrayList<>();
             }
@@ -375,6 +379,7 @@ public class VideoActivity extends GvrActivity implements
     }
 
     private void processEvent(Event e) {
+        Log.d(TAG, "process event " + e.toString());
         actionTable.get(e.action).accept(e);
     }
 }

@@ -3,6 +3,7 @@
     <application>
         <activity
             android:name="autoandshare.headvr.activity.VideoActivity"
+            android:configChanges="orientation|screenSize"
             android:screenOrientation="landscape" />
     </application>
 </manifest>
