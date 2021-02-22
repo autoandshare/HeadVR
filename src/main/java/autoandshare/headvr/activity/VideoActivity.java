@@ -1,5 +1,7 @@
 package autoandshare.headvr.activity;
 
+import android.content.Context;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
@@ -117,6 +119,12 @@ public class VideoActivity extends GvrActivity implements
         videoRenderer.getState().message = "setting " + Setting.id.VideoSize
                 + " to " + newScreenSize;
         videoRenderer.updateVideoPosition();
+    }
+
+    private void updateScreenVertical(int i) {
+        int newScreenVertial = setting.update(Setting.id.VerticalDistance, i);
+        videoRenderer.getState().message = "setting " + Setting.id.VerticalDistance
+                + " to " + newScreenVertial;
     }
 
     private Boolean playMediaFromList(int offset) {
@@ -307,6 +315,7 @@ public class VideoActivity extends GvrActivity implements
     public boolean dispatchKeyEvent(KeyEvent event) {
         Log.d(TAG, "got key event " + event.toString());
         Event e = KeyControl.processKeyEvent(event,
+                (!setting.getBoolean(Setting.id.DisableExtraControl)) &&
                 (videoRenderer != null) && videoRenderer.paused());
         if (e.action != Actions.NoAction) {
             appendEvent(e);
@@ -330,7 +339,7 @@ public class VideoActivity extends GvrActivity implements
         }
 
         synchronized (this) {
-            Log.d(TAG , "append event " + e.toString());
+            Log.d(TAG, "append event " + e.toString());
             if (events == null) {
                 events = new ArrayList<>();
             }
@@ -376,6 +385,21 @@ public class VideoActivity extends GvrActivity implements
         actionTable.put(Actions.Back, (e) -> returnHome());
         actionTable.put(Actions.IncreaseScreenSize, (e) -> updateScreenSize(3));
         actionTable.put(Actions.DecreaseScreenSize, (e) -> updateScreenSize(-3));
+        actionTable.put(Actions.MoveScreenUp, (e) -> updateScreenVertical(3));
+        actionTable.put(Actions.MoveScreenDown, (e) -> updateScreenVertical(-3));
+        actionTable.put(Actions.IncreaseVolume, (e) -> adjustVolume(true));
+        actionTable.put(Actions.DecreaseVolume, (e) -> adjustVolume(false));
+    }
+
+    private AudioManager audioManager;
+
+    private void adjustVolume(boolean increase) {
+        if (audioManager == null) {
+            audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        }
+        audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC,
+                increase ? AudioManager.ADJUST_RAISE : AudioManager.ADJUST_LOWER,
+                AudioManager.FLAG_SHOW_UI);
     }
 
     private void processEvent(Event e) {

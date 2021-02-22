@@ -17,4 +17,8 @@ public enum Actions {
     Back,
     IncreaseScreenSize,
     DecreaseScreenSize,
+    MoveScreenUp,
+    MoveScreenDown,
+    IncreaseVolume,
+    DecreaseVolume,
 }

@@ -22,6 +22,7 @@ public class Setting {
         MotionSensitivity,
         DisableDistortionCorrection,
         HeadControl,
+        DisableExtraControl,
     }
 
     private static class Item {

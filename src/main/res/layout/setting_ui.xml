@@ -6,13 +6,13 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_margin="10dp"
         android:orientation="vertical">
 
         <View
             android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_margin="10dp"
-            android:background="@android:color/darker_gray" />
+            android:layout_height="0dp"
+            android:layout_margin="10dp" />
 
         <TextView
             android:id="@+id/textViewBrightness"
@@ -145,10 +145,17 @@
             android:layout_margin="10dp"
             android:background="@android:color/darker_gray" />
 
+        <Switch
+            android:id="@+id/extraFunctionSwitch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Disable Controller Extra Function" />
+
         <Button
             android:id="@+id/buttonReset"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_margin="20dp"
             android:text="Reset" />
 
     </LinearLayout>

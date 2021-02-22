@@ -1,5 +1,6 @@
 package autoandshare.headvr.activity;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -49,6 +50,7 @@ public class SettingFragment extends Fragment implements View.OnClickListener {
     private void initSwitchs(View view) {
         initSwitch(view, R.id.distortionCorrectionSwitch, Setting.id.DisableDistortionCorrection);
         initSwitch(view, R.id.headControlSwitch, Setting.id.HeadControl);
+        initSwitch(view, R.id.extraFunctionSwitch, Setting.id.DisableExtraControl);
     }
 
     private void initSwitch(View view, int id, Setting.id settingId) {
@@ -79,6 +81,7 @@ public class SettingFragment extends Fragment implements View.OnClickListener {
 
         seekBar.setProgress(setting.get(propertyName) - setting.getMin(propertyName));
         textView.setText(String.format("%s (%d)", setting.getDescription(propertyName), setting.get(propertyName)));
+        textView.setTextColor(Color.BLACK);
 
 
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {

@@ -3,6 +3,9 @@ package autoandshare.headvr.lib.controller;
 import android.util.Log;
 import android.view.KeyEvent;
 
+import java.util.HashMap;
+import java.util.HashSet;
+
 import autoandshare.headvr.lib.Actions;
 import autoandshare.headvr.lib.Event;
 import autoandshare.headvr.lib.VideoRenderer;
@@ -28,22 +31,41 @@ public class KeyControl {
                 break;
             case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
             case KeyEvent.KEYCODE_DPAD_UP:
-                setIfFirstDown(event, e, Actions.IncreaseScreenSize);
+                setActionForPressAndLongPress(event, e,
+                        Actions.MoveScreenUp, Actions.IncreaseScreenSize);
                 break;
             case KeyEvent.KEYCODE_MEDIA_NEXT:
             case KeyEvent.KEYCODE_DPAD_DOWN:
-                setIfFirstDown(event, e, Actions.DecreaseScreenSize);
+                setActionForPressAndLongPress(event, e,
+                        Actions.MoveScreenDown, Actions.DecreaseScreenSize);
                 break;
             case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:
             case KeyEvent.KEYCODE_DPAD_RIGHT:
-                setIfFirstDown(event, e, Actions.IncreaseEyeDistance);
+                setActionForPressAndLongPress(event, e,
+                        Actions.IncreaseEyeDistance, Actions.IncreaseVolume);
                 break;
             case KeyEvent.KEYCODE_MEDIA_REWIND:
             case KeyEvent.KEYCODE_DPAD_LEFT:
-                setIfFirstDown(event, e, Actions.DecreaseEyeDistance);
+                setActionForPressAndLongPress(event, e,
+                        Actions.DecreaseEyeDistance, Actions.DecreaseVolume);
                 break;
             default:
                 break;
+        }
+    }
+
+    private static HashSet<Integer> keyTracking = new HashSet<Integer>();
+
+    private static void setActionForPressAndLongPress(
+            KeyEvent event, Event e, Actions pressAction, Actions longPressAction) {
+        if ((event.getRepeatCount() + 1) % keyRepeatCountForOneSecond == 0) {
+            keyTracking.add(event.getKeyCode());
+            e.action = longPressAction;
+        }
+        if (event.getAction() == KeyEvent.ACTION_UP) {
+            if (!keyTracking.remove(event.getKeyCode())) {
+                e.action = pressAction;
+            }
         }
     }
 
