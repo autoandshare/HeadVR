@@ -13,7 +13,7 @@ import autoandshare.headvr.lib.VideoRenderer;
 public class KeyControl {
 
     public static Event processKeyEvent(KeyEvent event, boolean extraFunction) {
-        Event e = new Event(Actions.NoAction, false, "key");
+        Event e = new Event("key");
         if (extraFunction) {
             extraFunction(event, e);
         } else {

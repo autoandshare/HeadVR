@@ -21,4 +21,5 @@ public enum Actions {
     MoveScreenDown,
     IncreaseVolume,
     DecreaseVolume,
+    SingleSeek,
 }

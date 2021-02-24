@@ -37,6 +37,7 @@ import autoandshare.headvr.lib.Setting;
 import autoandshare.headvr.lib.VideoRenderer;
 import autoandshare.headvr.lib.browse.PlayList;
 import autoandshare.headvr.lib.controller.KeyControl;
+import autoandshare.headvr.lib.controller.TouchControl;
 import autoandshare.headvr.lib.controller.headcontrol.HeadControl;
 import autoandshare.headvr.lib.rendering.Mesh;
 import autoandshare.headvr.lib.rendering.VRTexture2D;
@@ -315,7 +316,8 @@ public class VideoActivity extends GvrActivity implements
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
         Log.d(TAG, "got touch event " + ev.toString());
-        return super.dispatchTouchEvent(ev);
+        appendEvent(TouchControl.processEvent(ev));
+        return true;
     }
 
     @Override
@@ -377,6 +379,7 @@ public class VideoActivity extends GvrActivity implements
 
     private void setupActionTable() {
         actionTable = new HashMap<>();
+        actionTable.put(Actions.NoAction, (e) -> {});
         actionTable.put(Actions.PartialAction, (e) -> {});
         actionTable.put(Actions.PlayOrPause, (e) -> videoRenderer.pauseOrPlay());
         actionTable.put(Actions.NextFile, (e) -> nextFile());
@@ -396,6 +399,7 @@ public class VideoActivity extends GvrActivity implements
         actionTable.put(Actions.MoveScreenDown, (e) -> updateScreenVertical(-3));
         actionTable.put(Actions.IncreaseVolume, (e) -> adjustVolume(true));
         actionTable.put(Actions.DecreaseVolume, (e) -> adjustVolume(false));
+        actionTable.put(Actions.SingleSeek, (e) -> videoRenderer.singleSeek(e.offset));
     }
 
     private AudioManager audioManager;

@@ -4,11 +4,13 @@ public class Event {
     public Actions action;
     public boolean seekForward;
     public String sender;
+    public float offset;
 
-    public Event(Actions action, boolean seekForward, String sender) {
-        this.action = action;
-        this.seekForward = seekForward;
+    public Event(String sender) {
+        this.action = Actions.NoAction;
+        this.seekForward = false;
         this.sender = sender;
+        this.offset = 0;
     }
 
     @Override
@@ -17,6 +19,7 @@ public class Event {
                 "action=" + action +
                 ", seekForward=" + seekForward +
                 ", sender='" + sender + '\'' +
+                ", offset=" + offset +
                 '}';
     }
 }

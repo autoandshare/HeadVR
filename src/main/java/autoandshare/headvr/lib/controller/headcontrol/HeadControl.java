@@ -147,7 +147,7 @@ public class HeadControl {
 
     public Event handleMotion(float[] upVector, float[] forwardVector) {
 
-        Event e = new Event(Actions.NoAction, false, "head");
+        Event e = new Event("head");
 
         Motion motion = headMotion.check(upVector, forwardVector);
         if (motion == null) {

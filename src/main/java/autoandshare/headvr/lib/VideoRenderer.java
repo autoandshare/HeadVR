@@ -96,6 +96,15 @@ public class VideoRenderer {
         state.seeking = false;
     }
 
+    public void singleSeek(float offset) {
+        if (state.seeking) {
+            return;
+        }
+        restartIfNeeded();
+        state.newPosition = newPosition(offset);
+        mPlayer.setPosition(state.newPosition);
+    }
+
     public void confirmSeek(String seekController) {
         if (!state.seeking || (!seekController.equals(this.seekController))) {
             return;
