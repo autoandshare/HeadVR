@@ -10,6 +10,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.WindowManager;
 
 import com.google.vr.sdk.base.Eye;
@@ -208,13 +209,13 @@ public class VideoActivity extends GvrActivity implements
 
     @Override
     public void onStop() {
-        videoRenderer.stop();
         super.onStop();
         Log.i(TAG, "onStop()");
     }
 
     @Override
     public void onDestroy() {
+        videoRenderer.stop();
         super.onDestroy();
         Log.i(TAG, "onDestroy()");
     }
@@ -309,6 +310,12 @@ public class VideoActivity extends GvrActivity implements
             return;
         }
         uiVisible = (System.currentTimeMillis() - lastEventTime) < 6000;
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        Log.d(TAG, "got touch event " + ev.toString());
+        return super.dispatchTouchEvent(ev);
     }
 
     @Override
