@@ -235,8 +235,7 @@ public class VideoRenderer {
     }
 
     public static float getCurrentEyeDistance() {
-        return state.drawAs2D() ?
-                Setting.EyeDistance : Setting.EyeDistance3D;
+        return Setting.EyeDistance;
     }
 
     private String propertyKey;

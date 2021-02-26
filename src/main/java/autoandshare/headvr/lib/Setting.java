@@ -8,7 +8,6 @@ import java.util.HashMap;
 public class Setting {
     public static float Brightness;
     public static float EyeDistance;
-    public static float EyeDistance3D;
     public static float VerticalDistance;
     public static float VideoSize;
     public static float MotionSensitivity;
@@ -16,7 +15,6 @@ public class Setting {
     public enum id {
         Brightness,
         EyeDistance,
-        EyeDistance3D,
         VerticalDistance,
         VideoSize,
         MotionSensitivity,
@@ -49,7 +47,6 @@ public class Setting {
         items = new HashMap<>();
         items.put(id.Brightness, new Item(0, 100, 25, 0f, 0.5f, "Brightness"));
         items.put(id.EyeDistance, new Item(-50, 50, 0, -0.4f, 0.4f, "Eye to eye distance (near <-> far)"));
-        items.put(id.EyeDistance3D, new Item(-50, 50, 0, -0.4f, 0.4f, "Eye to eye distance for 3D content"));
         items.put(id.VerticalDistance, new Item(-50, 50, 0, -0.6f, 0.6f, "Vertical offset (low <-> high)"));
         items.put(id.VideoSize, new Item(50, 150, 100, 1.5f, 6.5f, "Video size (small <-> big)"));
         items.put(id.MotionSensitivity, new Item(-10, 10, 0, 0.09f, 0.01f, "Head motion sensitivity (less <-> more)"));
@@ -70,7 +67,6 @@ public class Setting {
     private void loadValues() {
         Brightness = getFloat(id.Brightness);
         EyeDistance = getFloat(id.EyeDistance);
-        EyeDistance3D = getFloat(id.EyeDistance3D);
         VerticalDistance = getFloat(id.VerticalDistance);
         VideoSize = getFloat(id.VideoSize);
         MotionSensitivity = getFloat(id.MotionSensitivity);
@@ -128,9 +124,6 @@ public class Setting {
                 break;
             case EyeDistance:
                 EyeDistance = getFloat(name);
-                break;
-            case EyeDistance3D:
-                EyeDistance3D = getFloat(name);
                 break;
             case VerticalDistance:
                 VerticalDistance = getFloat(name);

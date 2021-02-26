@@ -94,39 +94,26 @@ public class VideoActivity extends GvrActivity implements
         if (!videoRenderer.getState().isVR()) {
             return false;
         }
-
-        hideAll = true;
-        new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            resetRotationMatrix = true;
-            hideAll = false;
-        }, 1000);
         return true;
+    }
+
+    private void updateSettingWithId(Setting.id id, int i) {
+        int newValue = setting.update(id, i);
+        videoRenderer.getState().message = "setting " + id + " to " + newValue;
     }
 
     private Boolean updateEyeDistance(int i) {
-        Setting.id id = videoRenderer.getState().drawAs2D() ?
-                Setting.id.EyeDistance : Setting.id.EyeDistance3D;
-
-        updateEyeDistanceWithId(i, id);
+        updateSettingWithId(Setting.id.EyeDistance, i);
         return true;
     }
 
-    private void updateEyeDistanceWithId(int i, Setting.id id) {
-        int eyeDistance = setting.update(id, i);
-        videoRenderer.getState().message = "setting " + id + " to " + eyeDistance;
-    }
-
     private void updateScreenSize(int i) {
-        int newScreenSize = setting.update(Setting.id.VideoSize, i);
-        videoRenderer.getState().message = "setting " + Setting.id.VideoSize
-                + " to " + newScreenSize;
+        updateSettingWithId(Setting.id.VideoSize, i);
         videoRenderer.updateVideoPosition();
     }
 
     private void updateScreenVertical(int i) {
-        int newScreenVertial = setting.update(Setting.id.VerticalDistance, i);
-        videoRenderer.getState().message = "setting " + Setting.id.VerticalDistance
-                + " to " + newScreenVertial;
+        updateSettingWithId(Setting.id.VerticalDistance, i);
     }
 
     private Boolean playMediaFromList(int offset) {
@@ -139,15 +126,11 @@ public class VideoActivity extends GvrActivity implements
             if (mw == null) {
                 videoRenderer.getState().errorMessage = "Invalid play list";
             } else {
-                hideAll = true;
                 videoRenderer.playUri(mw);
-                new Handler(Looper.getMainLooper()).postDelayed(() -> hideAll = false, 1500);
             }
         }
         return true;
     }
-
-    private boolean hideAll = false;
 
     private Boolean prevFile() {
         return playMediaFromList(-1);
@@ -264,17 +247,12 @@ public class VideoActivity extends GvrActivity implements
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
-        if (hideAll) {
-            return;
-        }
-
-        videoRenderer.glDraw(eye);
-
         if (uiVisible) {
             basicUI.glDraw(eye, videoRenderer.getState(), headControl,
                     (playList != null) ? playList.currentIndex() : "");
         }
 
+        videoRenderer.glDraw(eye);
     }
 
     @Override

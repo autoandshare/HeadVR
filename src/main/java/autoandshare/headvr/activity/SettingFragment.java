@@ -67,7 +67,6 @@ public class SettingFragment extends Fragment implements View.OnClickListener {
     private void initSeekBars(View view) {
         initSeekBars(view, R.id.seekBarBrightness, Setting.id.Brightness, R.id.textViewBrightness);
         initSeekBars(view, R.id.seekBarEyeDistance, Setting.id.EyeDistance, R.id.textViewEyeDistance);
-        initSeekBars(view, R.id.seekBarEyeDistance3D, Setting.id.EyeDistance3D, R.id.textViewEyeDistance3D);
         initSeekBars(view, R.id.seekBarVerticalDistance, Setting.id.VerticalDistance, R.id.textViewVerticalDistance);
         initSeekBars(view, R.id.seekBarVideoSize, Setting.id.VideoSize, R.id.textViewVideoSize);
         initSeekBars(view, R.id.seekBarSensitivity, Setting.id.MotionSensitivity, R.id.textViewSensitivity);

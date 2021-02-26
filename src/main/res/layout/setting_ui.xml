@@ -69,24 +69,6 @@
             android:background="@android:color/darker_gray" />
 
         <TextView
-            android:id="@+id/textViewEyeDistance3D"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="EyeDistance" />
-
-        <SeekBar
-            android:id="@+id/seekBarEyeDistance3D"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:max="200" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_margin="10dp"
-            android:background="@android:color/darker_gray" />
-
-        <TextView
             android:id="@+id/textViewVerticalDistance"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
