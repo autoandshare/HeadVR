@@ -20,8 +20,9 @@ public class Setting {
         MotionSensitivity,
         DisableDistortionCorrection,
         HeadControl,
-        DisableExtraControl,
     }
+
+    public static boolean DisableExtraFunction;
 
     private static class Item {
         int min;

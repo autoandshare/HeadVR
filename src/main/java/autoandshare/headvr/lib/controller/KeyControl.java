@@ -8,6 +8,7 @@ import java.util.HashSet;
 
 import autoandshare.headvr.lib.Actions;
 import autoandshare.headvr.lib.Event;
+import autoandshare.headvr.lib.Setting;
 import autoandshare.headvr.lib.VideoRenderer;
 
 public class KeyControl {
@@ -22,12 +23,19 @@ public class KeyControl {
         return e;
     }
 
+    private static void handlePlayPauseKey(KeyEvent event, Event e, Actions action) {
+        setIfFirstDown(event, e, action);
+        if (event.getAction() == KeyEvent.ACTION_UP) {
+            Setting.DisableExtraFunction = (event.getEventTime() - event.getDownTime()) < 3000;
+        }
+
+    }
     private static void extraFunction(KeyEvent event, Event e) {
         switch (event.getKeyCode()) {
             case KeyEvent.KEYCODE_ENTER:
             case KeyEvent.KEYCODE_SPACE:
             case KeyEvent.KEYCODE_BUTTON_START:
-                setIfFirstDown(event, e, Actions.PlayOrPause);
+                handlePlayPauseKey(event, e, Actions.PlayOrPause);
                 break;
             case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
             case KeyEvent.KEYCODE_DPAD_UP:
@@ -81,7 +89,7 @@ public class KeyControl {
             case KeyEvent.KEYCODE_ENTER:
             case KeyEvent.KEYCODE_SPACE:
             case KeyEvent.KEYCODE_BUTTON_START:
-                setIfFirstDown(event, e, Actions.PlayOrPause);
+                handlePlayPauseKey(event, e, Actions.PlayOrPause);
                 break;
             case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
             case KeyEvent.KEYCODE_DPAD_UP:

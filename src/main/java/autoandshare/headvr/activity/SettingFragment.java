@@ -50,7 +50,6 @@ public class SettingFragment extends Fragment implements View.OnClickListener {
     private void initSwitchs(View view) {
         initSwitch(view, R.id.distortionCorrectionSwitch, Setting.id.DisableDistortionCorrection);
         initSwitch(view, R.id.headControlSwitch, Setting.id.HeadControl);
-        initSwitch(view, R.id.extraFunctionSwitch, Setting.id.DisableExtraControl);
     }
 
     private void initSwitch(View view, int id, Setting.id settingId) {

@@ -146,7 +146,6 @@ public class VideoActivity extends GvrActivity implements
         }
 
         playMediaFromList(0);
-        videoRenderer.pause();
     }
 
     private Boolean returnHome() {
@@ -299,7 +298,7 @@ public class VideoActivity extends GvrActivity implements
     public boolean dispatchKeyEvent(KeyEvent event) {
         Log.d(TAG, "got key event " + event.toString());
         Event e = KeyControl.processKeyEvent(event,
-                (!setting.getBoolean(Setting.id.DisableExtraControl)) &&
+                (!Setting.DisableExtraFunction) &&
                 (videoRenderer != null) && videoRenderer.frameVisibleAndPaused());
         if (e.action != Actions.NoAction) {
             appendEvent(e);
