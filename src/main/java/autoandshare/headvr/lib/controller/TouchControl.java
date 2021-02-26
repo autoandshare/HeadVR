@@ -44,7 +44,8 @@ public class TouchControl {
             e.action = Actions.SingleSeek;
             e.offset = deltaX / 10000;
         } else {
-            // nothing yet
+            // next/prev file
+            e.action = (deltaY > 0) ? Actions.PrevFile : Actions.NextFile;
         }
     }
 }

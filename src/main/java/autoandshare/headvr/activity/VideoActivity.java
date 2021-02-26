@@ -6,8 +6,6 @@ import android.net.Uri;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -32,7 +30,6 @@ import autoandshare.headvr.R;
 import autoandshare.headvr.lib.Actions;
 import autoandshare.headvr.lib.BasicUI;
 import autoandshare.headvr.lib.Event;
-import autoandshare.headvr.lib.NoDistortionProvider;
 import autoandshare.headvr.lib.Setting;
 import autoandshare.headvr.lib.VideoRenderer;
 import autoandshare.headvr.lib.browse.PlayList;
@@ -149,7 +146,7 @@ public class VideoActivity extends GvrActivity implements
         }
 
         playMediaFromList(0);
-
+        videoRenderer.pause();
     }
 
     private Boolean returnHome() {
@@ -303,7 +300,7 @@ public class VideoActivity extends GvrActivity implements
         Log.d(TAG, "got key event " + event.toString());
         Event e = KeyControl.processKeyEvent(event,
                 (!setting.getBoolean(Setting.id.DisableExtraControl)) &&
-                (videoRenderer != null) && videoRenderer.paused());
+                (videoRenderer != null) && videoRenderer.frameVisibleAndPaused());
         if (e.action != Actions.NoAction) {
             appendEvent(e);
             return true;

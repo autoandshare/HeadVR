@@ -3,7 +3,6 @@ package autoandshare.headvr.lib;
 import android.app.Activity;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
-import android.util.Log;
 
 import com.google.vr.sdk.base.Eye;
 
@@ -168,14 +167,10 @@ public class VideoRenderer {
     }
 
     public Boolean toggleForce2D() {
-        if (!(frameReady && positionUpdated)) {
-            return false;
-        }
-
         if ((this.mw != null) && state.is3D()) {
             state.force2D = !state.force2D;
             videoProperties.setForce2D(propertyKey, state.force2D);
-            updateVideoPosition();
+            updatePositionRequested = true;
             state.message = (state.force2D ? "Enable" : "Disable") + "  Force2D";
         }
 
@@ -310,7 +305,10 @@ public class VideoRenderer {
             if (switchingVideo) {
                 return;
             }
-            frameReady = true;
+            framesCount += 1;
+            if (framesCount == 1) {
+                updatePositionRequested = true;
+            }
             state.videoLoaded = true;
         });
 
@@ -320,11 +318,10 @@ public class VideoRenderer {
         mILibVLC = VlcHelper.Instance;
     }
 
-    private int videosPlayedCount = 0;
     private boolean switchingVideo = true;
     private boolean ended = false;
-    private boolean frameReady = false;
-    private boolean positionUpdated = false;
+    private int framesCount = 0;
+    private boolean updatePositionRequested = false;
     private int retry = 0;
     Media.VideoTrack vtrack;
 
@@ -335,11 +332,10 @@ public class VideoRenderer {
         if (this.mw != null) {
             savePosition();
         }
-        videosPlayedCount += 1;
         switchingVideo = true;
         ended = false;
-        frameReady = false;
-        positionUpdated = false;
+        framesCount = 0;
+        updatePositionRequested = false;
         retry = 0;
         vtrack = null;
         resetState();
@@ -420,7 +416,7 @@ public class VideoRenderer {
     }
 
     public void updateVideoPosition() {
-        if (!frameReady) {
+        if (framesCount == 0) {
             return;
         }
 
@@ -440,6 +436,8 @@ public class VideoRenderer {
         if (!state.isVR()) {
             setScreenSize();
         }
+
+        updatePositionRequested = false;
     }
 
     private void setScreenSize() {
@@ -479,11 +477,15 @@ public class VideoRenderer {
 
     boolean readyToDraw = false;
 
+    private boolean enoughFrames() {
+        return framesCount > 10;
+    }
+
     public void glDraw(Eye eye) {
         updateStates();
 
         if (eye.getType() == 1) {
-            readyToDraw = frameReady && positionUpdated;
+            readyToDraw = enoughFrames();
             videoScreen.getSurfaceTexture().updateTexImage();
         }
 
@@ -497,23 +499,11 @@ public class VideoRenderer {
     }
 
     private void updateStates() {
-        if (ended && (!frameReady) && (mPlayer.getLength() != 0)) {
+        if (ended && (mPlayer.getLength() != 0)) {
             restartIfNeeded();
         }
-        if (frameReady && (!positionUpdated)) {
+        if (updatePositionRequested) {
             updateVideoPosition();
-
-            if (videosPlayedCount == 1) {
-                pause();
-            }
-
-            positionUpdated = true;
-            frameReady = false;
-        }
-        if ((!state.videoLoaded) && (!switchingVideo)) {
-            if (((int) mPlayer.getTime()) != 0) {
-                state.videoLoaded = true;
-            }
         }
     }
 
@@ -527,11 +517,7 @@ public class VideoRenderer {
     }
 
     public void pause() {
-        if (state.videoLoaded) {
-            if (state.playing) {
-                pauseOrPlay();
-            }
-        }
+        mPlayer.pause();
     }
 
     public void savePosition() {
@@ -545,7 +531,7 @@ public class VideoRenderer {
                 state.playing && (!state.seeking);
     }
 
-    public boolean paused() {
+    public boolean frameVisibleAndPaused() {
         return state.videoLoaded && readyToDraw &&
                 (!state.playing);
     }
