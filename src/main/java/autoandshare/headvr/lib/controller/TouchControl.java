@@ -34,7 +34,7 @@ public class TouchControl {
     private static void compareXY(MotionEvent mv, Event e) {
         float deltaX = mv.getX() - savedX;
         float deltaY = mv.getY() - savedY;
-        if ((deltaX*deltaX + deltaY*deltaY) < 30*30) {
+        if ((deltaX*deltaX + deltaY*deltaY) < 5*5) {
             e.action = Actions.PlayOrPause;
             return;
         }
@@ -44,8 +44,7 @@ public class TouchControl {
             e.action = Actions.SingleSeek;
             e.offset = deltaX / 10000;
         } else {
-            // prev/next file
-            e.action = (deltaY > 0) ? Actions.NextFile : Actions.PrevFile;
+            // nothing yet
         }
     }
 }
