@@ -16,6 +16,7 @@ import java.text.MessageFormat;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import autoandshare.headvr.activity.VideoActivity;
 import autoandshare.headvr.activity.VlcHelper;
 import autoandshare.headvr.lib.rendering.Mesh;
 import autoandshare.headvr.lib.rendering.MeshExt;
@@ -295,6 +296,45 @@ public class VideoRenderer {
     private MediaWrapper mw;
     private Activity activity;
 
+    private String[] getLangKeywords(Setting.id id) {
+        if (Setting.Instance.getBoolean(id)) {
+            return Setting.Instance.getString(id).split(",|，");
+        }
+        return null;
+    }
+    private String[] getAudioKeywords() {
+        return getLangKeywords(Setting.id.AudioLanguageKeywords);
+    }
+    private String[] getSubtitleKeyword() {
+        return getLangKeywords(Setting.id.SubtitleLanguageKeywords);
+    }
+
+    private void setTrack(MediaPlayer.TrackDescription[] tracks, String[] keywords,
+                         VideoActivity.Consumer<Integer> setFunc) {
+
+        if (tracks == null || keywords == null || keywords.length == 0) {
+            return;
+        }
+
+        for (String keyword : keywords) {
+            keyword = keyword.trim().toLowerCase();
+            if (keyword.length() == 0) {
+                continue;
+            }
+            for (MediaPlayer.TrackDescription track : tracks) {
+                if (track.name.toLowerCase().contains(keyword)) {
+                    setFunc.accept(track.id);
+                    return;
+                }
+            }
+        }
+    }
+
+    private void setAudioAndSubtitle() {
+        setTrack(mPlayer.getAudioTracks(), getAudioKeywords(), i -> mPlayer.setAudioTrack(i));
+        setTrack(mPlayer.getSpuTracks(), getSubtitleKeyword(), i -> mPlayer.setSpuTrack(i));
+    }
+
     public VideoRenderer(Activity activity) {
         this.activity = activity;
         resetState();
@@ -307,6 +347,7 @@ public class VideoRenderer {
             }
             framesCount += 1;
             if (framesCount == 1) {
+                setAudioAndSubtitle();
                 updatePositionRequested = true;
             }
             state.videoLoaded = true;

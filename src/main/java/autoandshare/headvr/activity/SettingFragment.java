@@ -2,11 +2,14 @@ package autoandshare.headvr.activity;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -45,6 +48,43 @@ public class SettingFragment extends Fragment implements View.OnClickListener {
         View view = getView();
         initSeekBars(view);
         initSwitchs(view);
+        initLangKeywords(view);
+    }
+
+    private void initLangKeywords(View view) {
+        initLangKeyword(view, R.id.audioLangKeywordSwitch, R.id.audioLangKeywords,
+                Setting.id.AudioLanguageKeywords);
+        initLangKeyword(view, R.id.subtitleLangKeywordSwitch, R.id.subtitleLangKeywords,
+                Setting.id.SubtitleLanguageKeywords);
+    }
+
+    private void initLangKeyword(View view, int switchId, int editId, Setting.id settingId) {
+        Switch sw = view.findViewById(switchId);
+        EditText edit = view.findViewById(editId);
+
+        boolean enabled = setting.getBoolean(settingId);
+        sw.setChecked(enabled);
+        edit.setEnabled(enabled);
+        edit.setText(setting.getString(settingId));
+
+        sw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                setting.putBoolean(settingId, isChecked);
+                edit.setEnabled(isChecked);
+            }
+        });
+        edit.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override
+            public void afterTextChanged(Editable s) {
+                setting.putString(settingId, s.toString());
+            }
+        });
+
     }
 
     private void initSwitchs(View view) {

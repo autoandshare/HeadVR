@@ -6,11 +6,21 @@ import android.content.SharedPreferences;
 import java.util.HashMap;
 
 public class Setting {
+    public static Setting Instance;
     public static float Brightness;
     public static float EyeDistance;
     public static float VerticalDistance;
     public static float VideoSize;
     public static float MotionSensitivity;
+
+    public String getString(id settingId) {
+        return pref.getString(settingId.toString() + "S", "");
+    }
+
+    public void putString(id settingId, String val) {
+        editor.putString(settingId.toString() + "S", val);
+        editor.apply();
+    }
 
     public enum id {
         Brightness,
@@ -20,6 +30,8 @@ public class Setting {
         MotionSensitivity,
         DisableDistortionCorrection,
         HeadControl,
+        AudioLanguageKeywords,
+        SubtitleLanguageKeywords,
     }
 
     public static boolean DisableExtraFunction;
@@ -85,6 +97,7 @@ public class Setting {
         pref = activity.getSharedPreferences("Setting", 0);
         editor = pref.edit();
         loadValues();
+        Instance = this;
     }
 
     public int getMin(id name) {

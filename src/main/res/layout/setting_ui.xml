@@ -121,6 +121,40 @@
             android:layout_height="wrap_content"
             android:text="Head Control" />
 
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_margin="10dp"
+            android:background="@android:color/darker_gray" />
+
+        <Switch
+            android:id="@+id/audioLangKeywordSwitch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Audio Language Keywords (ex: en,it)" />
+
+        <EditText
+            android:id="@+id/audioLangKeywords"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_margin="10dp"
+            android:background="@android:color/darker_gray" />
+
+        <Switch
+            android:id="@+id/subtitleLangKeywordSwitch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Subtitle Language Keywords (ex: ch,fr,ru)" />
+
+        <EditText
+            android:id="@+id/subtitleLangKeywords"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
         <Button
             android:id="@+id/buttonReset"
             android:layout_width="wrap_content"
