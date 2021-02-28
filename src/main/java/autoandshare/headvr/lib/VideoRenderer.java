@@ -518,6 +518,7 @@ public class VideoRenderer {
 
     public void pause() {
         mPlayer.pause();
+        state.playing = false;
     }
 
     public void savePosition() {
