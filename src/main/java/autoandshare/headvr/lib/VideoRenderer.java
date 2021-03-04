@@ -333,11 +333,6 @@ public class VideoRenderer {
             return;
         }
 
-        if (pref == -1) {
-            setFunc.accept(-1);
-            return;
-        }
-
         if (pref != VideoProperties.TrackAuto) {
             for (MediaPlayer.TrackDescription track : tracks) {
                 if (track.id == pref) {
