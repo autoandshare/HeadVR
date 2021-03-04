@@ -1,6 +1,7 @@
 package autoandshare.headvr.activity;
 
 import android.content.Context;
+import android.content.Intent;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.opengl.GLES20;
@@ -88,7 +89,7 @@ public class VideoActivity extends GvrActivity implements
     private boolean resetRotationMatrix = false;
 
     private Boolean recenter() {
-        if (!videoRenderer.getState().isVR()) {
+        if (!videoRenderer.getState().videoType.isVR()) {
             return false;
         }
         return true;
@@ -269,6 +270,9 @@ public class VideoActivity extends GvrActivity implements
         Log.i(TAG, "onSurfaceCreated");
         GLES20.glClearColor(0f, 0f, 0f, 0.5f); // Dark background so text shows up well.
 
+        TouchControl.Width = this.getWindow().getDecorView().getWidth();
+        Log.i(TAG, "width " + TouchControl.Width);
+
         basicUI = new BasicUI();
 
         videoRenderer = new VideoRenderer(this);
@@ -374,6 +378,24 @@ public class VideoActivity extends GvrActivity implements
         actionTable.put(Actions.IncreaseVolume, (e) -> adjustVolume(true));
         actionTable.put(Actions.DecreaseVolume, (e) -> adjustVolume(false));
         actionTable.put(Actions.SingleSeek, (e) -> videoRenderer.singleSeek(e.offset));
+        actionTable.put(Actions.StartOptionActivity, (e) -> startOptionWindow());
+    }
+
+    private void startOptionWindow() {
+        if (videoRenderer == null || videoRenderer.propertyKey == null) {
+            return;
+        }
+
+        VideoOptions.propertyKey = videoRenderer.propertyKey;
+        VideoOptions.audioTracks = null;
+        VideoOptions.subtitleTracks = null;
+
+        if (videoRenderer.mPlayer != null) {
+            VideoOptions.audioTracks = videoRenderer.mPlayer.getAudioTracks();
+            VideoOptions.subtitleTracks = videoRenderer.mPlayer.getSpuTracks();
+        }
+
+        startActivity(new Intent(this, VideoOptions.class));
     }
 
     private AudioManager audioManager;

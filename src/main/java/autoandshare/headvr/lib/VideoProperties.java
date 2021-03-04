@@ -5,20 +5,47 @@ import android.content.SharedPreferences;
 import com.tencent.mmkv.MMKV;
 
 public class VideoProperties {
-    private MMKV prefPostion;
-    private SharedPreferences.Editor editorPosition;
-    private MMKV prefForce2D;
-    private SharedPreferences.Editor editorForce2D;
+    private static MMKV prefPostion = MMKV.mmkvWithID("VideoProperties-Position");
+    private static MMKV prefForce2D = MMKV.mmkvWithID("VideoProperties-Force2D");
+    private static MMKV prefVideoType = MMKV.mmkvWithID("VideoProperties-VideoType");
+    private static MMKV prefVideoTypeLayout = MMKV.mmkvWithID("VideoProperties-VideoTypeLayout");
+    private static MMKV prefVideoTypeAspect = MMKV.mmkvWithID("VideoProperties-VideoTypeAspect");
+    private static MMKV prefAudio = MMKV.mmkvWithID("VideoProperties-Audio");
+    private static MMKV prefSubtitle = MMKV.mmkvWithID("VideoProperties-Subtitle");
 
-    public VideoProperties() {
+    public static int TrackAuto = -100;
 
-        prefPostion = MMKV.mmkvWithID("VideoProperties-Position");
-        editorPosition = prefPostion.edit();
-        prefForce2D = MMKV.mmkvWithID("VideoProperties-Force2D");
-        editorForce2D = prefForce2D.edit();
+    public static int getVideoAudio(String key) {
+        return prefAudio.getInt(key, TrackAuto);
     }
 
-    public float getPosition(String key) {
+    public static void setVideoAudio(String key, int val) {
+        prefAudio.putInt(key, val);
+    }
+
+    public static int getVideoSubtitle(String key) {
+        return prefSubtitle.getInt(key, TrackAuto);
+    }
+
+    public static void setVideoSubtitle(String key, int val) {
+        prefSubtitle.putInt(key, val);
+    }
+
+    public static VideoType getVideoType(String key) {
+        VideoType videoType = new VideoType();
+        videoType.type = VideoType.Type.valueOf(prefVideoType.getString(key, "Auto"));
+        videoType.layout = VideoType.Layout.valueOf(prefVideoTypeLayout.getString(key, "Auto"));
+        videoType.aspect = VideoType.Aspect.valueOf(prefVideoTypeAspect.getString(key, "Auto"));
+        return videoType;
+    }
+
+    public static void setVideoType(String key, VideoType videoType) {
+        prefVideoType.putString(key, videoType.type.name());
+        prefVideoTypeLayout.putString(key, videoType.layout.name());
+        prefVideoTypeAspect.putString(key, videoType.aspect.name());
+    }
+
+    public static float getPosition(String key) {
         float position = prefPostion.getFloat(key, 0);
         if ((position < 0) || (position > 1)) {
             position = 0;
@@ -26,25 +53,23 @@ public class VideoProperties {
         return position;
     }
 
-    public void setPosition(String key, float position) {
+    public static void setPosition(String key, float position) {
         if (position == 0) {
-            editorPosition.remove(key);
+            prefPostion.remove(key);
         } else {
-            editorPosition.putFloat(key, position);
+            prefPostion.putFloat(key, position);
         }
-        editorPosition.apply();
     }
 
-    public boolean getForce2D(String key) {
+    public static boolean getForce2D(String key) {
         return prefForce2D.getBoolean(key, false);
     }
 
-    public void setForce2D(String key, boolean force2D) {
+    public static void setForce2D(String key, boolean force2D) {
         if (force2D) {
-            editorForce2D.putBoolean(key, true);
+            prefForce2D.putBoolean(key, true);
         } else {
-            editorForce2D.remove(key);
+            prefForce2D.remove(key);
         }
-        editorForce2D.apply();
     }
 }

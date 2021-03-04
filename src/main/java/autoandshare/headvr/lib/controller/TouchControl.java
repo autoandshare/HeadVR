@@ -7,6 +7,7 @@ import autoandshare.headvr.lib.Actions;
 import autoandshare.headvr.lib.Event;
 
 public class TouchControl {
+    public static float Width;
     private static float savedX = 0;
     private static float savedY = 0;
     private static long savedT = 0;
@@ -21,9 +22,7 @@ public class TouchControl {
                 savedT = mv.getEventTime();
                 break;
             case MotionEvent.ACTION_UP:
-                if (mv.getEventTime() - savedT < 2000) {
-                    compareXY(mv, e);
-                }
+                compareXY(mv, e);
                 break;
             default:
                 break;
@@ -35,7 +34,7 @@ public class TouchControl {
         float deltaX = mv.getX() - savedX;
         float deltaY = mv.getY() - savedY;
         if ((deltaX*deltaX + deltaY*deltaY) < 5*5) {
-            e.action = Actions.PlayOrPause;
+            e.action = mv.getX() < (Width/3) ? Actions.StartOptionActivity : Actions.PlayOrPause;
             return;
         }
 

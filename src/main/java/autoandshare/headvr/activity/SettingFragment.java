@@ -119,8 +119,6 @@ public class SettingFragment extends Fragment implements View.OnClickListener {
 
         seekBar.setProgress(setting.get(propertyName) - setting.getMin(propertyName));
         textView.setText(String.format("%s (%d)", setting.getDescription(propertyName), setting.get(propertyName)));
-        textView.setTextColor(Color.BLACK);
-
 
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {

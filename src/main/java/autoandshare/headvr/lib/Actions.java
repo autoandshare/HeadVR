@@ -22,4 +22,5 @@ public enum Actions {
     IncreaseVolume,
     DecreaseVolume,
     SingleSeek,
+    StartOptionActivity,
 }

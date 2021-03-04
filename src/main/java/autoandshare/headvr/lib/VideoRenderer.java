@@ -3,9 +3,11 @@ package autoandshare.headvr.lib;
 import android.app.Activity;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
+import android.util.Log;
 
 import com.google.vr.sdk.base.Eye;
 
+import org.videolan.libvlc.interfaces.IMedia;
 import org.videolan.libvlc.interfaces.IVLCVout;
 import org.videolan.libvlc.interfaces.ILibVLC;
 import org.videolan.libvlc.Media;
@@ -25,6 +27,8 @@ import autoandshare.headvr.lib.rendering.VRTexture2D;
 import static java.lang.Math.min;
 
 public class VideoRenderer {
+    private static final String TAG = "VideoRenderer";
+
     public void stop() {
         if (mPlayer != null) {
             mPlayer.stop();
@@ -168,7 +172,7 @@ public class VideoRenderer {
     }
 
     public Boolean toggleForce2D() {
-        if ((this.mw != null) && state.is3D()) {
+        if ((this.mw != null) && !state.videoType.isMono()) {
             state.force2D = !state.force2D;
             videoProperties.setForce2D(propertyKey, state.force2D);
             updatePositionRequested = true;
@@ -202,48 +206,27 @@ public class VideoRenderer {
         // optional info
         public String message;
         public String playerState;
-
-        public boolean is3D() {
-            return this.videoType.sbs || this.videoType.tab;
-        }
-
-        public boolean drawAs2D() {
-            return (!is3D()) || force2D;
-        }
-
-        public boolean isVR() {
-            return this.videoType.vr180 || this.videoType.vr360;
-        }
     }
 
     private ILibVLC mILibVLC = null;
     public static State state = new State();
-    private MediaPlayer mPlayer;
+    public MediaPlayer mPlayer;
     private VRTexture2D videoScreen;
     private MeshExt mesh;
 
-    public static boolean drawAs2D() {
-        return state.drawAs2D();
+    public static boolean drawSameImage() {
+        return state.force2D || state.videoType.isMono();
     }
 
     public static boolean useRightTexture(int eyeType) {
-        return VideoRenderer.drawAs2D() || (eyeType == Eye.Type.RIGHT);
+        return VideoRenderer.drawSameImage() || (eyeType == Eye.Type.RIGHT);
     }
 
     public static float getCurrentEyeDistance() {
         return Setting.EyeDistance;
     }
 
-    private String propertyKey;
-
-    class VideoType {
-        boolean half;
-        boolean full;
-        boolean sbs;
-        boolean tab;
-        boolean vr180;
-        boolean vr360;
-    }
+    public String propertyKey;
 
     private Pattern fileNamePattern3D =
             Pattern.compile("([^A-Za-z0-9]|^)(half|h|full|f|)[^A-Za-z0-9]?(3d)?(sbs|ou|tab)([^A-Za-z0-9]|$)",
@@ -253,43 +236,76 @@ public class VideoRenderer {
             Pattern.compile("([^A-Za-z0-9]|^)(180|360)([^A-Za-z0-9]|$)",
                     Pattern.CASE_INSENSITIVE);
 
-    private void getVideoType() {
-        Uri uri = mw.getUri();
-        VideoType videoType = new VideoType();
-
-        propertyKey = PathUtil.getKey(uri);
-        state.fileName = mw.getTitle();
-
-        int mediaFormat = Mesh.MEDIA_MONOSCOPIC;
-        Matcher matcher = fileNamePattern3D.matcher(state.fileName);
+    private void getLayoutFromName(String name, VideoType videoType) {
+        Matcher matcher = fileNamePattern3D.matcher(name);
         if (matcher.find()) {
             if (matcher.group(2).toLowerCase().startsWith("h")) {
-                videoType.half = true;
+                videoType.aspect = VideoType.Aspect.Half;
             } else if (matcher.group(2).toLowerCase().startsWith("f")) {
-                videoType.full = true;
+                videoType.aspect = VideoType.Aspect.Full;
             }
             if (matcher.group(4).toLowerCase().startsWith("s")) {
-                videoType.sbs = true;
-                mediaFormat = Mesh.MEDIA_STEREO_LEFT_RIGHT;
+                videoType.layout = VideoType.Layout.SideBySide;
             } else {
-                videoType.tab = true;
-                mediaFormat = Mesh.MEDIA_STEREO_TOP_BOTTOM;
+                videoType.layout = VideoType.Layout.TopAndBottom;
             }
         }
-        videoScreen.setMediaType(mediaFormat);
-        matcher = fileNamePatternVR.matcher(state.fileName);
+
+    }
+
+    private int getMediaFormatFromLayout(VideoType.Layout layout) {
+        switch (layout) {
+            case SideBySide:
+                return Mesh.MEDIA_STEREO_LEFT_RIGHT;
+            case TopAndBottom:
+                return Mesh.MEDIA_STEREO_TOP_BOTTOM;
+        }
+        return Mesh.MEDIA_MONOSCOPIC;
+    }
+
+    private void getVRFromName(String name, VideoType videoType) {
+        Matcher matcher = fileNamePatternVR.matcher(name);
         if (matcher.find()) {
-            if (matcher.group(2).equals("180")) {
-                videoType.vr180 = true;
-                mesh.setMediaType(true, mediaFormat);
-            } else {
-                videoType.vr360 = true;
-                mesh.setMediaType(false, mediaFormat);
+            videoType.type = matcher.group(2).equals("180") ?
+                    VideoType.Type.VR180 : VideoType.Type.VR360;
+        }
+    }
+
+    private void getVideoType() {
+        VideoType videoType = videoProperties.getVideoType(propertyKey);
+
+        String title = mPlayer.getMedia().getMeta(IMedia.Meta.Title);
+
+        if (videoType.layout == VideoType.Layout.Auto) {
+            getLayoutFromName(state.fileName, videoType);
+            if (videoType.layout == VideoType.Layout.Auto) {
+                getLayoutFromName(title, videoType);
+                if (videoType.layout == VideoType.Layout.Auto) {
+                    videoType.layout = VideoType.Layout.Mono;
+                }
             }
         }
+
+        int mediaFormat = getMediaFormatFromLayout(videoType.layout);
+        videoScreen.setMediaType(mediaFormat);
+
+        if (videoType.type == VideoType.Type.Auto) {
+            getVRFromName(state.fileName, videoType);
+            if (videoType.type == VideoType.Type.Auto) {
+                getVRFromName(title, videoType);
+                if (videoType.type == VideoType.Type.Auto) {
+                    videoType.type = VideoType.Type.Plane;
+                }
+            }
+        }
+
+        if (videoType.type != VideoType.Type.Plane) {
+            mesh.setMediaType(videoType.type == VideoType.Type.VR180, mediaFormat);
+        }
+
         state.videoType = videoType;
         state.force2D = videoProperties.getForce2D(propertyKey);
-
+        Log.d(TAG, "Video Type: " + videoType);
     }
 
     private VideoProperties videoProperties;
@@ -310,10 +326,25 @@ public class VideoRenderer {
     }
 
     private void setTrack(MediaPlayer.TrackDescription[] tracks, String[] keywords,
+                         int pref,
                          VideoActivity.Consumer<Integer> setFunc) {
 
         if (tracks == null || keywords == null || keywords.length == 0) {
             return;
+        }
+
+        if (pref == -1) {
+            setFunc.accept(-1);
+            return;
+        }
+
+        if (pref != VideoProperties.TrackAuto) {
+            for (MediaPlayer.TrackDescription track : tracks) {
+                if (track.id == pref) {
+                    setFunc.accept(track.id);
+                    return;
+                }
+            }
         }
 
         for (String keyword : keywords) {
@@ -331,8 +362,12 @@ public class VideoRenderer {
     }
 
     private void setAudioAndSubtitle() {
-        setTrack(mPlayer.getAudioTracks(), getAudioKeywords(), i -> mPlayer.setAudioTrack(i));
-        setTrack(mPlayer.getSpuTracks(), getSubtitleKeyword(), i -> mPlayer.setSpuTrack(i));
+        setTrack(mPlayer.getAudioTracks(), getAudioKeywords(),
+                videoProperties.getVideoAudio(propertyKey),
+                i -> mPlayer.setAudioTrack(i));
+        setTrack(mPlayer.getSpuTracks(), getSubtitleKeyword(),
+                videoProperties.getVideoSubtitle(propertyKey),
+                i -> mPlayer.setSpuTrack(i));
     }
 
     public VideoRenderer(Activity activity) {
@@ -347,7 +382,6 @@ public class VideoRenderer {
             }
             framesCount += 1;
             if (framesCount == 1) {
-                setAudioAndSubtitle();
                 updatePositionRequested = true;
             }
             state.videoLoaded = true;
@@ -382,7 +416,8 @@ public class VideoRenderer {
         resetState();
 
         this.mw = mw;
-        getVideoType();
+        state.fileName = mw.getTitle();
+        propertyKey = PathUtil.getKey(mw.getUri());
 
         if (mPlayer != null) {
             mPlayer.getVLCVout().detachViews();
@@ -461,6 +496,9 @@ public class VideoRenderer {
             return;
         }
 
+        getVideoType();
+        setAudioAndSubtitle();
+
         if (vtrack == null) {
             vtrack = mPlayer.getCurrentVideoTrack();
         }
@@ -474,7 +512,7 @@ public class VideoRenderer {
         mPlayer.setAspectRatio("" + vtrack.width + ":" + vtrack.height);
         mPlayer.setScale(0);
 
-        if (!state.isVR()) {
+        if (!state.videoType.isVR()) {
             setScreenSize();
         }
 
@@ -489,15 +527,15 @@ public class VideoRenderer {
         }
 
         // guess half and full if not specified
-        if (state.videoType.sbs) {
-            if (state.videoType.full
-                    || ((!state.videoType.half) && heightWidthRatio < 1f / 3)) {
+        if (state.videoType.isSBS()) {
+            if (state.videoType.isFull()
+                    || ((!state.videoType.isHalf()) && heightWidthRatio < 1f / 3)) {
                 heightWidthRatio *= 2;
             }
 
-        } else if (state.videoType.tab) {
-            if (state.videoType.full ||
-                    ((!state.videoType.half) && heightWidthRatio > 3.3f / 4)) {
+        } else if (state.videoType.isTAB()) {
+            if (state.videoType.isFull() ||
+                    ((!state.videoType.isHalf()) && heightWidthRatio > 3.3f / 4)) {
                 heightWidthRatio /= 2;
             }
         }
@@ -531,7 +569,7 @@ public class VideoRenderer {
         }
 
         if (readyToDraw) {
-            if (state.isVR()) {
+            if (state.videoType.isVR()) {
                 mesh.draw(eye);
             } else {
                 videoScreen.draw(eye);

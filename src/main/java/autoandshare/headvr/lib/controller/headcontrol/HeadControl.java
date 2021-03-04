@@ -50,7 +50,7 @@ public class HeadControl {
             return false;
         }
 
-        if (VideoRenderer.state.isVR() && VideoRenderer.state.playing) {
+        if (VideoRenderer.state.videoType.isVR() && VideoRenderer.state.playing) {
             return false;
         }
 

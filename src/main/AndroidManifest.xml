@@ -1,9 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="autoandshare.headvr" >
+    package="autoandshare.headvr">
+
     <application>
+        <activity android:name=".activity.VideoOptions"></activity>
         <activity
-            android:name="autoandshare.headvr.activity.VideoActivity"
+            android:name=".activity.VideoActivity"
             android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation|locale"
             android:screenOrientation="landscape" />
     </application>
+
 </manifest>
