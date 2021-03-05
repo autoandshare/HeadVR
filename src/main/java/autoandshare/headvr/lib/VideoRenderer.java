@@ -36,7 +36,7 @@ public class VideoRenderer {
     }
 
     public Boolean pauseOrPlay() {
-        if (!state.videoLoaded) {
+        if (mPlayer == null) {
             return false;
         }
 
