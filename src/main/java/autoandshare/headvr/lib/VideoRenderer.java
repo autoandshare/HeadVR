@@ -239,9 +239,11 @@ public class VideoRenderer {
     private void getLayoutFromName(String name, VideoType videoType) {
         Matcher matcher = fileNamePattern3D.matcher(name);
         if (matcher.find()) {
-            if (matcher.group(2).toLowerCase().startsWith("h")) {
-                videoType.aspect = VideoType.Aspect.Half;
-            } else if (matcher.group(2).toLowerCase().startsWith("f")) {
+            if (matcher.group(2).toLowerCase().startsWith("h") &&
+                    (videoType.aspect == VideoType.Aspect.Auto)) {
+                    videoType.aspect = VideoType.Aspect.Half;
+            } else if (matcher.group(2).toLowerCase().startsWith("f") &&
+                    (videoType.aspect == VideoType.Aspect.Auto)) {
                 videoType.aspect = VideoType.Aspect.Full;
             }
             if (matcher.group(4).toLowerCase().startsWith("s")) {
@@ -514,6 +516,14 @@ public class VideoRenderer {
         updatePositionRequested = false;
     }
 
+    // guess half and full if not specified
+    private boolean isSBSFullByGuess(float heightWidthRatio) {
+        return heightWidthRatio < 1f / 3;
+    }
+    private boolean isTABFullByGuess(float heightWidthRatio) {
+        return heightWidthRatio  > 3.3f / 4;
+    }
+
     private void setScreenSize() {
         float heightWidthRatio = ((float) vtrack.height) / vtrack.width;
 
@@ -521,16 +531,14 @@ public class VideoRenderer {
             heightWidthRatio *= (float) vtrack.sarDen / vtrack.sarNum;
         }
 
-        // guess half and full if not specified
-        if (state.videoType.isSBS()) {
-            if (state.videoType.isFull()
-                    || ((!state.videoType.isHalf()) && heightWidthRatio < 1f / 3)) {
+
+        if (state.videoType.isSBS() && !state.videoType.isHalf()) {
+            if (state.videoType.isFull() || isSBSFullByGuess(heightWidthRatio)) {
                 heightWidthRatio *= 2;
             }
 
-        } else if (state.videoType.isTAB()) {
-            if (state.videoType.isFull() ||
-                    ((!state.videoType.isHalf()) && heightWidthRatio > 3.3f / 4)) {
+        } else if (state.videoType.isTAB() && !state.videoType.isHalf() ) {
+            if (state.videoType.isFull() || isTABFullByGuess(heightWidthRatio)) {
                 heightWidthRatio /= 2;
             }
         }
