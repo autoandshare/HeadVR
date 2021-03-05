@@ -107,7 +107,7 @@ public class VideoActivity extends GvrActivity implements
 
     private void updateScreenSize(int i) {
         updateSettingWithId(Setting.id.VideoSize, i);
-        videoRenderer.updateVideoPosition();
+        videoRenderer.updateVideoPositionAndOthers();
     }
 
     private void updateScreenVertical(int i) {
@@ -115,6 +115,7 @@ public class VideoActivity extends GvrActivity implements
     }
 
     private Boolean playMediaFromList(int offset) {
+        lastEventTime = System.currentTimeMillis();
         if (!playList.isReady()) {
             videoRenderer.getState().message = "Loading play list";
         } else {
@@ -178,7 +179,7 @@ public class VideoActivity extends GvrActivity implements
 
         setBrightness();
         if (videoRenderer != null) {
-            videoRenderer.updateVideoPosition();
+            videoRenderer.updateVideoPositionAndOthers();
         }
     }
 
@@ -244,12 +245,16 @@ public class VideoActivity extends GvrActivity implements
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
-        if (uiVisible) {
-            basicUI.glDraw(eye, videoRenderer.getState(), headControl,
-                    (playList != null) ? playList.currentIndex() : "");
-        }
+        try {
+            if (uiVisible) {
+                basicUI.glDraw(eye, videoRenderer.getState(), headControl,
+                        (playList != null) ? playList.currentIndex() : "");
+            }
 
-        videoRenderer.glDraw(eye);
+            videoRenderer.glDraw(eye);
+        } catch (Exception ex) {
+            Log.e(TAG, "glDraw got exception ", ex);
+        }
     }
 
     @Override
@@ -303,7 +308,7 @@ public class VideoActivity extends GvrActivity implements
         Log.d(TAG, "got key event " + event.toString());
         Event e = KeyControl.processKeyEvent(event,
                 (!Setting.DisableExtraFunction) &&
-                (videoRenderer != null) && videoRenderer.frameVisibleAndPaused());
+                        (videoRenderer != null) && videoRenderer.frameVisibleAndPaused());
         if (e.action != Actions.NoAction) {
             appendEvent(e);
             return true;
@@ -357,8 +362,10 @@ public class VideoActivity extends GvrActivity implements
 
     private void setupActionTable() {
         actionTable = new HashMap<>();
-        actionTable.put(Actions.NoAction, (e) -> {});
-        actionTable.put(Actions.PartialAction, (e) -> {});
+        actionTable.put(Actions.NoAction, (e) -> {
+        });
+        actionTable.put(Actions.PartialAction, (e) -> {
+        });
         actionTable.put(Actions.PlayOrPause, (e) -> videoRenderer.pauseOrPlay());
         actionTable.put(Actions.NextFile, (e) -> nextFile());
         actionTable.put(Actions.PrevFile, (e) -> prevFile());

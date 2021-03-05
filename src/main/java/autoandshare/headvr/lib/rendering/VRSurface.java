@@ -14,6 +14,7 @@ public class VRSurface {
                      PointF topLeft, int widthPixel, int heightPixel) {
         vrTexture2D = new VRTexture2D();
         vrTexture2D.verticalFixed = true;
+        vrTexture2D.setMediaType(Mesh.MEDIA_MONOSCOPIC);
         vrTexture2D.updatePositions(
                 width, height, distance,
                 topLeft);

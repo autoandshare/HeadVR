@@ -172,10 +172,9 @@ public class VideoRenderer {
     }
 
     public Boolean toggleForce2D() {
-        if ((this.mw != null) && !state.videoType.isMono()) {
+        if ((this.mw != null) && (state.videoType != null) && !state.videoType.isMono()) {
             state.force2D = !state.force2D;
             videoProperties.setForce2D(propertyKey, state.force2D);
-            updatePositionRequested = true;
             state.message = (state.force2D ? "Enable" : "Disable") + "  Force2D";
         }
 
@@ -214,12 +213,8 @@ public class VideoRenderer {
     private VRTexture2D videoScreen;
     private MeshExt mesh;
 
-    public static boolean drawSameImage() {
-        return state.force2D || state.videoType.isMono();
-    }
-
     public static boolean useRightTexture(int eyeType) {
-        return VideoRenderer.drawSameImage() || (eyeType == Eye.Type.RIGHT);
+        return eyeType == Eye.Type.RIGHT || VideoRenderer.state.force2D;
     }
 
     public static float getCurrentEyeDistance() {
@@ -241,7 +236,7 @@ public class VideoRenderer {
         if (matcher.find()) {
             if (matcher.group(2).toLowerCase().startsWith("h") &&
                     (videoType.aspect == VideoType.Aspect.Auto)) {
-                    videoType.aspect = VideoType.Aspect.Half;
+                videoType.aspect = VideoType.Aspect.Half;
             } else if (matcher.group(2).toLowerCase().startsWith("f") &&
                     (videoType.aspect == VideoType.Aspect.Auto)) {
                 videoType.aspect = VideoType.Aspect.Full;
@@ -320,16 +315,18 @@ public class VideoRenderer {
         }
         return null;
     }
+
     private String[] getAudioKeywords() {
         return getLangKeywords(Setting.id.AudioLanguageKeywords);
     }
+
     private String[] getSubtitleKeyword() {
         return getLangKeywords(Setting.id.SubtitleLanguageKeywords);
     }
 
     private void setTrack(MediaPlayer.TrackDescription[] tracks, String[] keywords,
-                         int pref,
-                         VideoActivity.Consumer<Integer> setFunc) {
+                          int pref,
+                          VideoActivity.Consumer<Integer> setFunc) {
 
         if (tracks == null || keywords == null || keywords.length == 0) {
             return;
@@ -488,7 +485,7 @@ public class VideoRenderer {
         state.message = null;
     }
 
-    public void updateVideoPosition() {
+    public void updateVideoPositionAndOthers() {
         if (framesCount == 0) {
             return;
         }
@@ -520,8 +517,9 @@ public class VideoRenderer {
     private boolean isSBSFullByGuess(float heightWidthRatio) {
         return heightWidthRatio < 1f / 3;
     }
+
     private boolean isTABFullByGuess(float heightWidthRatio) {
-        return heightWidthRatio  > 3.3f / 4;
+        return heightWidthRatio > 3.3f / 4;
     }
 
     private void setScreenSize() {
@@ -537,7 +535,7 @@ public class VideoRenderer {
                 heightWidthRatio *= 2;
             }
 
-        } else if (state.videoType.isTAB() && !state.videoType.isHalf() ) {
+        } else if (state.videoType.isTAB() && !state.videoType.isHalf()) {
             if (state.videoType.isFull() || isTABFullByGuess(heightWidthRatio)) {
                 heightWidthRatio /= 2;
             }
@@ -585,7 +583,7 @@ public class VideoRenderer {
             restartIfNeeded();
         }
         if (updatePositionRequested) {
-            updateVideoPosition();
+            updateVideoPositionAndOthers();
         }
     }
 
