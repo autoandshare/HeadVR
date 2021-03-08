@@ -184,7 +184,7 @@ public class VRTexture2D {
     private float[] getMVP(Eye eye) {
 
         // use different distance for mono and stereo content
-        float eyeDistance = VideoRenderer.getCurrentEyeDistance();
+        float eyeDistance = VideoRenderer.getCurrentEyeDistance(mediaType);
 
         Matrix.setIdentityM(mvp, 0);
 

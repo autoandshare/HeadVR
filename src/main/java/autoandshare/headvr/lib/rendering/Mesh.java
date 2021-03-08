@@ -309,6 +309,7 @@ public class Mesh {
     private float[] mvp = new float[16];
     private static final float Z_NEAR = 0.1f;
     private static final float Z_FAR = 100.0f;
+    protected int mediaType;
 
     private float[] getMVP(Eye eye) {
         float[] eyeView = eye.getEyeView();
@@ -318,7 +319,7 @@ public class Mesh {
         }
 
         // use different distance for mono and stereo content
-        float eyeDistance = VideoRenderer.getCurrentEyeDistance();
+        float eyeDistance = VideoRenderer.getCurrentEyeDistance(mediaType);
 
         float[] rotate = new float[16];
         Matrix.setRotateM(rotate, 0,

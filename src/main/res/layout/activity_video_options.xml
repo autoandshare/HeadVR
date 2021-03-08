@@ -26,6 +26,23 @@
                 android:layout_margin="10dp"
                 android:orientation="vertical">
 
+                <Switch
+                    android:id="@+id/force2DSwitch"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Force2D" />
+
+                <TextView
+                    android:id="@+id/textViewEyeDistance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="EyeDistance" />
+
+                <SeekBar
+                    android:id="@+id/seekBarEyeDistance"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

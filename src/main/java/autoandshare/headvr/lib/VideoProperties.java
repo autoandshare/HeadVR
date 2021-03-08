@@ -4,6 +4,8 @@ import android.content.SharedPreferences;
 
 import com.tencent.mmkv.MMKV;
 
+import java.util.Set;
+
 public class VideoProperties {
     private static MMKV prefPostion = MMKV.mmkvWithID("VideoProperties-Position");
     private static MMKV prefForce2D = MMKV.mmkvWithID("VideoProperties-Force2D");
@@ -12,6 +14,18 @@ public class VideoProperties {
     private static MMKV prefVideoTypeAspect = MMKV.mmkvWithID("VideoProperties-VideoTypeAspect");
     private static MMKV prefAudio = MMKV.mmkvWithID("VideoProperties-Audio");
     private static MMKV prefSubtitle = MMKV.mmkvWithID("VideoProperties-Subtitle");
+    private static MMKV prefEyeDistance = MMKV.mmkvWithID("VideoProperties-EyeDistance");
+
+    public static float getVideoEyeDistanceFloat(String key) {
+        return Setting.Instance.getFloatValue(Setting.id.EyeDistance,
+                getVideoEyeDistance(key));
+    }
+    public static int getVideoEyeDistance(String key) {
+        return prefEyeDistance.getInt(key, Setting.Instance.get(Setting.id.EyeDistance));
+    }
+    public static void setVideoEyeDistance(String key, int val) {
+        prefEyeDistance.putInt(key, val);
+    }
 
     public static int TrackAuto = -100;
 

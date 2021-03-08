@@ -101,7 +101,12 @@ public class VideoActivity extends GvrActivity implements
     }
 
     private Boolean updateEyeDistance(int i) {
-        updateSettingWithId(Setting.id.EyeDistance, i);
+        if (videoRenderer != null) {
+            int newVal = videoRenderer.updateVideoEyeDistance(i);
+            videoRenderer.getState().message = "setting video eye distance " +
+                    (VideoRenderer.is2DContent() ? "(default) " : "for this video ") +
+                    "to " + newVal;
+        }
         return true;
     }
 
@@ -373,8 +378,8 @@ public class VideoActivity extends GvrActivity implements
         actionTable.put(Actions.ContinueSeek, (e) -> videoRenderer.continueSeek(e.sender));
         actionTable.put(Actions.CancelSeek, (e) -> videoRenderer.cancelSeek(e.sender));
         actionTable.put(Actions.ConfirmSeek, (e) -> videoRenderer.confirmSeek(e.sender));
-        actionTable.put(Actions.IncreaseEyeDistance, (e) -> updateEyeDistance(3));
-        actionTable.put(Actions.DecreaseEyeDistance, (e) -> updateEyeDistance(-3));
+        actionTable.put(Actions.IncreaseEyeDistance, (e) -> updateEyeDistance(1));
+        actionTable.put(Actions.DecreaseEyeDistance, (e) -> updateEyeDistance(-1));
         actionTable.put(Actions.Force2D, (e) -> videoRenderer.toggleForce2D());
         actionTable.put(Actions.Recenter, (e) -> recenter());
         actionTable.put(Actions.Back, (e) -> returnHome());

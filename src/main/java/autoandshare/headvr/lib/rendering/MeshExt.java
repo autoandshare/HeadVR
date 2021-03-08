@@ -41,6 +41,7 @@ public class MeshExt extends Mesh {
     }
 
     public void setMediaType(boolean vr180, int mediaFormat) {
+        mediaType = mediaFormat;
         if (vr180) {
             this.vertexBuffer = vertexBuffer180[mediaFormat];
         } else {

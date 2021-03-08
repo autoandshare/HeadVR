@@ -76,9 +76,13 @@ public class SettingFragment extends Fragment implements View.OnClickListener {
         });
         edit.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
             @Override
             public void afterTextChanged(Editable s) {
                 setting.putString(settingId, s.toString());
@@ -104,27 +108,37 @@ public class SettingFragment extends Fragment implements View.OnClickListener {
     }
 
     private void initSeekBars(View view) {
-        initSeekBars(view, R.id.seekBarBrightness, Setting.id.Brightness, R.id.textViewBrightness);
-        initSeekBars(view, R.id.seekBarEyeDistance, Setting.id.EyeDistance, R.id.textViewEyeDistance);
-        initSeekBars(view, R.id.seekBarVerticalDistance, Setting.id.VerticalDistance, R.id.textViewVerticalDistance);
-        initSeekBars(view, R.id.seekBarVideoSize, Setting.id.VideoSize, R.id.textViewVideoSize);
-        initSeekBars(view, R.id.seekBarSensitivity, Setting.id.MotionSensitivity, R.id.textViewSensitivity);
+        initSeekBar(view, R.id.seekBarBrightness, Setting.id.Brightness, R.id.textViewBrightness);
+        initSeekBar(view, R.id.seekBarEyeDistance, Setting.id.EyeDistance, R.id.textViewEyeDistance);
+        initSeekBar(view, R.id.seekBarVerticalDistance, Setting.id.VerticalDistance, R.id.textViewVerticalDistance);
+        initSeekBar(view, R.id.seekBarVideoSize, Setting.id.VideoSize, R.id.textViewVideoSize);
+        initSeekBar(view, R.id.seekBarSensitivity, Setting.id.MotionSensitivity, R.id.textViewSensitivity);
     }
 
-    void initSeekBars(View view, int id, Setting.id propertyName, int textId) {
+    private void initSeekBar(View view, int id, Setting.id propertyName, int textId) {
+        initSeekBar(view, id, propertyName, textId,
+                Setting.Instance.get(propertyName),
+                (x) -> Setting.Instance.set(propertyName, x),
+                propertyName != Setting.id.EyeDistance ? "%s (%d)" : "%s (default) (%d)");
+    }
+
+    public static void initSeekBar(View view, int id, Setting.id propertyName, int textId,
+                                   int currentVal,
+                                   VideoActivity.Consumer<Integer> setValue,
+                                   String formatString) {
         SeekBar seekBar = view.findViewById(id);
         TextView textView = view.findViewById(textId);
 
-        seekBar.setMax(setting.getMax(propertyName) - setting.getMin(propertyName));
+        seekBar.setMax(Setting.Instance.getMax(propertyName) - Setting.Instance.getMin(propertyName));
 
-        seekBar.setProgress(setting.get(propertyName) - setting.getMin(propertyName));
-        textView.setText(String.format("%s (%d)", setting.getDescription(propertyName), setting.get(propertyName)));
+        seekBar.setProgress(currentVal - Setting.Instance.getMin(propertyName));
+        textView.setText(String.format(formatString, Setting.Instance.getDescription(propertyName), currentVal));
 
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                int newValue = progress + setting.getMin(propertyName);
-                setting.set(propertyName, newValue);
-                textView.setText(String.format("%s (%d)", setting.getDescription(propertyName), newValue));
+                int newValue = progress + Setting.Instance.getMin(propertyName);
+                setValue.accept(newValue);
+                textView.setText(String.format(formatString, Setting.Instance.getDescription(propertyName), newValue));
             }
 
             @Override

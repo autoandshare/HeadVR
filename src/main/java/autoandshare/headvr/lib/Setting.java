@@ -66,8 +66,12 @@ public class Setting {
     }
 
     private float getFloat(id name) {
+        return getFloatValue(name, get(name));
+    }
+
+    public float getFloatValue(id name, int intVal) {
         Item item = items.get(name);
-        return item.minF + (item.maxF - item.minF) * (get(name) - item.min) / (item.max - item.min);
+        return item.minF + (item.maxF - item.minF) * (intVal - item.min) / (item.max - item.min);
     }
 
     private SharedPreferences pref;

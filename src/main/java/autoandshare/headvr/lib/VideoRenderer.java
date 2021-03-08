@@ -35,6 +35,32 @@ public class VideoRenderer {
         }
     }
 
+    public static void setVideoEyeDistance(String propertyKey, int newVal) {
+        if (state.force2D || state.videoType.isMono()) {
+            Setting.Instance.set(Setting.id.EyeDistance, newVal);
+        } else {
+            VideoProperties.setVideoEyeDistance(propertyKey, newVal);
+            state.videoEyeDistance = VideoProperties.getVideoEyeDistanceFloat(propertyKey);
+        }
+    }
+
+    public static boolean is2DContent() {
+        return state.force2D || state.videoType.isMono();
+    }
+    public static int getVideoEyeDistance(String propertyKey) {
+        if (is2DContent()) {
+            return Setting.Instance.get(Setting.id.EyeDistance);
+        } else {
+            return VideoProperties.getVideoEyeDistance(propertyKey);
+        }
+    }
+
+    public int updateVideoEyeDistance(int offset) {
+        int newVal = offset + VideoProperties.getVideoEyeDistance(propertyKey);
+        setVideoEyeDistance(propertyKey, newVal);
+        return newVal;
+    }
+
     public Boolean pauseOrPlay() {
         if (mPlayer == null) {
             return false;
@@ -205,6 +231,9 @@ public class VideoRenderer {
         // optional info
         public String message;
         public String playerState;
+
+        //
+        public float videoEyeDistance;
     }
 
     private ILibVLC mILibVLC = null;
@@ -217,8 +246,9 @@ public class VideoRenderer {
         return eyeType == Eye.Type.RIGHT || VideoRenderer.state.force2D;
     }
 
-    public static float getCurrentEyeDistance() {
-        return Setting.EyeDistance;
+    public static float getCurrentEyeDistance(int mediaType) {
+        return (mediaType == Mesh.MEDIA_MONOSCOPIC || state.force2D) ?
+                Setting.EyeDistance : state.videoEyeDistance;
     }
 
     public String propertyKey;
@@ -489,6 +519,8 @@ public class VideoRenderer {
         if (framesCount == 0) {
             return;
         }
+
+        state.videoEyeDistance = videoProperties.getVideoEyeDistanceFloat(propertyKey);
 
         getVideoType();
         setAudioAndSubtitle();
