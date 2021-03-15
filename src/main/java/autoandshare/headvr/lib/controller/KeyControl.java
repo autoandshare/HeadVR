@@ -35,7 +35,8 @@ public class KeyControl {
             case KeyEvent.KEYCODE_ENTER:
             case KeyEvent.KEYCODE_SPACE:
             case KeyEvent.KEYCODE_BUTTON_START:
-                handlePlayPauseKey(event, e, Actions.PlayOrPause);
+                setActionForPressAndLongPress(event, e,
+                        Actions.PlayOrPause, Actions.Force2D);
                 break;
             case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
             case KeyEvent.KEYCODE_DPAD_UP:
