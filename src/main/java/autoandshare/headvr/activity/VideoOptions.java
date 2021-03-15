@@ -16,6 +16,7 @@ import org.videolan.libvlc.MediaPlayer;
 
 import autoandshare.headvr.R;
 import autoandshare.headvr.lib.Setting;
+import autoandshare.headvr.lib.State;
 import autoandshare.headvr.lib.VideoProperties;
 import autoandshare.headvr.lib.VideoRenderer;
 import autoandshare.headvr.lib.VideoType;
@@ -23,10 +24,9 @@ import autoandshare.headvr.lib.VideoType;
 public class VideoOptions extends AppCompatActivity {
 
     private static final String TAG = "VideoOptions";
-    public static String propertyKey;
-    public static MediaPlayer.TrackDescription[] audioTracks;
-    public static MediaPlayer.TrackDescription[] subtitleTracks;
 
+    public static State _state; // a workaround to pass object to activity
+    private State state; // capture the value here
 
     private void addRadioButton(RadioGroup radioGroup, String text, boolean checked, Runnable work) {
         RadioButton radioButton = new RadioButton(this);
@@ -69,9 +69,10 @@ public class VideoOptions extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_video_options);
-        if (propertyKey == null) {
-            return;
-        }
+
+        this.state = VideoOptions._state;
+        String propertyKey = state.propertyKey;
+
         VideoType videoType = VideoProperties.getVideoType(propertyKey);
         initEnumRadioGroup(findViewById(R.id.radio_group_video_type),
                 VideoType.Type.values(),
@@ -99,12 +100,12 @@ public class VideoOptions extends AppCompatActivity {
         );
         initTrackRadioGroup(findViewById(R.id.radio_group_audio_tracks),
                 VideoProperties.getVideoAudio(propertyKey),
-                audioTracks,
+                state.audioTracks,
                 (x) -> VideoProperties.setVideoAudio(propertyKey, x)
         );
         initTrackRadioGroup(findViewById(R.id.radio_group_subtitle_tracks),
                 VideoProperties.getVideoSubtitle(propertyKey),
-                subtitleTracks,
+                state.subtitleTracks,
                 (x) -> VideoProperties.setVideoSubtitle(propertyKey, x)
         );
         updateOptionView();
@@ -112,41 +113,32 @@ public class VideoOptions extends AppCompatActivity {
 
     private void updateOptionView() {
         Switch force2DSwitch = findViewById(R.id.force2DSwitch);
-        if (VideoRenderer.state.videoType.isMono()) {
+        if (state.videoType.isMono()) {
             force2DSwitch.setVisibility(View.GONE);
         } else {
             force2DSwitch.setVisibility(View.VISIBLE);
-            force2DSwitch.setChecked(VideoRenderer.state.force2D);
+            force2DSwitch.setChecked(state.force2D);
             force2DSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    VideoRenderer.state.force2D = isChecked;
-                    VideoProperties.setForce2D(propertyKey, isChecked);
+                    state.setForce2D(isChecked);
                 }
             });
 
         }
-        if (VideoRenderer.is2DContent()) {
+        if (state.is2DContent()) {
             ((TextView) findViewById(R.id.textViewEyeDistance)).setText("Default Eye Distance is used for 2D content");
             findViewById(R.id.seekBarEyeDistance).setVisibility(View.INVISIBLE);
         } else {
             SettingFragment.initSeekBar(findViewById(android.R.id.content),
                     R.id.seekBarEyeDistance, Setting.id.EyeDistance, R.id.textViewEyeDistance,
-                    VideoRenderer.getVideoEyeDistance(propertyKey),
-                    (x) -> VideoRenderer.setVideoEyeDistance(propertyKey, x),
+                    state.getVideoEyeDistance(),
+                    (x) -> state.setVideoEyeDistance(x),
                     "%s for this video (%d)");
         }
     }
 
     public void closeButtonPressed(View v) {
         finish();
-    }
-
-    @Override
-    protected void onPause() {
-        Log.d(TAG, "video type: " + VideoProperties.getVideoType(propertyKey));
-        Log.d(TAG, "audio track: " + VideoProperties.getVideoAudio(propertyKey));
-        Log.d(TAG, "subtitle track: " + VideoProperties.getVideoSubtitle(propertyKey));
-        super.onPause();
     }
 }

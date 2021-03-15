@@ -32,6 +32,7 @@ import autoandshare.headvr.lib.Actions;
 import autoandshare.headvr.lib.BasicUI;
 import autoandshare.headvr.lib.Event;
 import autoandshare.headvr.lib.Setting;
+import autoandshare.headvr.lib.State;
 import autoandshare.headvr.lib.VideoRenderer;
 import autoandshare.headvr.lib.browse.PlayList;
 import autoandshare.headvr.lib.controller.KeyControl;
@@ -45,12 +46,18 @@ public class VideoActivity extends GvrActivity implements
 
     private static final String TAG = "VideoActivity";
 
+    public static float Brightness;
+
+    private State state; // the state shared by all parts
+
     private BasicUI basicUI;
-
     private Setting setting;
-
-    private GvrView cardboardView;
     private PlayList playList;
+    private HeadControl headControl = new HeadControl(state);
+    private VideoRenderer videoRenderer;
+
+    private long lastEventTime = 0;
+    private boolean resetRotationMatrix = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -58,12 +65,13 @@ public class VideoActivity extends GvrActivity implements
 
         setupActionTable();
         setting = new Setting(this);
+        state = new State(setting);
 
         setContentView(R.layout.video_ui);
 
         MMKV.initialize(this);
 
-        cardboardView = findViewById(R.id.cardboard_view);
+        GvrView cardboardView = findViewById(R.id.cardboard_view);
 
         if (setting.getBoolean(Setting.id.DisableDistortionCorrection)) {
             //NoDistortionProvider.setupProvider(this);
@@ -84,12 +92,9 @@ public class VideoActivity extends GvrActivity implements
         playList = PlayList.getPlayList(uri, this);
     }
 
-    private HeadControl headControl = new HeadControl();
-
-    private boolean resetRotationMatrix = false;
 
     private Boolean recenter() {
-        if (!videoRenderer.getState().videoType.isVR()) {
+        if (!state.videoLoaded || !state.videoType.isVR()) {
             return false;
         }
         return true;
@@ -97,16 +102,18 @@ public class VideoActivity extends GvrActivity implements
 
     private void updateSettingWithId(Setting.id id, int i) {
         int newValue = setting.update(id, i);
-        videoRenderer.getState().message = "setting " + id + " to " + newValue;
+        state.message = "setting " + id + " to " + newValue;
     }
 
     private Boolean updateEyeDistance(int i) {
-        if (videoRenderer != null) {
-            int newVal = videoRenderer.updateVideoEyeDistance(i);
-            videoRenderer.getState().message = "setting video eye distance " +
-                    (VideoRenderer.is2DContent() ? "(default) " : "for this video ") +
-                    "to " + newVal;
+        if (!state.videoLoaded) {
+            return false;
         }
+
+        int newVal = state.updateVideoEyeDistance(i);
+        state.message = "setting video eye distance " +
+                (state.is2DContent() ? "(default) " : "for this video ") +
+                "to " + newVal;
         return true;
     }
 
@@ -122,13 +129,17 @@ public class VideoActivity extends GvrActivity implements
     private Boolean playMediaFromList(int offset) {
         lastEventTime = System.currentTimeMillis();
         if (!playList.isReady()) {
-            videoRenderer.getState().message = "Loading play list";
+            state.message = "Loading play list";
         } else {
             loaded = true;
 
             MediaWrapper mw = playList.next(offset);
+
+            state.currentIndex = playList.currentIndex();
+            state.count = playList.count();
+
             if (mw == null) {
-                videoRenderer.getState().errorMessage = "Invalid play list";
+                state.errorMessage = "Invalid play list";
             } else {
                 videoRenderer.playUri(mw);
             }
@@ -162,7 +173,7 @@ public class VideoActivity extends GvrActivity implements
 
     private void setBrightness() {
         WindowManager.LayoutParams layout = getWindow().getAttributes();
-        layout.screenBrightness = Setting.Brightness;
+        layout.screenBrightness = Brightness;
         getWindow().setAttributes(layout);
     }
 
@@ -216,8 +227,6 @@ public class VideoActivity extends GvrActivity implements
     public void onNewFrame(HeadTransform headTransform) {
         loadFirstVideo();
 
-        updateUIVisibility();
-
         processHeadMotion(headTransform);
 
         handleEvents();
@@ -251,9 +260,9 @@ public class VideoActivity extends GvrActivity implements
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
         try {
-            if (uiVisible) {
-                basicUI.glDraw(eye, videoRenderer.getState(), headControl,
-                        (playList != null) ? playList.currentIndex() : "");
+            if (isUiVisible()) {
+                videoRenderer.fillStateTime();
+                basicUI.glDraw(eye);
             }
 
             videoRenderer.glDraw(eye);
@@ -271,7 +280,6 @@ public class VideoActivity extends GvrActivity implements
         Log.i(TAG, "onSurfaceChanged");
     }
 
-    VideoRenderer videoRenderer;
 
     @Override
     public void onSurfaceCreated(EGLConfig config) {
@@ -283,22 +291,17 @@ public class VideoActivity extends GvrActivity implements
         TouchControl.Width = this.getWindow().getDecorView().getWidth();
         Log.i(TAG, "width " + TouchControl.Width);
 
-        basicUI = new BasicUI();
+        basicUI = new BasicUI(state);
 
-        videoRenderer = new VideoRenderer(this);
+        videoRenderer = new VideoRenderer(this, state);
     }
 
 
-    private boolean uiVisible = true;
-
-    private long lastEventTime = 0;
-
-    private void updateUIVisibility() {
-        if (!videoRenderer.normalPlaying()) {
-            uiVisible = true;
-            return;
+    private boolean isUiVisible() {
+        if (!state.normalPlaying()) {
+            return true;
         }
-        uiVisible = (System.currentTimeMillis() - lastEventTime) < 6000;
+        return (System.currentTimeMillis() - lastEventTime) < 6000;
     }
 
     @Override
@@ -380,7 +383,7 @@ public class VideoActivity extends GvrActivity implements
         actionTable.put(Actions.ConfirmSeek, (e) -> videoRenderer.confirmSeek(e.sender));
         actionTable.put(Actions.IncreaseEyeDistance, (e) -> updateEyeDistance(1));
         actionTable.put(Actions.DecreaseEyeDistance, (e) -> updateEyeDistance(-1));
-        actionTable.put(Actions.Force2D, (e) -> videoRenderer.toggleForce2D());
+        actionTable.put(Actions.Force2D, (e) -> state.toggleForce2D());
         actionTable.put(Actions.Recenter, (e) -> recenter());
         actionTable.put(Actions.Back, (e) -> returnHome());
         actionTable.put(Actions.IncreaseScreenSize, (e) -> updateScreenSize(3));
@@ -394,18 +397,11 @@ public class VideoActivity extends GvrActivity implements
     }
 
     private void startOptionWindow() {
-        if (videoRenderer == null || videoRenderer.propertyKey == null) {
+        if (!state.videoLoaded) {
             return;
         }
 
-        VideoOptions.propertyKey = videoRenderer.propertyKey;
-        VideoOptions.audioTracks = null;
-        VideoOptions.subtitleTracks = null;
-
-        if (videoRenderer.mPlayer != null) {
-            VideoOptions.audioTracks = videoRenderer.mPlayer.getAudioTracks();
-            VideoOptions.subtitleTracks = videoRenderer.mPlayer.getSpuTracks();
-        }
+        VideoOptions._state = state;
 
         startActivity(new Intent(this, VideoOptions.class));
     }

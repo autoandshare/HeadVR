@@ -26,14 +26,12 @@ import com.google.vr.sdk.base.Eye;
 
 import java.nio.FloatBuffer;
 
-import autoandshare.headvr.lib.VideoRenderer;
-
 /**
  * Utility class to generate & render spherical meshes for video or images. Use the static creation
  * methods to construct the Mesh's data. Then call the Mesh constructor on the GL thread when ready.
  * Use glDraw method to render it.
  */
-public class Mesh {
+public class Mesh extends ContentForTwoEyes {
     public static float[] recenterMatrix = null;
 
     /**
@@ -272,7 +270,7 @@ public class Mesh {
 
         // Load texture data. Eye.Type.RIGHT uses the left eye's data.
         int textureOffset =
-                VideoRenderer.useRightTexture(eyeType) ?
+                useRightTexture(eyeType) ?
                         POSITION_COORDS_PER_VERTEX + 2 : POSITION_COORDS_PER_VERTEX;
         vertexBuffer.position(textureOffset);
         GLES20.glVertexAttribPointer(
@@ -318,20 +316,8 @@ public class Mesh {
             Matrix.multiplyMM(eyeView, 0, eye.getEyeView(), 0, recenterMatrix, 0);
         }
 
-        // use different distance for mono and stereo content
-        float eyeDistance = VideoRenderer.getCurrentEyeDistance(mediaType);
-
-        float[] rotate = new float[16];
-        Matrix.setRotateM(rotate, 0,
-                (eye.getType() == 1 ? eyeDistance : -eyeDistance) * 19,
-                0.0f, 1.0f, 0.0f);
-
-        float[] rotated = new float[16];
         Matrix.multiplyMM(
-                rotated, 0, rotate, 0, eyeView, 0);
-
-        Matrix.multiplyMM(
-                mvp, 0, eye.getPerspective(Z_NEAR, Z_FAR), 0, rotated, 0);
+                mvp, 0, eye.getPerspective(Z_NEAR, Z_FAR), 0, eyeView, 0);
 
         return mvp;
     }

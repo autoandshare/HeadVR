@@ -5,13 +5,12 @@ import android.content.SharedPreferences;
 
 import java.util.HashMap;
 
+import autoandshare.headvr.activity.VideoActivity;
+import autoandshare.headvr.lib.controller.headcontrol.HeadMotion;
+import autoandshare.headvr.lib.rendering.ContentForTwoEyes;
+
 public class Setting {
     public static Setting Instance;
-    public static float Brightness;
-    public static float EyeDistance;
-    public static float VerticalDistance;
-    public static float VideoSize;
-    public static float MotionSensitivity;
 
     public String getString(id settingId) {
         return pref.getString(settingId.toString() + "S", "");
@@ -82,11 +81,11 @@ public class Setting {
     }
 
     private void loadValues() {
-        Brightness = getFloat(id.Brightness);
-        EyeDistance = getFloat(id.EyeDistance);
-        VerticalDistance = getFloat(id.VerticalDistance);
-        VideoSize = getFloat(id.VideoSize);
-        MotionSensitivity = getFloat(id.MotionSensitivity);
+        updateStaticValue(id.Brightness);
+        updateStaticValue(id.EyeDistance);
+        updateStaticValue(id.VerticalDistance);
+        updateStaticValue(id.VideoSize);
+        updateStaticValue(id.MotionSensitivity);
     }
 
     public boolean getBoolean(id name) {
@@ -136,21 +135,25 @@ public class Setting {
         editor.putInt(name.toString(), value);
         editor.apply();
 
+        updateStaticValue(name);
+    }
+
+    private void updateStaticValue(id name) {
         switch (name) {
             case Brightness:
-                Brightness = getFloat(name);
+                VideoActivity.Brightness = getFloat(name);
                 break;
             case EyeDistance:
-                EyeDistance = getFloat(name);
+                ContentForTwoEyes.EyeDistance = getFloat(name);
                 break;
             case VerticalDistance:
-                VerticalDistance = getFloat(name);
+                ContentForTwoEyes.VerticalDistance = getFloat(name);
                 break;
             case VideoSize:
-                VideoSize = getFloat(name);
+                ContentForTwoEyes.VideoSize = getFloat(name);
                 break;
             case MotionSensitivity:
-                MotionSensitivity = getFloat(name);
+                HeadMotion.MotionSensitivity = getFloat(name);
                 break;
         }
     }

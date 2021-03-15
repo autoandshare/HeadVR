@@ -12,6 +12,7 @@ import java.util.concurrent.Callable;
 import autoandshare.headvr.BuildConfig;
 import autoandshare.headvr.lib.Actions;
 import autoandshare.headvr.lib.Event;
+import autoandshare.headvr.lib.State;
 import autoandshare.headvr.lib.VideoRenderer;
 import autoandshare.headvr.lib.controller.headcontrol.HeadMotion.Motion;
 
@@ -33,24 +34,29 @@ public class HeadControl {
     private static final List<Motion> Right = Arrays.asList(Motion.RIGHT, Motion.IDLE);
     private static final List<Motion> Idle = Collections.singletonList(Motion.IDLE);
 
-    private HeadMotion headMotion = new HeadMotion();
+    private State state;
 
+    private HeadMotion headMotion = new HeadMotion();
     private ArrayList<Motion> motions = new ArrayList<>();
+
+    public HeadControl(State state) {
+        this.state = state;
+    }
 
     private boolean isSeekCancelled() {
         Motion motion = getMotions().get(0);
-        return ((VideoRenderer.state.forward && !motion.equals(Motion.LEFT))) ||
-                (((!VideoRenderer.state.forward) && !motion.equals(Motion.RIGHT)));
+        return ((state.forward && !motion.equals(Motion.LEFT))) ||
+                (((!state.forward) && !motion.equals(Motion.RIGHT)));
     }
 
     private static String controllerName = "head";
 
     private Boolean handleSeeking(Event e) {
-        if (!VideoRenderer.state.videoLoaded) {
+        if (!state.videoLoaded) {
             return false;
         }
 
-        if (VideoRenderer.state.videoType.isVR() && VideoRenderer.state.playing) {
+        if (state.videoType.isVR() && state.playing) {
             return false;
         }
 
@@ -60,7 +66,7 @@ public class HeadControl {
             return true;
         }
 
-        if (VideoRenderer.state.seeking) {
+        if (state.seeking) {
             if (Idle.equals(motions)) {
                 e.action = Actions.ContinueSeek;
             } else {
@@ -146,29 +152,51 @@ public class HeadControl {
     }
 
     public Event handleMotion(float[] upVector, float[] forwardVector) {
+        try {
+            Event e = new Event("head");
 
-        Event e = new Event("head");
+            Motion motion = headMotion.check(upVector, forwardVector);
+            if (motion == null) {
+                return e;
+            }
 
-        Motion motion = headMotion.check(upVector, forwardVector);
-        if (motion == null) {
+            motions.add(motion);
+
+            if ((motion == Motion.IDLE) && (!isPartOfAction())) {
+                motions.clear();
+                return e;
+            }
+
+            if (processMatchingMotions(e)) {
+                motions.clear();
+            }
+
             return e;
         }
-
-        motions.add(motion);
-
-        if ((motion == Motion.IDLE) && (!isPartOfAction())) {
-            motions.clear();
-            return e;
+        finally {
+            state.motions = notIdle() ? motionString(motions) : "";
         }
-
-        if (processMatchingMotions(e)) {
-            motions.clear();
-        }
-
-        return e;
     }
 
     public boolean notIdle() {
         return (motions.size() > 0) && (motions.get(0) != Motion.IDLE);
+    }
+
+    private static final HashMap<Motion, String> motionChar = new HashMap<>();
+
+    static {
+        motionChar.put(Motion.LEFT, "\u2190");
+        motionChar.put(Motion.UP, "\u2191");
+        motionChar.put(Motion.RIGHT, "\u2192");
+        motionChar.put(Motion.DOWN, "\u2193");
+        motionChar.put(Motion.IDLE, "\u2022");
+    }
+
+    private String motionString(List<Motion> motions) {
+        StringBuilder string = new StringBuilder();
+        for (int i = 0; (i < motions.size()) && (i < 5); i++) {
+            string.append(motionChar.get(motions.get(i)));
+        }
+        return string.toString();
     }
 }

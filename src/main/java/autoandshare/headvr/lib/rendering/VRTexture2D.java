@@ -10,12 +10,9 @@ import com.google.vr.sdk.base.Eye;
 
 import java.nio.FloatBuffer;
 
-import autoandshare.headvr.lib.Setting;
-import autoandshare.headvr.lib.VideoRenderer;
-
 import static autoandshare.headvr.lib.rendering.Utils.checkGlError;
 
-public class VRTexture2D {
+public class VRTexture2D extends ContentForTwoEyes {
     private static FloatBuffer[] textureBufferLeft = new FloatBuffer[3];
     private static FloatBuffer[] textureBufferRight = new FloatBuffer[3];
 
@@ -31,12 +28,6 @@ public class VRTexture2D {
     }
 
     public boolean verticalFixed = false;
-
-    private int mediaType;
-
-    public void setMediaType(int mediaType) {
-        this.mediaType = mediaType;
-    }
 
     // constructors
     public VRTexture2D() {
@@ -167,7 +158,7 @@ public class VRTexture2D {
         checkGlError();
         GLES20.glVertexAttribPointer(textureCoordsParam, 2, GLES20.GL_FLOAT,
                 false, 0,
-                VideoRenderer.useRightTexture(eye.getType()) ?
+                useRightTexture(eye.getType()) ?
                         textureBufferRight[mediaType] :
                         textureBufferLeft[mediaType]);
         checkGlError();
@@ -184,13 +175,13 @@ public class VRTexture2D {
     private float[] getMVP(Eye eye) {
 
         // use different distance for mono and stereo content
-        float eyeDistance = VideoRenderer.getCurrentEyeDistance(mediaType);
+        float eyeDistance = getEyeDistance();
 
         Matrix.setIdentityM(mvp, 0);
 
         Matrix.translateM(mvp, 0,
                 eye.getType() == 1 ? -eyeDistance : eyeDistance,
-                verticalFixed ? 0 : Setting.VerticalDistance,
+                verticalFixed ? 0 : VerticalDistance,
                 0);
 
         float CAMERA_Z = 0.01f;

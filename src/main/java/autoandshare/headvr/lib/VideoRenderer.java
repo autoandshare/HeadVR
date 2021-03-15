@@ -20,6 +20,7 @@ import java.util.regex.Pattern;
 
 import autoandshare.headvr.activity.VideoActivity;
 import autoandshare.headvr.activity.VlcHelper;
+import autoandshare.headvr.lib.rendering.ContentForTwoEyes;
 import autoandshare.headvr.lib.rendering.Mesh;
 import autoandshare.headvr.lib.rendering.MeshExt;
 import autoandshare.headvr.lib.rendering.VRTexture2D;
@@ -33,32 +34,6 @@ public class VideoRenderer {
         if (mPlayer != null) {
             mPlayer.stop();
         }
-    }
-
-    public static void setVideoEyeDistance(String propertyKey, int newVal) {
-        if (state.force2D || state.videoType.isMono()) {
-            Setting.Instance.set(Setting.id.EyeDistance, newVal);
-        } else {
-            VideoProperties.setVideoEyeDistance(propertyKey, newVal);
-            state.videoEyeDistance = VideoProperties.getVideoEyeDistanceFloat(propertyKey);
-        }
-    }
-
-    public static boolean is2DContent() {
-        return state.force2D || state.videoType.isMono();
-    }
-    public static int getVideoEyeDistance(String propertyKey) {
-        if (is2DContent()) {
-            return Setting.Instance.get(Setting.id.EyeDistance);
-        } else {
-            return VideoProperties.getVideoEyeDistance(propertyKey);
-        }
-    }
-
-    public int updateVideoEyeDistance(int offset) {
-        int newVal = offset + VideoProperties.getVideoEyeDistance(propertyKey);
-        setVideoEyeDistance(propertyKey, newVal);
-        return newVal;
     }
 
     public Boolean pauseOrPlay() {
@@ -130,7 +105,6 @@ public class VideoRenderer {
         if (state.seeking) {
             return;
         }
-        restartIfNeeded();
         state.newPosition = newPosition(offset);
         mPlayer.setPosition(state.newPosition);
     }
@@ -139,7 +113,6 @@ public class VideoRenderer {
         if (!state.seeking || (!seekController.equals(this.seekController))) {
             return;
         }
-        restartIfNeeded();
         mPlayer.setPosition(state.newPosition);
         state.seeking = false;
     }
@@ -197,145 +170,12 @@ public class VideoRenderer {
         return offset;
     }
 
-    public Boolean toggleForce2D() {
-        if ((this.mw != null) && (state.videoType != null) && !state.videoType.isMono()) {
-            state.force2D = !state.force2D;
-            videoProperties.setForce2D(propertyKey, state.force2D);
-            state.message = (state.force2D ? "Enable" : "Disable") + "  Force2D";
-        }
-
-        return true;
-    }
-
-    public static class State {
-        // player ready
-        public boolean videoLoaded;
-
-        // error info
-        public String errorMessage;
-
-        // basic info
-        public String fileName;
-        public VideoType videoType;
-        public boolean force2D;
-
-        // playing info
-        public boolean playing;
-        public boolean seeking;
-        public boolean forward;
-        public int videoLength;
-        public int currentTime;
-        public float currentPosition;
-        public float newPosition;
-
-        // optional info
-        public String message;
-        public String playerState;
-
-        //
-        public float videoEyeDistance;
-    }
-
     private ILibVLC mILibVLC = null;
-    public static State state = new State();
+    private State state;
     public MediaPlayer mPlayer;
     private VRTexture2D videoScreen;
     private MeshExt mesh;
 
-    public static boolean useRightTexture(int eyeType) {
-        return eyeType == Eye.Type.RIGHT || VideoRenderer.state.force2D;
-    }
-
-    public static float getCurrentEyeDistance(int mediaType) {
-        return (mediaType == Mesh.MEDIA_MONOSCOPIC || state.force2D) ?
-                Setting.EyeDistance : state.videoEyeDistance;
-    }
-
-    public String propertyKey;
-
-    private Pattern fileNamePattern3D =
-            Pattern.compile("([^A-Za-z0-9]|^)(half|h|full|f|)[^A-Za-z0-9]?(3d)?(sbs|ou|tab)([^A-Za-z0-9]|$)",
-                    Pattern.CASE_INSENSITIVE);
-
-    private Pattern fileNamePatternVR =
-            Pattern.compile("([^A-Za-z0-9]|^)(180|360)([^A-Za-z0-9]|$)",
-                    Pattern.CASE_INSENSITIVE);
-
-    private void getLayoutFromName(String name, VideoType videoType) {
-        Matcher matcher = fileNamePattern3D.matcher(name);
-        if (matcher.find()) {
-            if (matcher.group(2).toLowerCase().startsWith("h") &&
-                    (videoType.aspect == VideoType.Aspect.Auto)) {
-                videoType.aspect = VideoType.Aspect.Half;
-            } else if (matcher.group(2).toLowerCase().startsWith("f") &&
-                    (videoType.aspect == VideoType.Aspect.Auto)) {
-                videoType.aspect = VideoType.Aspect.Full;
-            }
-            if (matcher.group(4).toLowerCase().startsWith("s")) {
-                videoType.layout = VideoType.Layout.SideBySide;
-            } else {
-                videoType.layout = VideoType.Layout.TopAndBottom;
-            }
-        }
-
-    }
-
-    private int getMediaFormatFromLayout(VideoType.Layout layout) {
-        switch (layout) {
-            case SideBySide:
-                return Mesh.MEDIA_STEREO_LEFT_RIGHT;
-            case TopAndBottom:
-                return Mesh.MEDIA_STEREO_TOP_BOTTOM;
-        }
-        return Mesh.MEDIA_MONOSCOPIC;
-    }
-
-    private void getVRFromName(String name, VideoType videoType) {
-        Matcher matcher = fileNamePatternVR.matcher(name);
-        if (matcher.find()) {
-            videoType.type = matcher.group(2).equals("180") ?
-                    VideoType.Type.VR180 : VideoType.Type.VR360;
-        }
-    }
-
-    private void getVideoType() {
-        VideoType videoType = videoProperties.getVideoType(propertyKey);
-
-        String title = mPlayer.getMedia().getMeta(IMedia.Meta.Title);
-
-        if (videoType.layout == VideoType.Layout.Auto) {
-            getLayoutFromName(state.fileName, videoType);
-            if (videoType.layout == VideoType.Layout.Auto) {
-                getLayoutFromName(title, videoType);
-                if (videoType.layout == VideoType.Layout.Auto) {
-                    videoType.layout = VideoType.Layout.Mono;
-                }
-            }
-        }
-
-        int mediaFormat = getMediaFormatFromLayout(videoType.layout);
-        videoScreen.setMediaType(mediaFormat);
-
-        if (videoType.type == VideoType.Type.Auto) {
-            getVRFromName(state.fileName, videoType);
-            if (videoType.type == VideoType.Type.Auto) {
-                getVRFromName(title, videoType);
-                if (videoType.type == VideoType.Type.Auto) {
-                    videoType.type = VideoType.Type.Plane;
-                }
-            }
-        }
-
-        if (videoType.type != VideoType.Type.Plane) {
-            mesh.setMediaType(videoType.type == VideoType.Type.VR180, mediaFormat);
-        }
-
-        state.videoType = videoType;
-        state.force2D = videoProperties.getForce2D(propertyKey);
-        Log.d(TAG, "Video Type: " + videoType);
-    }
-
-    private VideoProperties videoProperties;
     private MediaWrapper mw;
     private Activity activity;
 
@@ -387,17 +227,16 @@ public class VideoRenderer {
 
     private void setAudioAndSubtitle() {
         setTrack(mPlayer.getAudioTracks(), getAudioKeywords(),
-                videoProperties.getVideoAudio(propertyKey),
+                state.getAudio(),
                 i -> mPlayer.setAudioTrack(i));
         setTrack(mPlayer.getSpuTracks(), getSubtitleKeyword(),
-                videoProperties.getVideoSubtitle(propertyKey),
+                state.getSubtitle(),
                 i -> mPlayer.setSpuTrack(i));
     }
 
-    public VideoRenderer(Activity activity) {
+    public VideoRenderer(Activity activity, State state) {
         this.activity = activity;
-        resetState();
-        videoProperties = new VideoProperties();
+        this.state = state;
 
         videoScreen = new VRTexture2D();
         videoScreen.getSurfaceTexture().setOnFrameAvailableListener((t) -> {
@@ -406,15 +245,24 @@ public class VideoRenderer {
             }
             framesCount += 1;
             if (framesCount == 1) {
-                updatePositionRequested = true;
+                onVideoLoaded();
             }
-            state.videoLoaded = true;
         });
 
         mesh = new MeshExt();
         mesh.glInit(videoScreen.getTextureId());
 
         mILibVLC = VlcHelper.Instance;
+    }
+
+    private void onVideoLoaded() {
+        state.title = mPlayer.getMedia().getMeta(IMedia.Meta.Title);
+        state.audioTracks = mPlayer.getAudioTracks();
+        state.subtitleTracks = mPlayer.getSpuTracks();
+        state.loadValues();
+
+        state.videoLoaded = true;
+        updatePositionRequested = true;
     }
 
     private boolean switchingVideo = true;
@@ -427,7 +275,6 @@ public class VideoRenderer {
     private ParcelFileDescriptor fd;
 
     public void playUri(MediaWrapper mw) {
-
         if (this.mw != null) {
             savePosition();
         }
@@ -437,11 +284,11 @@ public class VideoRenderer {
         updatePositionRequested = false;
         retry = 0;
         vtrack = null;
-        resetState();
+        state.reset();
 
         this.mw = mw;
         state.fileName = mw.getTitle();
-        propertyKey = PathUtil.getKey(mw.getUri());
+        state.propertyKey = PathUtil.getKey(mw.getUri());
 
         if (mPlayer != null) {
             mPlayer.getVLCVout().detachViews();
@@ -493,26 +340,8 @@ public class VideoRenderer {
 
     private void playAndSeek() {
         mPlayer.play();
-        mPlayer.setPosition(videoProperties.getPosition(propertyKey));
+        mPlayer.setPosition(state.getPosition());
         state.playing = true;
-    }
-
-    private void resetState() {
-        state.videoLoaded = false;
-        state.errorMessage = null;
-
-        state.fileName = "";
-        state.force2D = false;
-
-        state.playing = false;
-        state.seeking = false;
-        state.forward = false;
-        state.videoLength = 0;
-        state.currentTime = 0;
-        state.currentPosition = 0;
-        state.newPosition = 0;
-
-        state.message = null;
     }
 
     public void updateVideoPositionAndOthers() {
@@ -520,9 +349,11 @@ public class VideoRenderer {
             return;
         }
 
-        state.videoEyeDistance = videoProperties.getVideoEyeDistanceFloat(propertyKey);
+        state.loadValues();
 
-        getVideoType();
+        videoScreen.setMediaType(state.mediaType);
+        mesh.setMediaType(state.videoType.type == VideoType.Type.VR180, state.mediaType);
+
         setAudioAndSubtitle();
 
         if (vtrack == null) {
@@ -573,9 +404,9 @@ public class VideoRenderer {
             }
         }
 
-        float width = Setting.VideoSize;
+        float width = ContentForTwoEyes.VideoSize;
         float height = width * heightWidthRatio;
-        float minHeight = Setting.VideoSize * 9.0f / 16.0f;
+        float minHeight = ContentForTwoEyes.VideoSize * 9.0f / 16.0f;
         if (height < minHeight) {
             width = width * minHeight / height;
             height = minHeight;
@@ -619,13 +450,12 @@ public class VideoRenderer {
         }
     }
 
-    public State getState() {
+    public void fillStateTime() {
         if (state.videoLoaded) {
             state.currentTime = (int) mPlayer.getTime();
             state.currentPosition = mPlayer.getPosition();
             state.videoLength = (int) mPlayer.getLength();
         }
-        return state;
     }
 
     public void pause() {
@@ -635,14 +465,10 @@ public class VideoRenderer {
 
     public void savePosition() {
         if (state.videoLoaded) {
-            videoProperties.setPosition(propertyKey, ended ? 0 : mPlayer.getPosition());
+            state.setPosition(ended ? 0 : mPlayer.getPosition());
         }
     }
 
-    public boolean normalPlaying() {
-        return state.videoLoaded &&
-                state.playing && (!state.seeking);
-    }
 
     public boolean frameVisibleAndPaused() {
         return state.videoLoaded && readyToDraw &&

@@ -105,10 +105,11 @@ public class PlayList {
 
     }
 
-    public String currentIndex() {
-        if ((!isReady) || (list == null)) {
-            return "";
-        }
-        return "" + (currentPos + 1) + "/" + list.size() + " ";
+    public int currentIndex() {
+        return currentPos;
+    }
+
+    public int count() {
+        return list.size();
     }
 }

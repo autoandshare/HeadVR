@@ -4,25 +4,28 @@ import android.graphics.Canvas;
 import android.graphics.PointF;
 import android.view.Surface;
 
-import com.google.vr.sdk.base.Eye;
 
-public class VRSurface {
-    private VRTexture2D vrTexture2D;
+public class VRSurface extends VRTexture2D {
     private Surface surface;
 
-    public VRSurface(float width, float height, float distance,
-                     PointF topLeft, int widthPixel, int heightPixel) {
-        vrTexture2D = new VRTexture2D();
-        vrTexture2D.verticalFixed = true;
-        vrTexture2D.setMediaType(Mesh.MEDIA_MONOSCOPIC);
-        vrTexture2D.updatePositions(
+    public VRSurface() {
+    }
+
+    public void init(
+            float width,
+            float height, float distance,
+            PointF topLeft, int widthPixel, int heightPixel) {
+
+        this.verticalFixed = true;
+        this.setMediaType(Mesh.MEDIA_MONOSCOPIC);
+        this.updatePositions(
                 width, height, distance,
                 topLeft);
 
-        vrTexture2D.getSurfaceTexture().setDefaultBufferSize(
+        this.getSurfaceTexture().setDefaultBufferSize(
                 widthPixel, heightPixel);
 
-        surface = new Surface(vrTexture2D.getSurfaceTexture());
+        surface = new Surface(this.getSurfaceTexture());
     }
 
     public Canvas getCanvas() {
@@ -31,10 +34,6 @@ public class VRSurface {
 
     public void releaseCanvas(Canvas canvas) {
         surface.unlockCanvasAndPost(canvas);
-        vrTexture2D.getSurfaceTexture().updateTexImage();
-    }
-
-    public void draw(Eye eye) {
-        vrTexture2D.draw(eye);
+        this.getSurfaceTexture().updateTexImage();
     }
 }

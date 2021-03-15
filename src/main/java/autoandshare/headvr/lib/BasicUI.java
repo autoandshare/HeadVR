@@ -19,8 +19,9 @@ import autoandshare.headvr.lib.controller.headcontrol.HeadControl;
 import autoandshare.headvr.lib.controller.headcontrol.HeadMotion.Motion;
 import autoandshare.headvr.lib.rendering.VRSurface;
 
-public class BasicUI {
-    private VRSurface uiVRSurface;
+public class BasicUI extends VRSurface {
+    private State state;
+
     private TextPaint leftAlignTextPaint;
     private Paint rightAlignTextPaint;
     private Paint centerAlignTextPaint;
@@ -36,7 +37,8 @@ public class BasicUI {
     private float endX;
     private float motionsX;
 
-    public BasicUI() {
+    public BasicUI(State state) {
+        this.state = state;
 
         float widthPixel = 920;
         float heightPixel = 138;
@@ -88,47 +90,46 @@ public class BasicUI {
     private void initSurface(float widthPixel, float heightPixel) {
         float uiWidth = widthPixel / 360;
         float uiHeight = heightPixel / 360;
-        uiVRSurface = new VRSurface(
-                uiWidth, uiHeight, 3f,
+        init(uiWidth, uiHeight, 3f,
                 new PointF(-uiWidth / 2, -1.55f),
                 (int) widthPixel, (int) heightPixel);
     }
 
-    public void glDraw(Eye eye, VideoRenderer.State videoState, HeadControl control, String currentIndex) {
+    public void glDraw(Eye eye) {
         if (eye.getType() == 1) {
-            Canvas canvas = uiVRSurface.getCanvas();
+            Canvas canvas = this.getCanvas();
 
             canvas.drawColor(Color.BLACK);
 
-            drawFileNameOrMessage(canvas, videoState, currentIndex);
+            drawFileNameOrMessage(canvas);
 
             drawDatetime(canvas);
 
-            drawMotions(canvas, control);
+            drawMotions(canvas);
 
-            if (videoState.errorMessage != null) {
+            if (state.errorMessage != null) {
                 drawString(canvas, "Error", beginX, row1Y, leftAlignTextPaint);
-                drawString(canvas, videoState.errorMessage, beginX, row2Y, leftAlignTextPaint);
-            } else if (videoState.videoLoaded) {
-                drawStateIcon(canvas, videoState);
-                drawTagAndTime(canvas, videoState);
-                drawProgress(canvas, videoState);
+                drawString(canvas, state.errorMessage, beginX, row2Y, leftAlignTextPaint);
+            } else if (state.videoLoaded) {
+                drawStateIcon(canvas);
+                drawTagAndTime(canvas);
+                drawProgress(canvas);
             } else {
                 drawString(canvas,
-                        (videoState.playerState != null) ? videoState.playerState : "Loading",
+                        (state.playerState != null) ? state.playerState : "Loading",
                         beginX, row1Y, leftAlignTextPaint);
             }
 
-            uiVRSurface.releaseCanvas(canvas);
+            this.releaseCanvas(canvas);
         }
-        uiVRSurface.draw(eye);
+        this.draw(eye);
 
     }
 
-    private void drawFileNameOrMessage(Canvas canvas, VideoRenderer.State videoState, String currentIndex) {
-        String fullTxt = (videoState.message != null) ?
-                videoState.message :
-                currentIndex + videoState.fileName;
+    private void drawFileNameOrMessage(Canvas canvas) {
+        String fullTxt = (state.message != null) ?
+                state.message :
+                "" + state.currentIndex + "/" + state.count + " " + state.fileName;
 
         drawString(canvas,
                 TextUtils.ellipsize(fullTxt, leftAlignTextPaint, (endX - beginX) * 3 / 4, TextUtils.TruncateAt.END).toString(),
@@ -147,16 +148,16 @@ public class BasicUI {
     }
 
 
-    private void drawStateIcon(Canvas canvas, VideoRenderer.State videoState) {
+    private void drawStateIcon(Canvas canvas) {
 
-        if (videoState.seeking) {
-            if (videoState.forward) {
+        if (state.seeking) {
+            if (state.forward) {
                 drawStateString(canvas, "\u23E9");
             } else {
                 drawStateString(canvas, "\u23EA");
             }
         } else {
-            if (!videoState.playing) {
+            if (!state.playing) {
                 drawStateString(canvas, "\u25B6");
             } else {
                 drawStateString(canvas, "\u23F8");
@@ -175,10 +176,10 @@ public class BasicUI {
                 paint);
     }
 
-    private void drawMotions(Canvas canvas, HeadControl control) {
+    private void drawMotions(Canvas canvas) {
         String string = "";
-        if (control.notIdle()) {
-            string = motionString(control.getMotions());
+        if (state.motions != null) {
+            string = state.motions;
         }
         if (HeadControl.HeadControlLocked) {
             string = "\uD83D\uDD12" + " " + string;
@@ -186,21 +187,21 @@ public class BasicUI {
         drawString(canvas, string, motionsX, row1Y, leftAlignTextPaint);
     }
 
-    private void drawTagAndTime(Canvas canvas, VideoRenderer.State videoState) {
-        drawString(canvas, (videoState.force2D ? "2D   " : "") +
-                        formatTime(videoState.currentTime) + " / " +
-                        formatTime(videoState.videoLength),
+    private void drawTagAndTime(Canvas canvas) {
+        drawString(canvas, (state.force2D ? "2D   " : "") +
+                        formatTime(state.currentTime) + " / " +
+                        formatTime(state.videoLength),
                 endX, row1Y, rightAlignTextPaint);
     }
 
-    private void drawProgress(Canvas canvas, VideoRenderer.State videoState) {
-        float middle = beginX + (endX - beginX) * videoState.currentPosition;
+    private void drawProgress(Canvas canvas) {
+        float middle = beginX + (endX - beginX) * state.currentPosition;
 
         canvas.drawLine(beginX, row2Y, middle, row2Y, progressLinePaint1);
         canvas.drawLine(middle, row2Y, endX, row2Y, progressLinePaint2);
 
-        if (videoState.seeking) {
-            float newMiddle = beginX + (endX - beginX) * videoState.newPosition;
+        if (state.seeking) {
+            float newMiddle = beginX + (endX - beginX) * state.newPosition;
             canvas.drawLine(beginX, row2Y, newMiddle, row2Y, progressLinePaint3);
         }
     }
@@ -214,23 +215,5 @@ public class BasicUI {
         } else {
             return String.format(Locale.US, "%02d:%02d", minutes, seconds % 60);
         }
-    }
-
-    private static final HashMap<Motion, String> motionChar = new HashMap<>();
-
-    static {
-        motionChar.put(Motion.LEFT, "\u2190");
-        motionChar.put(Motion.UP, "\u2191");
-        motionChar.put(Motion.RIGHT, "\u2192");
-        motionChar.put(Motion.DOWN, "\u2193");
-        motionChar.put(Motion.IDLE, "\u2022");
-    }
-
-    private String motionString(List<Motion> motions) {
-        StringBuilder string = new StringBuilder();
-        for (int i = 0; (i < motions.size()) && (i < 5); i++) {
-            string.append(motionChar.get(motions.get(i)));
-        }
-        return string.toString();
     }
 }

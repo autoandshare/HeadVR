@@ -2,6 +2,8 @@ package autoandshare.headvr.lib.rendering;
 
 import java.nio.FloatBuffer;
 
+import autoandshare.headvr.lib.State;
+
 public class MeshExt extends Mesh {
     /**
      * A spherical mesh for video should be large enough that there are no stereo artifacts.
@@ -40,14 +42,13 @@ public class MeshExt extends Mesh {
         }
     }
 
-    public void setMediaType(boolean vr180, int mediaFormat) {
-        mediaType = mediaFormat;
+    public void setMediaType(boolean vr180, int mediaType) {
+        this.mediaType = mediaType;
         if (vr180) {
-            this.vertexBuffer = vertexBuffer180[mediaFormat];
+            this.vertexBuffer = vertexBuffer180[mediaType];
         } else {
-            this.vertexBuffer = vertexBuffer360[mediaFormat];
+            this.vertexBuffer = vertexBuffer360[mediaType];
         }
-
     }
 
     public MeshExt() {
