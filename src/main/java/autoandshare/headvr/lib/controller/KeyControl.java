@@ -52,6 +52,7 @@ public class KeyControl {
                         Actions.PlayOrPause, Actions.Force2D);
                 if (e.action == Actions.PlayOrPause) {
                     extraFunction = false;
+                    state.message = null;
                 }
                 break;
             case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
