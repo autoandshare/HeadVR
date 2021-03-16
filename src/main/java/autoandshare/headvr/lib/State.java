@@ -22,6 +22,7 @@ public class State {
 
     // player ready
     public boolean videoLoaded;
+    public boolean readyToDraw;
 
     // error info
     public String errorMessage;
@@ -116,6 +117,8 @@ public class State {
 
     public void reset() {
         this.videoLoaded = false;
+        this.readyToDraw = false;
+
         this.errorMessage = null;
 
         this.fileName = "";

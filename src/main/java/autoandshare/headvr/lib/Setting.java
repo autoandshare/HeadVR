@@ -33,8 +33,6 @@ public class Setting {
         SubtitleLanguageKeywords,
     }
 
-    public static boolean DisableExtraFunction;
-
     private static class Item {
         int min;
         int max;

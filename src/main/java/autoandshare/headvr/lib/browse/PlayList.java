@@ -106,7 +106,7 @@ public class PlayList {
     }
 
     public int currentIndex() {
-        return currentPos;
+        return currentPos + 1;
     }
 
     public int count() {

@@ -3,19 +3,27 @@ package autoandshare.headvr.lib.controller;
 import android.util.Log;
 import android.view.KeyEvent;
 
-import java.util.HashMap;
 import java.util.HashSet;
 
 import autoandshare.headvr.lib.Actions;
 import autoandshare.headvr.lib.Event;
-import autoandshare.headvr.lib.Setting;
-import autoandshare.headvr.lib.VideoRenderer;
+import autoandshare.headvr.lib.State;
 
 public class KeyControl {
 
-    public static Event processKeyEvent(KeyEvent event, boolean extraFunction) {
+    private final State state;
+    private boolean extraFunction = false;
+
+    public KeyControl(State state) {
+        this.state = state;
+    }
+
+    public Event processKeyEvent(KeyEvent event) {
+
         Event e = new Event("key");
-        if (extraFunction) {
+        e.action = Actions.PartialAction;
+
+        if (extraFunction && state.readyToDraw && !state.playing) {
             extraFunction(event, e);
         } else {
             normalFunctions(event, e);
@@ -23,20 +31,28 @@ public class KeyControl {
         return e;
     }
 
-    private static void handlePlayPauseKey(KeyEvent event, Event e, Actions action) {
-        setIfFirstDown(event, e, action);
+    private void handlePlayPauseKey(KeyEvent event, Event e) {
         if (event.getAction() == KeyEvent.ACTION_UP) {
-            Setting.DisableExtraFunction = (event.getEventTime() - event.getDownTime()) < 3000;
+            e.action = Actions.PlayOrPause;
         }
-
+        if (event.getRepeatCount() == keyRepeatCountForOneSecond*3) {
+            extraFunction = state.readyToDraw && state.normalPlaying();
+            if (extraFunction) {
+                state.message = "video option control enabled";
+            }
+        }
     }
-    private static void extraFunction(KeyEvent event, Event e) {
+
+    private void extraFunction(KeyEvent event, Event e) {
         switch (event.getKeyCode()) {
             case KeyEvent.KEYCODE_ENTER:
             case KeyEvent.KEYCODE_SPACE:
             case KeyEvent.KEYCODE_BUTTON_START:
                 setActionForPressAndLongPress(event, e,
                         Actions.PlayOrPause, Actions.Force2D);
+                if (e.action == Actions.PlayOrPause) {
+                    extraFunction = false;
+                }
                 break;
             case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
             case KeyEvent.KEYCODE_DPAD_UP:
@@ -59,13 +75,14 @@ public class KeyControl {
                         Actions.DecreaseEyeDistance, Actions.DecreaseVolume);
                 break;
             default:
+                e.action = Actions.NoAction;
                 break;
         }
     }
 
-    private static HashSet<Integer> keyTracking = new HashSet<Integer>();
+    private HashSet<Integer> keyTracking = new HashSet<Integer>();
 
-    private static void setActionForPressAndLongPress(
+    private void setActionForPressAndLongPress(
             KeyEvent event, Event e, Actions pressAction, Actions longPressAction) {
         if ((event.getRepeatCount() + 1) % keyRepeatCountForOneSecond == 0) {
             keyTracking.add(event.getKeyCode());
@@ -85,12 +102,12 @@ public class KeyControl {
         }
     }
 
-    private static void normalFunctions(KeyEvent event, Event e) {
+    private void normalFunctions(KeyEvent event, Event e) {
         switch (event.getKeyCode()) {
             case KeyEvent.KEYCODE_ENTER:
             case KeyEvent.KEYCODE_SPACE:
             case KeyEvent.KEYCODE_BUTTON_START:
-                handlePlayPauseKey(event, e, Actions.PlayOrPause);
+                handlePlayPauseKey(event, e);
                 break;
             case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
             case KeyEvent.KEYCODE_DPAD_UP:
@@ -111,6 +128,7 @@ public class KeyControl {
                 e.action = handleSeekByKey(event);
                 break;
             default:
+                e.action = Actions.NoAction;
                 break;
         }
     }

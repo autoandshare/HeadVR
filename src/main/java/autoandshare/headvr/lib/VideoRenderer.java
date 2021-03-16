@@ -418,8 +418,6 @@ public class VideoRenderer {
 
     }
 
-    boolean readyToDraw = false;
-
     private boolean enoughFrames() {
         return framesCount > 10;
     }
@@ -428,11 +426,11 @@ public class VideoRenderer {
         updateStates();
 
         if (eye.getType() == 1) {
-            readyToDraw = enoughFrames();
+            state.readyToDraw = enoughFrames();
             videoScreen.getSurfaceTexture().updateTexImage();
         }
 
-        if (readyToDraw) {
+        if (state.readyToDraw) {
             if (state.videoType.isVR()) {
                 mesh.draw(eye);
             } else {
@@ -467,12 +465,6 @@ public class VideoRenderer {
         if (state.videoLoaded) {
             state.setPosition(ended ? 0 : mPlayer.getPosition());
         }
-    }
-
-
-    public boolean frameVisibleAndPaused() {
-        return state.videoLoaded && readyToDraw &&
-                (!state.playing);
     }
 
     public void onEvent(MediaPlayer.Event event) {

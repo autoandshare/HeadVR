@@ -53,7 +53,8 @@ public class VideoActivity extends GvrActivity implements
     private BasicUI basicUI;
     private Setting setting;
     private PlayList playList;
-    private HeadControl headControl = new HeadControl(state);
+    private HeadControl headControl;
+    private KeyControl keyControl;
     private VideoRenderer videoRenderer;
 
     private long lastEventTime = 0;
@@ -66,6 +67,8 @@ public class VideoActivity extends GvrActivity implements
         setupActionTable();
         setting = new Setting(this);
         state = new State(setting);
+        headControl = new HeadControl(state);
+        keyControl = new KeyControl(state);
 
         setContentView(R.layout.video_ui);
 
@@ -314,14 +317,11 @@ public class VideoActivity extends GvrActivity implements
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
         Log.d(TAG, "got key event " + event.toString());
-        Event e = KeyControl.processKeyEvent(event,
-                (!Setting.DisableExtraFunction) &&
-                        (videoRenderer != null) && videoRenderer.frameVisibleAndPaused());
+        Event e = keyControl.processKeyEvent(event);
         if (e.action != Actions.NoAction) {
             appendEvent(e);
             return true;
         }
-
         return super.dispatchKeyEvent(event);
     }
 
