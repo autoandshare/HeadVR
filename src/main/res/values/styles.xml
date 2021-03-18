@@ -16,4 +16,5 @@
         <item name="android:visibility">gone</item>
     </style>
 
+    <dimen name="alignment_marker_height">0mm</dimen>
 </resources>
