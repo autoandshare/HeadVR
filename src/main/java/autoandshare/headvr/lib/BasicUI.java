@@ -120,7 +120,8 @@ public class BasicUI extends VRSurface {
                             (state.playerState != null) ? state.playerState : "Loading",
                             beginX, row1Y, leftAlignTextPaint);
                 }
-                drawStateIcon(canvas);
+                else
+                    drawStateIcon(canvas);
             }
 
             this.releaseCanvas(canvas);
