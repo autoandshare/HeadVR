@@ -2,9 +2,14 @@ package autoandshare.headvr.activity;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.res.Configuration;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.CompoundButton;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -22,11 +27,20 @@ import autoandshare.headvr.lib.VideoRenderer;
 import autoandshare.headvr.lib.VideoType;
 
 public class VideoOptions extends AppCompatActivity {
-
     private static final String TAG = "VideoOptions";
 
     public static State _state; // a workaround to pass object to activity
     private State state; // capture the value here
+
+    private void setFontSize() {
+        Configuration configuration = this.getResources().getConfiguration();
+        configuration.fontScale = 0.8f;
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
+        WindowManager wm = (WindowManager) getSystemService(WINDOW_SERVICE);
+        wm.getDefaultDisplay().getMetrics(metrics);
+        metrics.scaledDensity = configuration.fontScale * metrics.density;
+        getBaseContext().getResources().updateConfiguration(configuration, metrics);
+    }
 
     private void addRadioButton(RadioGroup radioGroup, String text, boolean checked, Runnable work) {
         RadioButton radioButton = new RadioButton(this);
@@ -68,6 +82,8 @@ public class VideoOptions extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setFontSize();
+
         setContentView(R.layout.activity_video_options);
 
         this.state = VideoOptions._state;
