@@ -115,9 +115,12 @@ public class BasicUI extends VRSurface {
                 drawTagAndTime(canvas);
                 drawProgress(canvas);
             } else {
-                drawString(canvas,
-                        (state.playerState != null) ? state.playerState : "Loading",
-                        beginX, row1Y, leftAlignTextPaint);
+                if (state.playing) {
+                    drawString(canvas,
+                            (state.playerState != null) ? state.playerState : "Loading",
+                            beginX, row1Y, leftAlignTextPaint);
+                }
+                drawStateIcon(canvas);
             }
 
             this.releaseCanvas(canvas);
