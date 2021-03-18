@@ -31,6 +31,7 @@ import autoandshare.headvr.R;
 import autoandshare.headvr.lib.Actions;
 import autoandshare.headvr.lib.BasicUI;
 import autoandshare.headvr.lib.Event;
+import autoandshare.headvr.lib.NoDistortionProvider;
 import autoandshare.headvr.lib.Setting;
 import autoandshare.headvr.lib.State;
 import autoandshare.headvr.lib.VideoRenderer;
@@ -66,6 +67,10 @@ public class VideoActivity extends GvrActivity implements
 
         setupActionTable();
         setting = new Setting(this);
+        if (setting.getBoolean(Setting.id.DisableDistortionCorrection)) {
+            NoDistortionProvider.setupProvider(this);
+        }
+
         state = new State(setting);
         headControl = new HeadControl(state);
         keyControl = new KeyControl(state);
@@ -75,11 +80,6 @@ public class VideoActivity extends GvrActivity implements
         MMKV.initialize(this);
 
         GvrView cardboardView = findViewById(R.id.cardboard_view);
-
-        if (setting.getBoolean(Setting.id.DisableDistortionCorrection)) {
-            //NoDistortionProvider.setupProvider(this);
-            cardboardView.setDistortionCorrectionEnabled(false);
-        }
 
         cardboardView.setRenderer(this);
         this.setGvrView(cardboardView);
