@@ -67,7 +67,7 @@ public class VideoActivity extends GvrActivity implements
 
         setupActionTable();
         setting = new Setting(this);
-        if (setting.getBoolean(Setting.id.DisableDistortionCorrection)) {
+        if (!setting.getBoolean(Setting.id.EnableDistortionCorrection)) {
             NoDistortionProvider.setupProvider(this);
         }
 

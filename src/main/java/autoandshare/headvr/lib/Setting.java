@@ -27,7 +27,7 @@ public class Setting {
         VerticalDistance,
         VideoSize,
         MotionSensitivity,
-        DisableDistortionCorrection,
+        EnableDistortionCorrection,
         HeadControl,
         AudioLanguageKeywords,
         SubtitleLanguageKeywords,

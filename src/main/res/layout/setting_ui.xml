@@ -107,7 +107,7 @@
             android:id="@+id/distortionCorrectionSwitch"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Disable Distortion Correction" />
+            android:text="Enable Distortion Correction" />
 
         <View
             android:layout_width="match_parent"

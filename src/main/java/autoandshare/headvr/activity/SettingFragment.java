@@ -1,6 +1,5 @@
 package autoandshare.headvr.activity;
 
-import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -92,7 +91,7 @@ public class SettingFragment extends Fragment implements View.OnClickListener {
     }
 
     private void initSwitchs(View view) {
-        initSwitch(view, R.id.distortionCorrectionSwitch, Setting.id.DisableDistortionCorrection);
+        initSwitch(view, R.id.distortionCorrectionSwitch, Setting.id.EnableDistortionCorrection);
         initSwitch(view, R.id.headControlSwitch, Setting.id.HeadControl);
     }
 
