@@ -75,7 +75,7 @@ public class VideoRenderer {
     private String seekController;
 
     public void beginSeek(boolean forward, String seekController) {
-        if (state.seeking) {
+        if (!state.videoLoaded || state.seeking) {
             return;
         }
         state.seeking = true;
@@ -86,6 +86,9 @@ public class VideoRenderer {
     }
 
     public void continueSeek(String seekController) {
+        if (!state.videoLoaded) {
+            return;
+        }
         if ((!state.seeking) || (!seekController.equals(this.seekController))) {
             return;
         }
@@ -95,6 +98,9 @@ public class VideoRenderer {
     }
 
     public void cancelSeek(String seekController) {
+        if (!state.videoLoaded) {
+            return;
+        }
         if (!seekController.equals(this.seekController)) {
             return;
         }
@@ -102,6 +108,9 @@ public class VideoRenderer {
     }
 
     public void singleSeek(float offset) {
+        if (!state.videoLoaded) {
+            return;
+        }
         if (state.seeking) {
             return;
         }
@@ -110,6 +119,9 @@ public class VideoRenderer {
     }
 
     public void confirmSeek(String seekController) {
+        if (!state.videoLoaded) {
+            return;
+        }
         if (!state.seeking || (!seekController.equals(this.seekController))) {
             return;
         }
