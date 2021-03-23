@@ -11,22 +11,71 @@ tr {
 for android based on VLC. <br/><br/>
 
 <b><i>Features:</i></b><br/><p>
--- Nodding to play/pause, turning left/right to seek, ... <br/>
--- Play all video files in a folder<br/>
--- Support Local and network (SMB, FTP, ...)  resources<br/>
--- Rich settings and a Force2D mode to make video more comfortable.<br/>
+    -- Support touch control, bluetooth controller, head control <br/>
+    -- Head Control may be disabled or locked <br/>
+    -- Nodding to play/pause, turning left/right to seek, ... <br/>
+    -- Go to next/prev video in a folder without taking off headset<br/>
+    -- Support Local and network (SMB, FTP, ...) resources<br/>
+    -- Rich settings (brightness, eye distance, video position ...) <br/>
+    -- Force2D mode to make some 3D video more comfortable. In this mode, same picture will be shown to both eyes.<br/>
+    -- Video Options (sbs/tab, full/half, audio track, subtitle ...) <br/>
+    -- Automatic selection of audio track and subtitle based on language keywords in settings<br/>
 </p>
 Note:<br/>
-- Gyroscope sensor is necessary <br/>
-- 3D/VR file name should include tags like sbs, hsbs, fsbs, ou, tab, 180, 360 to indicate its format.
+- Gyroscope sensor is necessary for head control <br/>
+- 3D/VR file name may include tags like sbs, hsbs, fsbs, ou, tab, 180, 360 to indicate its format. <br/>
+- To get good experience, be sure to adjust headset and eye distance setting so that inter-lens
+distance and video distance on the phone screen are the same as your interpupillary distance.
 <br/><br/>
 
-<b><i>Usage:</i></b><br/>
+<br/>
+<b><i>Usage:</i></b><br/><br/>
+<p>Touch Control:</p>
+<table cellpadding="5">
+    <tbody>
+    <tr>
+        <td>Play/Pause</td><td/>
+        <td>- Touch Right 2/3 of the screen</td><td/>
+    </tr>
+    <tr>
+        <td>Forward/Rewind</td><td/>
+        <td>- Swipe Right/Left</td><td/>
+    </tr>
+    <tr>
+        <td>Next/Prev Video</td><td/>
+        <td>- Swipe Up/Down</td><td/>
+    </tr>
+    <tr>
+        <td>Video Options</td><td/>
+        <td>- Touch Left 1/3 of the screen</td><td/>
+    </tr>
+    </tbody>
+</table>
+
+<p>Bluetooth Controller:</p>
+<table cellpadding="5">
+    <tbody>
+    <tr>
+        <td>Play/Pause</td><td/>
+        <td>- Center Key</td>
+    </tr>
+    <tr>
+        <td>Forward/Rewind</td><td/>
+        <td>- Right/Left Key</td>
+    </tr>
+    <tr>
+        <td>Next/Prev Video</td><td/>
+        <td>- Down/Up Key</td>
+    </tr>
+    </tbody>
+</table>
+
+<br/>
+Head Control:
 <p>There are 5 basic head motions: Up, Down, Left, Right, Hold still. Each function is
 a combination of these motions.</p>
 
-<p>Basic functions:</p>
-<table>
+<table cellpadding="5">
     <tbody>
     <tr>
         <td>Play/Pause</td>
@@ -49,52 +98,29 @@ a combination of these motions.</p>
         <td>- Up, Down, Left, Right</td>
     </tr>
     <tr>
+        <td>Lock Head Control</td>
+        <td>- Up, Right, Left, Down</td>
+    </tr>
+    <tr>
         <td>Recenter 360/180 Video</td>
         <td>- Left, Right, Left, Right</td>
     </tr>
-    </tbody>
-</table>
-Note:<br/>
-Seeking is only enabled for 360/180 video when it is paused.
-<br/>
-<p>&nbsp;</p>
-<p>Change settings:</p>
-<p>Eye-to-Eye distance can be adjusted inside player.</p>
-<table>
-    <tbody>
-    <tr>
-        <td>Increase Eye-to-Eye distance</td>
-        <td>- Right, Down, Left, Up</td>
-    </tr>
-    <tr>
-        <td>Decrease Eye-to-Eye distance</td>
-        <td>- Left, Down, Right, Up</td>
-    </tr>
-    </tbody>
-</table>
-<p>&nbsp;</p>
-<p>Force2D mode:</p>
-<p>A special mode - Force2D can be enabled if a 3D video is too stressful for eyes.
-    In this mode, same picture will be shown to both eyes.</p>
-
-<table>
-    <tbody>
     <tr>
         <td>Toggle Force2D mode</td>
         <td>- Right, Left, Right, Left</td>
     </tr>
     </tbody>
 </table>
+<br/>
+
+
+Note:<br/>
+Seeking is only enabled for 360/180 video when it is paused.
+
 <p>&nbsp;</p>
-<p>Other functions:</p>
-<table>
-    <tbody>
-    <tr>
-        <td>Exit Program</td>
-        <td>- Up, Left, Right, Down</td>
-    </tr>
-    </tbody>
-</table>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
 
 <p>&nbsp;</p>
 <p>&nbsp;</p>
