@@ -216,9 +216,12 @@ public class VideoActivity extends GvrActivity implements
 
     @Override
     public void onDestroy() {
-        videoRenderer.stop();
         super.onDestroy();
         Log.i(TAG, "onDestroy()");
+
+        if (videoRenderer != null) {
+            videoRenderer.stop();
+        }
     }
 
     @Override
