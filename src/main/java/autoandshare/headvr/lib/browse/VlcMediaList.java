@@ -69,8 +69,10 @@ public class VlcMediaList implements PlayList.ListSource {
                     expand(sub_m, list);
                 } else {
                     MediaWrapper mw = MLServiceLocator.getAbstractMediaWrapper(sub_m);
-                    if (mw != null && mw.getType() == MediaWrapper.TYPE_VIDEO) {
-                        list.add(mw);
+                    if (mw != null) {
+                        if ((mw.getType() == MediaWrapper.TYPE_VIDEO) || mw.getUri().getScheme().startsWith("http")) {
+                            list.add(mw);
+                        }
                     }
                     sub_m.release();
                 }

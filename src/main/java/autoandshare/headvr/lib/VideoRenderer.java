@@ -286,6 +286,14 @@ public class VideoRenderer {
 
     private ParcelFileDescriptor fd;
 
+    private boolean isLocalHost(Uri uri) {
+        String host = uri.getHost().toLowerCase();
+        return host.equals("localhost") || host.equals("127.0.0.1");
+    }
+    private boolean isProbablyStreamingService(Uri uri) {
+        return  uri.getScheme().toLowerCase().startsWith("http") && (!isLocalHost(uri));
+    }
+
     public void playUri(MediaWrapper mw) {
         if (this.mw != null) {
             savePosition();
@@ -324,7 +332,7 @@ public class VideoRenderer {
         vlcVout.setVideoSurface(videoScreen.getSurfaceTexture());
         vlcVout.attachViews();
 
-        Media m;
+        IMedia m;
         Uri uri = mw.getUri();
         if (uri.getScheme().equals("content")) {
             try {
@@ -337,6 +345,15 @@ public class VideoRenderer {
             }
         } else {
             m = new Media(mILibVLC, uri);
+            if (isProbablyStreamingService(uri)) {
+                // youtube needs this
+                m.parse(Media.Parse.ParseNetwork);
+                if ((m.subItems() != null) && m.subItems().getCount() != 0) {
+                    IMedia subMedia = m.subItems().getMediaAt(0);
+                    m.release();
+                    m = subMedia;
+                }
+            }
         }
 
         // disable subtitle
@@ -469,7 +486,9 @@ public class VideoRenderer {
     }
 
     public void pause() {
-        mPlayer.pause();
+        if (mPlayer != null) {
+            mPlayer.pause();
+        }
         state.playing = false;
     }
 
