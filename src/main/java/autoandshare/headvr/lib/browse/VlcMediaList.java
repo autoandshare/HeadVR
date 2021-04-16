@@ -4,10 +4,12 @@ import android.net.Uri;
 import android.util.Log;
 
 import org.videolan.libvlc.Media;
+import org.videolan.libvlc.interfaces.ILibVLC;
 import org.videolan.libvlc.interfaces.IMedia;
 import org.videolan.libvlc.interfaces.IMediaList;
 import org.videolan.medialibrary.MLServiceLocator;
 import org.videolan.medialibrary.interfaces.media.MediaWrapper;
+import org.videolan.resources.VLCInstance;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,9 +25,11 @@ public class VlcMediaList implements PlayList.ListSource {
 
     private VlcHelper.VlcSelection selection;
     private String listPositionKey;
+    private ILibVLC mILibVLC;
 
     public VlcMediaList(VlcHelper.VlcSelection vlcSelection) {
         this.selection = vlcSelection;
+        mILibVLC = VLCInstance.INSTANCE.getInstance(selection.context);
     }
 
     public int getPosition() {
@@ -47,7 +51,7 @@ public class VlcMediaList implements PlayList.ListSource {
 
             listPositionKey = PathUtil.getKey(selection.mw.getUri());
 
-            Media m = new Media(VlcHelper.Instance, selection.mw.getUri());
+            Media m = new Media(mILibVLC, selection.mw.getUri());
 
             expand(m, list);
 

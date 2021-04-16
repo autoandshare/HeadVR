@@ -7,14 +7,13 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 
-import org.videolan.libvlc.interfaces.ILibVLC;
+import androidx.core.app.ActivityCompat;
+
 import org.videolan.medialibrary.MLServiceLocator;
 import org.videolan.medialibrary.interfaces.media.MediaWrapper;
 
 import java.net.URLDecoder;
 import java.util.List;
-
-import androidx.core.app.ActivityCompat;
 
 public class VlcHelper {
     private static final String[] permissions = new String[]{
@@ -46,20 +45,25 @@ public class VlcHelper {
         public List<MediaWrapper> list;
         public int position;
         public MediaWrapper mw;
+        public Context context;
 
-        public VlcSelection(String listUrl, List<MediaWrapper> list, int position, MediaWrapper mw) {
+        public VlcSelection(String listUrl, List<MediaWrapper> list, int position,
+                            MediaWrapper mw, Context context) {
             this.listUrl = listUrl;
             this.list = list;
             this.position = position;
             this.mw = mw;
+            this.context = context;
         }
     }
 
-    public static ILibVLC Instance;
     public static VlcSelection Selection;
 
-    public static void openMedia(Context context, Intent intent, ILibVLC vlc) {
+    public static void openMedia(Context context, Intent intent) {
         Uri uri = intent.getData();
+        openUri(context, uri);
+    }
+    public static void openUri(Context context, Uri uri) {
         if (uri.toString().contains("%2F")) {
             try {
                 uri = Uri.parse(URLDecoder.decode(uri.toString(), "UTF-8"));
@@ -67,21 +71,19 @@ public class VlcHelper {
             }
         }
         MediaWrapper mw = MLServiceLocator.getAbstractMediaWrapper(uri);
-        openMedia(context, mw, vlc);
+        openMedia(context, mw);
     }
 
-    public static void openMedia(Context context, MediaWrapper mw, ILibVLC vlc) {
-        Instance = vlc;
-        Selection = new VlcSelection(null, null, -1, mw);
+    public static void openMedia(Context context, MediaWrapper mw) {
+        Selection = new VlcSelection(null, null, -1, mw, context);
         startActivity(context, mw.getUri());
     }
 
-    public static void openList(String mrl, Context context, List<MediaWrapper> list, int position, ILibVLC vlc) {
+    public static void openList(String mrl, Context context, List<MediaWrapper> list, int position) {
         if (list.size() == 0) {
             return;
         }
-        Instance = vlc;
-        Selection = new VlcSelection(mrl, list, position, null);
+        Selection = new VlcSelection(mrl, list, position, null, context);
         startActivity(context, list.get(0).getUri());
     }
 

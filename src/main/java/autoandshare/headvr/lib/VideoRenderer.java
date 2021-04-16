@@ -3,25 +3,21 @@ package autoandshare.headvr.lib;
 import android.app.Activity;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
-import android.util.Log;
 
 import com.google.vr.sdk.base.Eye;
 
-import org.videolan.libvlc.interfaces.IMedia;
-import org.videolan.libvlc.interfaces.IVLCVout;
-import org.videolan.libvlc.interfaces.ILibVLC;
 import org.videolan.libvlc.Media;
 import org.videolan.libvlc.MediaPlayer;
+import org.videolan.libvlc.interfaces.ILibVLC;
+import org.videolan.libvlc.interfaces.IMedia;
+import org.videolan.libvlc.interfaces.IVLCVout;
 import org.videolan.medialibrary.interfaces.media.MediaWrapper;
+import org.videolan.resources.VLCInstance;
 
 import java.text.MessageFormat;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import autoandshare.headvr.activity.VideoActivity;
-import autoandshare.headvr.activity.VlcHelper;
 import autoandshare.headvr.lib.rendering.ContentForTwoEyes;
-import autoandshare.headvr.lib.rendering.Mesh;
 import autoandshare.headvr.lib.rendering.MeshExt;
 import autoandshare.headvr.lib.rendering.VRTexture2D;
 
@@ -264,7 +260,7 @@ public class VideoRenderer {
         mesh = new MeshExt();
         mesh.glInit(videoScreen.getTextureId());
 
-        mILibVLC = VlcHelper.Instance;
+        mILibVLC = VLCInstance.INSTANCE.getInstance(this.activity);
     }
 
     private void onVideoLoaded() {
@@ -290,8 +286,9 @@ public class VideoRenderer {
         String host = uri.getHost().toLowerCase();
         return host.equals("localhost") || host.equals("127.0.0.1");
     }
+
     private boolean isProbablyStreamingService(Uri uri) {
-        return  uri.getScheme().toLowerCase().startsWith("http") && (!isLocalHost(uri));
+        return uri.getScheme().toLowerCase().startsWith("http") && (!isLocalHost(uri));
     }
 
     public void playUri(MediaWrapper mw) {
