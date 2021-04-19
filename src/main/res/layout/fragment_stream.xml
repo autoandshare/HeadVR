@@ -4,12 +4,13 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-
     <EditText
         android:id="@+id/streamUrl"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:maxLines="2" />
+        android:maxLines="2"
+        android:hint="https://..."
+        />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -23,6 +24,12 @@
             android:text="Play" />
 
     </LinearLayout>
+
+    <Button
+        android:id="@+id/clearUrlList"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Clear History" />
 
     <ListView
         android:id="@+id/streamUrlList"

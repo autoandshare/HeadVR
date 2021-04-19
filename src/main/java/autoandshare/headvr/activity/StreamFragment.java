@@ -97,6 +97,14 @@ public class StreamFragment extends Fragment {
                 urlText.setText(listItems.get(position));
             }
         });
+
+        view.findViewById(R.id.clearUrlList).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                adapter.clear();
+            }
+        });
+
     }
 
     private void addOrReplace(String url) {
