@@ -60,8 +60,7 @@ public class StreamFragment extends Fragment {
         try {
             CharSequence text = clipboard.getPrimaryClip().getItemAt(0).getText();
             if (URLUtil.isValidUrl(text.toString())) {
-                urlText.setText(text);
-                urlText.selectAll();
+                setUrlText(text);
             }
         } catch (Exception e) {
         }
@@ -94,7 +93,7 @@ public class StreamFragment extends Fragment {
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                urlText.setText(listItems.get(position));
+                setUrlText(listItems.get(position));
             }
         });
 
@@ -105,6 +104,11 @@ public class StreamFragment extends Fragment {
             }
         });
 
+    }
+
+    private void setUrlText(CharSequence text) {
+        urlText.setText(text);
+        urlText.selectAll();
     }
 
     private void addOrReplace(String url) {
