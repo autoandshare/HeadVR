@@ -5,56 +5,78 @@ table {
 tr {
   border: solid blue 1px;
 }
+
+
 </style>
 
-<b>HeadVR</b> (https://github.com/autoandshare/HeadVR) is an open source VR video player
-for android based on VLC. <br/><br/>
+<b>HeadVR</b> (https://github.com/autoandshare/HeadVR) is an open source VR video player based on VLC.
+<br/><br/>
 
+<a href="#features"><b><i>Features</i></b></a>
+&nbsp;
+<a href="#usage"><b><i>Usage</i></b></a>
+<br/><br/>
+
+<a name="features"></a>
 <b><i>Features:</i></b><br/><p>
-    <ul>
-    <li> Support touch control, bluetooth controller, head control </li>
-    <li> Head Control may be disabled or locked </li>
-    <li> Nodding to play/pause, turning left/right to seek, ... </li>
-    <li> Go to next/prev video in a folder without taking off headset </li>
-    <li> Support Local and network (SMB, FTP, ...) resources </li>
-    <li> Rich settings (brightness, eye distance, video position ...) </li>
-    <li> Force2D mode to make some 3D video more comfortable. In this mode, same picture will be shown to both eyes. </li>
-    <li> Video Options (sbs/tab, full/half, audio track, subtitle ...) </li>
-    <li> Automatic selection of audio track and subtitle based on language keywords in settings </li>
+<ul>
+    <li> Support touch control, bluetooth controller, head control</li>
+    <li> Head Control may be disabled or locked</li>
+    <li> Nodding to play/pause, turning left/right to seek, ...</li>
+    <li> Go to next/prev video in a folder without taking off headset</li>
+    <li> Support Local and network (SMB, FTP, ...) resources</li>
+    <li> Rich settings (brightness, eye distance, video position ...)</li>
+    <li> Force2D mode to make some 3D video more comfortable. In this mode, same picture will be
+        shown to both eyes.
+    </li>
+    <li> Video Options (sbs/tab, full/half, audio track, subtitle ...)</li>
+    <li> Automatic selection of audio track and subtitle based on language keywords in settings</li>
 </ul>
 </p>
 Note:<br/>
 <ul>
-    <li> Gyroscope sensor is necessary for head control </li>
-    <li> 3D/VR file name may include tags like sbs, hsbs, fsbs, ou, tab, 180, 360 to indicate its format. </li>
-    <li> To get good experience, be sure to adjust headset and eye distance setting so that inter-lens
-        distance and video distance on the phone screen are the same as your interpupillary distance. </li>
+    <li> Gyroscope sensor is necessary for head control</li>
+    <li> 3D/VR file name may include tags like sbs, hsbs, fsbs, ou, tab, 180, 360 to indicate its
+        format.
+    </li>
+    <li> To get good experience, be sure to adjust headset and eye distance setting so that
+        inter-lens
+        distance and video distance on the phone screen are the same as your interpupillary
+        distance.
+    </li>
 </ul>
 <br/>
 <br/>
-<b><i>Usage:</i></b><br/><br/>
+
+<a name="usage"></a>
+<b><i>Usage:</i></b><br/>
 <p>Touch Control:</p>
 <table cellpadding="5">
     <tbody>
     <tr>
-        <td>Play/Pause</td><td/>
-        <td>- Touch Right 2/3 of the screen</td><td/>
+        <td>Play/Pause</td>
+        <td>-</td>
+        <td>Touch Right 2/3 of the screen</td>
     </tr>
     <tr>
-        <td>Forward/Rewind</td><td/>
-        <td>- Swipe Right/Left</td><td/>
+        <td>Forward/Rewind</td>
+        <td>-</td>
+        <td>Swipe Right/Left</td>
     </tr>
     <tr>
-        <td>Next/Prev Video</td><td/>
-        <td>- Swipe Up/Down</td><td/>
+        <td>Next/Prev Video</td>
+        <td>-</td>
+        <td>Swipe Up/Down</td>
     </tr>
     <tr>
-        <td>Video Options</td><td/>
-        <td>- Touch Left 1/3 of the screen</td><td/>
+        <td>Video Options</td>
+        <td>-</td>
+        <td>Touch Left 1/3 of the screen</td>
     </tr>
     <tr>
-        <td>Recenter</td><td/>
-        <td>- Double Click screen</td><td/>
+        <td>Recenter 360/180 Video</td>
+        <td>-</td>
+        <td>Double Click screen</td>
     </tr>
     </tbody>
 </table>
@@ -63,16 +85,19 @@ Note:<br/>
 <table cellpadding="5">
     <tbody>
     <tr>
-        <td>Play/Pause</td><td/>
-        <td>- Center Key</td>
+        <td>Play/Pause</td>
+        <td>-</td>
+        <td>Center Key</td>
     </tr>
     <tr>
-        <td>Forward/Rewind</td><td/>
-        <td>- Right/Left Key</td>
+        <td>Forward/Rewind</td>
+        <td>-</td>
+        <td>Right/Left Key</td>
     </tr>
     <tr>
-        <td>Next/Prev Video</td><td/>
-        <td>- Down/Up Key</td>
+        <td>Next/Prev Video</td>
+        <td>-</td>
+        <td>Down/Up Key</td>
     </tr>
     </tbody>
 </table>
@@ -80,41 +105,49 @@ Note:<br/>
 <br/>
 Head Control:
 <p>There are 5 basic head motions: Up, Down, Left, Right, Hold still. Each function is
-a combination of these motions.</p>
+    a combination of these motions.</p>
 
 <table cellpadding="5">
     <tbody>
     <tr>
         <td>Play/Pause</td>
-        <td>- Down, Up (Nod)</td>
+        <td>-</td>
+        <td>Down, Up (Nod)</td>
     </tr>
     <tr>
         <td>Forward</td>
-        <td>- Right, Hold still, Left (Cancel with any other action)</td>
+        <td>-</td>
+        <td>Right, Hold still, Left (Cancel with Up/Down)</td>
     </tr>
     <tr>
         <td>Rewind</td>
-        <td>- Left, Hold still, Right (Cancel with any other action)</td>
+        <td>-</td>
+        <td>Left, Hold still, Right (Cancel with Up/Down)</td>
     </tr>
     <tr>
         <td>Next Video</td>
-        <td>- Up, Down, Right, Left</td>
+        <td>-</td>
+        <td>Up, Down, Right, Left</td>
     </tr>
     <tr>
         <td>Prev Video</td>
-        <td>- Up, Down, Left, Right</td>
+        <td>-</td>
+        <td>Up, Down, Left, Right</td>
     </tr>
     <tr>
         <td>Lock Head Control</td>
-        <td>- Up, Right, Left, Down</td>
+        <td>-</td>
+        <td>Up, Right, Left, Down</td>
     </tr>
     <tr>
         <td>Recenter 360/180 Video</td>
-        <td>- Left, Right, Left, Right</td>
+        <td>-</td>
+        <td>Left, Right, Left, Right</td>
     </tr>
     <tr>
         <td>Toggle Force2D mode</td>
-        <td>- Right, Left, Right, Left</td>
+        <td>-</td>
+        <td>Right, Left, Right, Left</td>
     </tr>
     </tbody>
 </table>

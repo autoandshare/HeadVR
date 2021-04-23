@@ -25,25 +25,6 @@ public class AboutFragment extends Fragment {
 
         super.onActivityCreated(savedInstanceState);
         WebView help = getView().findViewById(R.id.help);
-        help.loadData(readAsset("help.html"), "text/html", "utf-8");
+        help.loadUrl("file:///android_asset/help.html");
     }
-
-    private String readAsset(String name) {
-        StringBuilder buf = new StringBuilder();
-
-        try (InputStream stream = getActivity().getAssets().open(name)) {
-            BufferedReader in =
-                    new BufferedReader(new InputStreamReader(stream, "UTF-8"));
-            String line;
-            while ((line = in.readLine()) != null) {
-                buf.append(line).append("\n");
-            }
-            in.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return buf.toString();
-    }
-
-
 }
