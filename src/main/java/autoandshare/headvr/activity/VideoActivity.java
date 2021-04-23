@@ -100,6 +100,7 @@ public class VideoActivity extends GvrActivity implements
         if (!state.videoLoaded || !state.videoType.isVR()) {
             return false;
         }
+        resetRotationMatrix = true;
         return true;
     }
 

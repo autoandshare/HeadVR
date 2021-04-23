@@ -19,9 +19,10 @@ public class TouchControl {
             case MotionEvent.ACTION_DOWN:
                 savedX = mv.getX();
                 savedY = mv.getY();
-                savedT = mv.getEventTime();
+                checkIfDoubleClick(mv, e);
                 break;
             case MotionEvent.ACTION_UP:
+                savedT = mv.getEventTime();
                 compareXY(mv, e);
                 break;
             default:
@@ -30,6 +31,13 @@ public class TouchControl {
 
         return e;
     }
+
+    private static void checkIfDoubleClick(MotionEvent mv, Event e) {
+        if (mv.getEventTime() - savedT < 500) {
+            e.action = Actions.Recenter;
+        }
+    }
+
     private static void compareXY(MotionEvent mv, Event e) {
         float deltaX = mv.getX() - savedX;
         float deltaY = mv.getY() - savedY;
