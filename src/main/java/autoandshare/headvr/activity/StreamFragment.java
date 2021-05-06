@@ -53,14 +53,17 @@ public class StreamFragment extends Fragment {
         initUI(getView());
     }
 
+    private String pastedUrl = null;
+
     @Override
     public void onResume() {
         super.onResume();
         ClipboardManager clipboard = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
         try {
-            CharSequence text = clipboard.getPrimaryClip().getItemAt(0).getText();
-            if (URLUtil.isValidUrl(text.toString())) {
+            String text = clipboard.getPrimaryClip().getItemAt(0).getText().toString();
+            if (URLUtil.isValidUrl(text) && !text.equals(pastedUrl)) {
                 setUrlText(text);
+                pastedUrl = text;
             }
         } catch (Exception e) {
         }
@@ -106,7 +109,7 @@ public class StreamFragment extends Fragment {
 
     }
 
-    private void setUrlText(CharSequence text) {
+    private void setUrlText(String text) {
         urlText.setText(text);
         urlText.selectAll();
     }
