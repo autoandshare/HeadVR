@@ -16,9 +16,13 @@ public class PathUtil {
         return getFilename(uri.getPath());
     }
 
+    public static boolean isFileAccessProtocol(String scheme) {
+        return "file,ftp,smb,ftps,sftp,nfs".contains(scheme.toLowerCase());
+    }
+
     public static String getKey(Uri uri) {
         // for file, name is enough
-        if ("file,ftp,smb,ftps,sftp,nfs".contains(uri.getScheme())) {
+        if (isFileAccessProtocol(uri.getScheme())) {
             return getFilename(uri);
         }
         return uri.toString();

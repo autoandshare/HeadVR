@@ -49,11 +49,14 @@ public class VlcMediaList implements PlayList.ListSource {
 
         } else if (selection.mw != null) {
 
-            listPositionKey = PathUtil.getKey(selection.mw.getUri());
+            Uri uri = selection.mw.getUri();
+            listPositionKey = PathUtil.getKey(uri);
 
-            Media m = new Media(mILibVLC, selection.mw.getUri());
-
-            expand(m, list);
+            if (PathUtil.isFileAccessProtocol(uri.getScheme())) {
+                Media m = new Media(mILibVLC, uri);
+                expand(m, list);
+                m.release();
+            }
 
             if (list.size() == 0) {
                 list.add(selection.mw);
@@ -78,12 +81,10 @@ public class VlcMediaList implements PlayList.ListSource {
                             list.add(mw);
                         }
                     }
-                    sub_m.release();
                 }
+                sub_m.release();
             }
             ml.release();
         }
-
-        m.release();
     }
 }
