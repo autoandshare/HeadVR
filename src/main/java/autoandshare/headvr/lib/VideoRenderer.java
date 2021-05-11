@@ -3,13 +3,16 @@ package autoandshare.headvr.lib;
 import android.app.Activity;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
+import android.util.Log;
 
 import com.google.vr.sdk.base.Eye;
 
+import org.jetbrains.annotations.Nullable;
 import org.videolan.libvlc.Media;
 import org.videolan.libvlc.MediaPlayer;
 import org.videolan.libvlc.interfaces.ILibVLC;
 import org.videolan.libvlc.interfaces.IMedia;
+import org.videolan.libvlc.interfaces.IMediaList;
 import org.videolan.libvlc.interfaces.IVLCVout;
 import org.videolan.medialibrary.interfaces.media.MediaWrapper;
 import org.videolan.resources.VLCInstance;
@@ -23,7 +26,7 @@ import autoandshare.headvr.lib.rendering.VRTexture2D;
 
 import static java.lang.Math.min;
 
-public class VideoRenderer {
+public class VideoRenderer implements IMedia.EventListener {
     private static final String TAG = "VideoRenderer";
 
     public void stop() {
@@ -264,7 +267,11 @@ public class VideoRenderer {
     }
 
     private void onVideoLoaded() {
-        state.title = mPlayer.getMedia().getMeta(IMedia.Meta.Title);
+
+        IMedia m = mPlayer.getMedia();
+        state.title = m.getMeta(IMedia.Meta.Title);
+        m.release();
+
         state.audioTracks = mPlayer.getAudioTracks();
         state.subtitleTracks = mPlayer.getSpuTracks();
         state.loadValues();
@@ -282,29 +289,18 @@ public class VideoRenderer {
 
     private ParcelFileDescriptor fd;
 
-    private boolean isLocalHost(Uri uri) {
-        String host = uri.getHost().toLowerCase();
-        return host.equals("localhost") || host.equals("127.0.0.1");
-    }
-
-    private boolean isProbablyStreamingService(Uri uri) {
-        return uri.getScheme().toLowerCase().startsWith("http") && (!isLocalHost(uri));
-    }
-
     public void playUri(MediaWrapper mw) {
         if (this.mw != null) {
             savePosition();
         }
-        switchingVideo = true;
-        ended = false;
-        framesCount = 0;
-        updatePositionRequested = false;
-        retry = 0;
-        vtrack = null;
-        state.reset();
+
+        resetAll();
 
         this.mw = mw;
-        state.fileName = mw.getTitle();
+        state.isFileProtocol = PathUtil.isFileAccessProtocol(mw.getUri().getScheme());
+        state.fileName = mw.getFileName();
+        state.title = mw.getTitle();
+
         state.propertyKey = PathUtil.getKey(mw.getUri());
 
         if (mPlayer != null) {
@@ -329,6 +325,26 @@ public class VideoRenderer {
         vlcVout.setVideoSurface(videoScreen.getSurfaceTexture());
         vlcVout.attachViews();
 
+        IMedia m = getiMedia(mw);
+        if (m == null) {
+            return;
+        }
+        playMedia(m);
+        m.release();
+    }
+
+    private void resetAll() {
+        switchingVideo = true;
+        ended = false;
+        framesCount = 0;
+        updatePositionRequested = false;
+        retry = 0;
+        vtrack = null;
+        state.reset();
+    }
+
+    @Nullable
+    private IMedia getiMedia(MediaWrapper mw) {
         IMedia m;
         Uri uri = mw.getUri();
         if (uri.getScheme().equals("content")) {
@@ -338,27 +354,20 @@ public class VideoRenderer {
                 m = new Media(mILibVLC, fd.getFileDescriptor());
             } catch (Exception e) {
                 state.errorMessage = e.getMessage();
-                return;
+                return null;
             }
         } else {
             m = new Media(mILibVLC, uri);
-            if (isProbablyStreamingService(uri)) {
-                // youtube needs this
-                m.parse(Media.Parse.ParseNetwork);
-                if ((m.subItems() != null) && m.subItems().getCount() != 0) {
-                    IMedia subMedia = m.subItems().getMediaAt(0);
-                    m.release();
-                    m = subMedia;
-                }
-            }
         }
+        return m;
+    }
 
+    private void playMedia(IMedia m) {
         // disable subtitle
         m.addOption(MessageFormat.format(":sub-track-id={0}", String.valueOf(Integer.MAX_VALUE)));
 
+        m.setEventListener(this);
         mPlayer.setMedia(m);
-        m.release();
-
         playAndSeek();
 
         switchingVideo = false;
@@ -518,7 +527,7 @@ public class VideoRenderer {
             case MediaPlayer.Event.Stopped:
                 state.playerState = "Stopped";
                 if ((!state.videoLoaded) && (mPlayer.getLength() == 0)) {
-                    if (retry < 3) {
+                    if (retry < 1) {
                         mPlayer.stop();
                         playAndSeek();
                         retry += 1;
@@ -540,6 +549,38 @@ public class VideoRenderer {
 
             default:
                 break;
+        }
+    }
+
+    @Override
+    public void onEvent(IMedia.Event event) {
+        Log.d(TAG, "got imedia event " + event.type);
+        if (event.type != IMedia.Event.SubItemAdded) {
+            return;
+        }
+
+        playSubItem();
+    }
+
+    private void playSubItem() {
+        IMedia m = mPlayer.getMedia();
+
+        if (m != null) {
+
+            IMediaList subItems = m.subItems();
+            if (subItems != null && subItems.getCount() > 0) {
+
+                IMedia subItem = subItems.getMediaAt(0);
+                if (subItem != null) {
+                    Log.d(TAG, "try to play sub item " + subItem.getUri());
+                    playMedia(subItem);
+                    subItem.release();
+                }
+
+                subItems.release();
+            }
+
+            m.release();
         }
     }
 }

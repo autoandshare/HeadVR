@@ -1,5 +1,6 @@
 package autoandshare.headvr.lib;
 
+import android.net.Uri;
 import android.util.Log;
 
 import com.google.vr.sdk.base.Eye;
@@ -26,6 +27,8 @@ public class State {
 
     // error info
     public String errorMessage;
+
+    public boolean isFileProtocol;
 
     // basic video info
     public String fileName;
@@ -122,6 +125,11 @@ public class State {
         this.errorMessage = null;
 
         this.fileName = "";
+
+        this.title = "";
+        this.audioTracks = null;
+        this.subtitleTracks = null;
+
         this.videoType = null;
         this.force2D = false;
 

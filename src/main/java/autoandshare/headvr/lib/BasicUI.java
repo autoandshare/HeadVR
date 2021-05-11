@@ -11,12 +11,9 @@ import com.google.vr.sdk.base.Eye;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 
 import autoandshare.headvr.lib.controller.headcontrol.HeadControl;
-import autoandshare.headvr.lib.controller.headcontrol.HeadMotion.Motion;
 import autoandshare.headvr.lib.rendering.VRSurface;
 
 public class BasicUI extends VRSurface {
@@ -130,10 +127,15 @@ public class BasicUI extends VRSurface {
 
     }
 
+    private String getFileNameOrTitle() {
+        return state.isFileProtocol ?
+                state.fileName : state.title;
+    }
+
     private void drawFileNameOrMessage(Canvas canvas) {
         String fullTxt = (state.message != null) ?
                 state.message :
-                "" + state.currentIndex + "/" + state.count + " " + state.fileName;
+                "" + state.currentIndex + "/" + state.count + " " + getFileNameOrTitle();
 
         drawString(canvas,
                 TextUtils.ellipsize(fullTxt, leftAlignTextPaint, (endX - beginX) * 3 / 4, TextUtils.TruncateAt.END).toString(),
