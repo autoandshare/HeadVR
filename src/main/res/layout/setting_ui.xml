@@ -11,7 +11,26 @@
 
         <View
             android:layout_width="match_parent"
-            android:layout_height="0dp"
+            android:layout_height="1dp"
+            android:layout_margin="10dp"
+            android:background="@android:color/darker_gray" />
+
+        <Button
+            android:id="@+id/buttonVLCSettings"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="VLC Settings" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_margin="10dp"
+            android:background="@android:color/darker_gray" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
             android:layout_margin="10dp" />
 
         <TextView
@@ -159,8 +178,12 @@
             android:id="@+id/buttonReset"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="20dp"
+            android:layout_margin="10dp"
             android:text="Reset" />
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="100dp"/>
 
     </LinearLayout>
 </ScrollView>

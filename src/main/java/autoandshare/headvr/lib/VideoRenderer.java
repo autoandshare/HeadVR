@@ -1,6 +1,7 @@
 package autoandshare.headvr.lib;
 
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
@@ -16,6 +17,8 @@ import org.videolan.libvlc.interfaces.IMediaList;
 import org.videolan.libvlc.interfaces.IVLCVout;
 import org.videolan.medialibrary.interfaces.media.MediaWrapper;
 import org.videolan.resources.VLCInstance;
+import org.videolan.resources.VLCOptions;
+import org.videolan.tools.Settings;
 
 import java.text.MessageFormat;
 
@@ -362,7 +365,20 @@ public class VideoRenderer implements IMedia.EventListener {
         return m;
     }
 
+    private void setNetworkCaching(IMedia m) {
+        SharedPreferences vlcPrefs = Settings.INSTANCE.getInstance(activity.getApplicationContext());
+        int networkCaching = vlcPrefs.getInt("network_caching_value", 0);
+        if (networkCaching > 0) {
+            m.addOption(":network-caching=" + networkCaching);
+        }
+
+    }
     private void playMedia(IMedia m) {
+        VLCOptions.INSTANCE.setMediaOptions(m, activity,
+                MediaWrapper.MEDIA_VIDEO, false);
+
+        setNetworkCaching(m);
+
         // disable subtitle
         m.addOption(MessageFormat.format(":sub-track-id={0}", String.valueOf(Integer.MAX_VALUE)));
 

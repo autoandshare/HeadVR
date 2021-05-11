@@ -1,5 +1,6 @@
 package autoandshare.headvr.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -39,6 +40,8 @@ public class SettingFragment extends Fragment implements View.OnClickListener {
 
         Button button = view.findViewById(R.id.buttonReset);
         button.setOnClickListener(this);
+
+        view.findViewById(R.id.buttonVLCSettings).setOnClickListener(this);
 
         initUI();
     }
@@ -153,8 +156,18 @@ public class SettingFragment extends Fragment implements View.OnClickListener {
 
     @Override
     public void onClick(View view) {
-        // reset values
-        setting.clear();
-        initUI();
+        if (view.getId() == R.id.buttonReset) {
+            // reset values
+            setting.clear();
+            initUI();
+        }
+        if (view.getId() == R.id.buttonVLCSettings) {
+            try {
+                startActivity(new Intent(this.getContext(),
+                        Class.forName("org.videolan.vlc.gui.preferences.PreferencesActivity")));
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }
