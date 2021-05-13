@@ -331,7 +331,7 @@ public class VideoActivity extends GvrActivity implements
 
     List<Event> events;
 
-    void appendEvent(Event e) {
+    public void appendEvent(Event e) {
         if (e == null || e.action == Actions.NoAction) {
             return;
         }

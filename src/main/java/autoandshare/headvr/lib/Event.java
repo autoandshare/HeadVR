@@ -7,7 +7,10 @@ public class Event {
     public float offset;
 
     public Event(String sender) {
-        this.action = Actions.NoAction;
+        this(sender, Actions.NoAction);
+    }
+    public Event(String sender, Actions action) {
+        this.action = action;
         this.seekForward = false;
         this.sender = sender;
         this.offset = 0;

@@ -131,12 +131,13 @@ public class VideoRenderer implements IMedia.EventListener {
         state.seeking = false;
     }
 
-    private void restartIfNeeded() {
-        if (ended) {
-            ended = false;
+    private boolean restartIfNeeded() {
+        if (!state.videoLoaded && mPlayer.getLength() != 0) {
             mPlayer.stop();
             mPlayer.play();
+            return true;
         }
+        return false;
     }
 
     private float getOffset() {
@@ -191,7 +192,7 @@ public class VideoRenderer implements IMedia.EventListener {
     private MeshExt mesh;
 
     private MediaWrapper mw;
-    private Activity activity;
+    private VideoActivity activity;
 
     private String[] getLangKeywords(Setting.id id) {
         if (Setting.Instance.getBoolean(id)) {
@@ -248,7 +249,7 @@ public class VideoRenderer implements IMedia.EventListener {
                 i -> mPlayer.setSpuTrack(i));
     }
 
-    public VideoRenderer(Activity activity, State state) {
+    public VideoRenderer(VideoActivity activity, State state) {
         this.activity = activity;
         this.state = state;
 
@@ -284,7 +285,6 @@ public class VideoRenderer implements IMedia.EventListener {
     }
 
     private boolean switchingVideo = true;
-    private boolean ended = false;
     private int framesCount = 0;
     private boolean updatePositionRequested = false;
     private int retry = 0;
@@ -338,7 +338,6 @@ public class VideoRenderer implements IMedia.EventListener {
 
     private void resetAll() {
         switchingVideo = true;
-        ended = false;
         framesCount = 0;
         updatePositionRequested = false;
         retry = 0;
@@ -491,9 +490,6 @@ public class VideoRenderer implements IMedia.EventListener {
     }
 
     private void updateStates() {
-        if (ended && (mPlayer.getLength() != 0)) {
-            restartIfNeeded();
-        }
         if (updatePositionRequested) {
             updateVideoPositionAndOthers();
         }
@@ -516,7 +512,7 @@ public class VideoRenderer implements IMedia.EventListener {
 
     public void savePosition() {
         if (state.videoLoaded) {
-            state.setPosition(ended ? 0 : mPlayer.getPosition());
+            state.setPosition(state.playerState == "Ended" ? 0 : mPlayer.getPosition());
         }
     }
 
@@ -524,8 +520,11 @@ public class VideoRenderer implements IMedia.EventListener {
 
         switch (event.type) {
             case MediaPlayer.Event.EndReached:
+                if (restartIfNeeded()) {
+                    break;
+                }
                 state.playerState = "Ended";
-                ended = true;
+                activity.appendEvent(new Event("player", Actions.NextFile));
                 break;
 
             case MediaPlayer.Event.Buffering:
