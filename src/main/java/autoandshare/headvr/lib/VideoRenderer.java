@@ -3,6 +3,8 @@ package autoandshare.headvr.lib;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
 
@@ -34,8 +36,11 @@ public class VideoRenderer implements IMedia.EventListener {
 
     public void stop() {
         if (mPlayer != null) {
+            mPlayer.setEventListener(null);  // prevent autoplay
             mPlayer.stop();
+            mPlayer.setEventListener(this::onEvent);
         }
+        state.playing = false;
     }
 
     public Boolean pauseOrPlay() {
@@ -44,25 +49,28 @@ public class VideoRenderer implements IMedia.EventListener {
         }
 
         if (state.playing) {
-            mPlayer.pause();
+            pause();
         } else {
-            if (mPlayer.getPlayerState() == Media.State.Ended) {
-                mPlayer.stop();
-            }
-            mPlayer.play();
+            play();
         }
-        state.playing = !state.playing;
-
         return true;
+    }
+
+    private void play() {
+        if (ended()) {
+            stop();
+        }
+        mPlayer.play();
+        state.playing = true;
     }
 
     private float newPosition(float current, float offset) {
         float pos = (current + offset);
-        while (pos < 0) {
-            pos += 1;
+        if (pos < 0) {
+            pos = 0;
         }
-        while (pos > 1) {
-            pos -= 1;
+        if (pos > 1) {
+            pos = 1;
         }
         return pos;
 
@@ -76,8 +84,12 @@ public class VideoRenderer implements IMedia.EventListener {
 
     private String seekController;
 
+    private boolean seekable() {
+        return state.videoLoaded && (!state.seeking) && (!ended());
+    }
+
     public void beginSeek(boolean forward, String seekController) {
-        if (!state.videoLoaded || state.seeking) {
+        if (!seekable()) {
             return;
         }
         state.seeking = true;
@@ -87,11 +99,12 @@ public class VideoRenderer implements IMedia.EventListener {
         this.seekController = seekController;
     }
 
+    private boolean seekingStartedByController(String seekController) {
+        return state.seeking && seekController.equals(this.seekController);
+    }
+
     public void continueSeek(String seekController) {
-        if (!state.videoLoaded) {
-            return;
-        }
-        if ((!state.seeking) || (!seekController.equals(this.seekController))) {
+        if (!seekingStartedByController(seekController)) {
             return;
         }
         seekCount += 1;
@@ -100,20 +113,14 @@ public class VideoRenderer implements IMedia.EventListener {
     }
 
     public void cancelSeek(String seekController) {
-        if (!state.videoLoaded) {
-            return;
-        }
-        if (!seekController.equals(this.seekController)) {
+        if (!seekingStartedByController(seekController)) {
             return;
         }
         state.seeking = false;
     }
 
     public void singleSeek(float offset) {
-        if (!state.videoLoaded) {
-            return;
-        }
-        if (state.seeking) {
+        if (!seekable()) {
             return;
         }
         state.newPosition = newPosition(offset);
@@ -131,10 +138,10 @@ public class VideoRenderer implements IMedia.EventListener {
         state.seeking = false;
     }
 
-    private boolean restartIfNeeded() {
-        if (!state.videoLoaded && mPlayer.getLength() != 0) {
-            mPlayer.stop();
-            mPlayer.play();
+    private boolean retryIfNeeded() {
+        if (!state.videoLoaded && (retry < 1)) {
+            playAndSeek();
+            retry += 1;
             return true;
         }
         return false;
@@ -389,9 +396,8 @@ public class VideoRenderer implements IMedia.EventListener {
     }
 
     private void playAndSeek() {
-        mPlayer.play();
+        play();
         mPlayer.setPosition(state.getPosition());
-        state.playing = true;
     }
 
     public void updateVideoPositionAndOthers() {
@@ -512,19 +518,20 @@ public class VideoRenderer implements IMedia.EventListener {
 
     public void savePosition() {
         if (state.videoLoaded) {
-            state.setPosition(state.playerState == "Ended" ? 0 : mPlayer.getPosition());
+            state.setPosition(ended() ? 0 : mPlayer.getPosition());
         }
     }
 
-    public void onEvent(MediaPlayer.Event event) {
+    private boolean ended() {
+        return mPlayer.getPlayerState() == Media.State.Ended;
+    }
 
+    public void onEvent(MediaPlayer.Event event) {
+        Log.d(TAG, "got media player event 0x" + Integer.toHexString(event.type));
+        Log.d(TAG, "mplayer state " + mPlayer.getPlayerState());
         switch (event.type) {
             case MediaPlayer.Event.EndReached:
-                if (restartIfNeeded()) {
-                    break;
-                }
                 state.playerState = "Ended";
-                activity.appendEvent(new Event("player", Actions.NextFile));
                 break;
 
             case MediaPlayer.Event.Buffering:
@@ -540,15 +547,13 @@ public class VideoRenderer implements IMedia.EventListener {
                 break;
 
             case MediaPlayer.Event.Stopped:
-                state.playerState = "Stopped";
-                if ((!state.videoLoaded) && (mPlayer.getLength() == 0)) {
-                    if (retry < 1) {
-                        mPlayer.stop();
-                        playAndSeek();
-                        retry += 1;
-                    } else
-                        state.playerState = "Failed to open";
+                if (retryIfNeeded()) {
+                    return;
                 }
+                state.playerState = "Stopped";
+                state.playing = false;
+                activity.showUI();
+                waitAndTryPlayNext();
                 break;
 
             case MediaPlayer.Event.Opening:
@@ -565,6 +570,41 @@ public class VideoRenderer implements IMedia.EventListener {
             default:
                 break;
         }
+    }
+
+    private Uri getCurrentMediaUri() {
+        IMedia m = mPlayer.getMedia();
+        Uri uri = m.getUri();
+        m.release();
+        return uri;
+    }
+
+    private void waitAndTryPlayNext() {
+        if (mPlayer.getPlayerState() != Media.State.Ended) {
+            Log.d(TAG, "got stop event but player state is " + mPlayer.getPlayerState());
+            return;
+        }
+
+        Uri savedUri = getCurrentMediaUri();
+        Log.d(TAG, " saved Uri: " + savedUri);
+
+        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (mPlayer.getPlayerState() !=  Media.State.Ended) {
+                    Log.d(TAG, "try to play next video but player state is " + mPlayer.getPlayerState());
+                    return;
+                }
+                Uri currentUri = getCurrentMediaUri();
+                Log.d(TAG, "saved Uri: " + savedUri + " current Uri: " + currentUri);
+                if (!savedUri.equals(currentUri)) {
+                    Log.d(TAG, "try to play next video but uri has changed");
+                    return;
+                }
+
+                activity.appendEvent(new Event("player", Actions.NextFile));
+            }
+        }, 6000);
     }
 
     @Override

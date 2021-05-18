@@ -308,7 +308,11 @@ public class VideoActivity extends GvrActivity implements
         if (!state.normalPlaying()) {
             return true;
         }
-        return (System.currentTimeMillis() - lastEventTime) < 6000;
+        return (System.currentTimeMillis() - lastEventTime) < 9000;
+    }
+
+    public void showUI() {
+        lastEventTime = System.currentTimeMillis();
     }
 
     @Override
