@@ -14,7 +14,39 @@ import java.util.List;
 
 import autoandshare.headvr.activity.VlcHelper;
 
-public class PlayList {
+public class PlayList implements IPlayList {
+    private Activity activity;
+    private Uri uri;
+
+    private List<MediaWrapper> list;
+    private String listPositionKey;
+    private int currentPos;
+    private MMKV listPosition;
+
+    public PlayList(Uri uri) {
+        this.uri = uri;
+    }
+
+    @Override
+    public void setActivity(Activity activity) {
+        this.activity = activity;
+    }
+
+    @Override
+    public String getIndexString() {
+        return list == null ?
+                "..." :
+                "[" + (currentPos + 1) + "/" + list.size() + "]";
+    }
+
+    @Override
+    public MediaWrapper getMediaAtOffset(int offset) {
+        if (list == null) {
+            initList();
+        }
+        return next(offset);
+    }
+
     public interface ListSource {
         public List<MediaWrapper> loadList();
 
@@ -34,63 +66,35 @@ public class PlayList {
         return source;
     }
 
-    private static void updatePlayList(PlayList playList, List<MediaWrapper> list, int currentPos, String listPositionKey) {
-        playList.list = list;
-        playList.currentPos = currentPos;
-        playList.listPositionKey = listPositionKey;
-        playList.loadDone();
-        playList.isReady = true;
+    private void updatePlayList(List<MediaWrapper> list, int currentPos, String listPositionKey) {
+        this.list = list;
+        this.currentPos = currentPos;
+        this.listPositionKey = listPositionKey;
+
+        listPosition = MMKV.mmkvWithID("List-Position");
+        if (currentPos < 0) {
+            this.currentPos = listPosition.getInt(listPositionKey, 0);
+        }
     }
 
-    public static PlayList getPlayList(Uri uri, Activity activity) {
-        PlayList playList = new PlayList();
-
+    private void initList() {
         ListSource source = getSource(uri, activity);
 
         if (source == null) {
             List<MediaWrapper> list = new ArrayList<>();
             list.add(MLServiceLocator.getAbstractMediaWrapper(uri));
-            updatePlayList(playList, list, 0, uri.toString());
+            updatePlayList(list, 0, uri.toString());
         } else {
-            // use thread to work around NetworkOnMainThreadException
-            new Thread(() -> {
-                updatePlayList(playList, source.loadList(), source.getPosition(), source.getPositionKey());
-            }).start();
+            updatePlayList(source.loadList(), source.getPosition(), source.getPositionKey());
         }
-        return playList;
     }
 
     public static boolean isListFile(String fileName) {
         return fileName.endsWith(".list");
     }
 
-    private List<MediaWrapper> list;
-    private String listPositionKey;
-    private int currentPos = -1;
-
-    private MMKV listPosition;
-    private boolean isReady = false;
-
-    private void loadDone() {
-        if (list == null) {
-            return;
-        }
-        if (list.size() == 0) {
-            list = null;
-            return;
-        }
-        listPosition = MMKV.mmkvWithID("List-Position");
-        if (currentPos < 0) {
-            currentPos = listPosition.getInt(listPositionKey, 0);
-        }
-    }
-
-    public boolean isReady() {
-        return isReady;
-    }
-
     public MediaWrapper next(int offset) {
-        if ((!isReady) || (list == null)) {
+        if (list == null || list.size() == 0) {
             return null;
         }
         currentPos = currentPos + offset;
@@ -103,13 +107,5 @@ public class PlayList {
 
         return list.get(currentPos);
 
-    }
-
-    public int currentIndex() {
-        return currentPos + 1;
-    }
-
-    public int count() {
-        return list.size();
     }
 }

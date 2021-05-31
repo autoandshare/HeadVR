@@ -15,6 +15,8 @@ import org.videolan.medialibrary.interfaces.media.MediaWrapper;
 import java.net.URLDecoder;
 import java.util.List;
 
+import autoandshare.headvr.lib.browse.PlayList;
+
 public class VlcHelper {
     private static final String[] permissions = new String[]{
             Manifest.permission.INTERNET,
@@ -88,6 +90,7 @@ public class VlcHelper {
     }
 
     private static void startActivity(Context context, Uri uri) {
+        VideoActivity.playListS = new PlayList(uri);
         Intent i = new Intent(context, VideoActivity.class);
         i.setData(uri);
         context.startActivity(i);

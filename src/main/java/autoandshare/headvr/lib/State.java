@@ -18,8 +18,7 @@ public class State {
     private static final String TAG = "VideoState";
 
     // list info
-    public int count;
-    public int currentIndex;
+    public String indexString;
 
     // player ready
     public boolean videoLoaded;

@@ -262,12 +262,14 @@ public class VideoRenderer implements IMedia.EventListener {
 
         videoScreen = new VRTexture2D();
         videoScreen.getSurfaceTexture().setOnFrameAvailableListener((t) -> {
-            if (switchingVideo) {
-                return;
-            }
-            framesCount += 1;
-            if (framesCount == 1) {
-                onVideoLoaded();
+            synchronized (this) {
+                if (switchingVideo) {
+                    return;
+                }
+                framesCount += 1;
+                if (framesCount == 1) {
+                    onVideoLoaded();
+                }
             }
         });
 
@@ -279,6 +281,7 @@ public class VideoRenderer implements IMedia.EventListener {
 
     private void onVideoLoaded() {
 
+        Log.d(TAG, "onVideoLoaded");
         IMedia m = mPlayer.getMedia();
         state.title = m.getMeta(IMedia.Meta.Title);
         m.release();
@@ -314,8 +317,12 @@ public class VideoRenderer implements IMedia.EventListener {
         state.propertyKey = PathUtil.getKey(mw.getUri());
 
         if (mPlayer != null) {
-            mPlayer.getVLCVout().detachViews();
-            mPlayer.release();
+            try {
+                mPlayer.setEventListener(null);
+                mPlayer.getVLCVout().detachViews();
+                mPlayer.release();
+            } catch (Exception e) {
+            }
         }
 
         if (fd != null) {
@@ -343,7 +350,7 @@ public class VideoRenderer implements IMedia.EventListener {
         m.release();
     }
 
-    private void resetAll() {
+    private synchronized void resetAll() {
         switchingVideo = true;
         framesCount = 0;
         updatePositionRequested = false;
@@ -512,6 +519,7 @@ public class VideoRenderer implements IMedia.EventListener {
     public void pause() {
         if (mPlayer != null) {
             mPlayer.pause();
+            Log.d(TAG, "pause called");
         }
         state.playing = false;
     }
@@ -527,8 +535,14 @@ public class VideoRenderer implements IMedia.EventListener {
     }
 
     public void onEvent(MediaPlayer.Event event) {
-        Log.d(TAG, "got media player event 0x" + Integer.toHexString(event.type));
-        Log.d(TAG, "mplayer state " + mPlayer.getPlayerState());
+        Log.d(TAG, "got media player event 0x" + Integer.toHexString(event.type)
+                + " mplayer state " + mPlayer.getPlayerState()
+                + " state playing " + state.playing);
+
+        if (mPlayer.getPlayerState() == IMedia.State.Playing && state.playing == false) {
+            pause();
+        }
+
         switch (event.type) {
             case MediaPlayer.Event.EndReached:
                 state.playerState = "Ended";
@@ -618,8 +632,11 @@ public class VideoRenderer implements IMedia.EventListener {
     }
 
     private void playSubItem() {
-        IMedia m = mPlayer.getMedia();
+        if (!state.playing) {
+            return;
+        }
 
+        IMedia m = mPlayer.getMedia();
         if (m != null) {
 
             IMediaList subItems = m.subItems();

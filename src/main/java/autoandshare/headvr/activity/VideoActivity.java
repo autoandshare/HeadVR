@@ -35,6 +35,7 @@ import autoandshare.headvr.lib.NoDistortionProvider;
 import autoandshare.headvr.lib.Setting;
 import autoandshare.headvr.lib.State;
 import autoandshare.headvr.lib.VideoRenderer;
+import autoandshare.headvr.lib.browse.IPlayList;
 import autoandshare.headvr.lib.browse.PlayList;
 import autoandshare.headvr.lib.controller.KeyControl;
 import autoandshare.headvr.lib.controller.TouchControl;
@@ -44,6 +45,7 @@ import autoandshare.headvr.lib.rendering.VRTexture2D;
 
 public class VideoActivity extends GvrActivity implements
         GvrView.StereoRenderer {
+    public static IPlayList playListS;
 
     private static final String TAG = "VideoActivity";
 
@@ -53,7 +55,7 @@ public class VideoActivity extends GvrActivity implements
 
     private BasicUI basicUI;
     private Setting setting;
-    private PlayList playList;
+    private IPlayList playList;
     private HeadControl headControl;
     private KeyControl keyControl;
     private VideoRenderer videoRenderer;
@@ -84,15 +86,21 @@ public class VideoActivity extends GvrActivity implements
         cardboardView.setRenderer(this);
         this.setGvrView(cardboardView);
 
+        // use static variable to pass parameter to new activiy
+        playList = playListS;
+        playListS = null;
+
         Log.i("intent", "start");
         Uri uri = this.getIntent().getData();
-        if (uri == null) {
+        if (uri == null && playList == null) {
             finish();
             return;
         }
 
-        Log.i("intent", uri.toString());
-        playList = PlayList.getPlayList(uri, this);
+        if (playList == null) {
+            playList = new PlayList(uri);
+        }
+        playList.setActivity(this);
     }
 
 
@@ -130,44 +138,37 @@ public class VideoActivity extends GvrActivity implements
         updateSettingWithId(Setting.id.VerticalDistance, i);
     }
 
-    private Boolean playMediaFromList(int offset) {
-        lastEventTime = System.currentTimeMillis();
-        if (!playList.isReady()) {
-            state.message = "Loading play list";
-        } else {
-            loaded = true;
-
-            MediaWrapper mw = playList.next(offset);
-
-            state.currentIndex = playList.currentIndex();
-            state.count = playList.count();
-
-            if (mw == null) {
-                state.errorMessage = "Invalid play list";
-            } else {
-                videoRenderer.playUri(mw);
-            }
-        }
-        return true;
-    }
-
-    private Boolean prevFile() {
-        return playMediaFromList(-1);
-    }
-
-    private Boolean nextFile() {
-        return playMediaFromList(1);
-    }
-
-
-    private boolean loaded = false;
-
-    private void loadFirstVideo() {
-        if (loaded) {
+    private void playMediaFromList(int offset) {
+        if (videoRenderer == null) {
             return;
         }
 
-        playMediaFromList(0);
+        lastEventTime = System.currentTimeMillis();
+
+        state.message = "Loading play list";
+
+        new Thread(() -> {
+            synchronized (playList) {
+                MediaWrapper mw = playList.getMediaAtOffset(offset);
+                if (mw == null) {
+                    state.errorMessage = "Invalid play list";
+                } else {
+                    state.indexString = playList.getIndexString();
+                    videoRenderer.playUri(mw);
+                }
+            }
+        }).start();
+        return;
+    }
+
+    private Boolean prevFile() {
+        playMediaFromList(-1);
+        return true;
+    }
+
+    private Boolean nextFile() {
+        playMediaFromList(1);
+        return true;
     }
 
     private Boolean returnHome() {
@@ -232,7 +233,6 @@ public class VideoActivity extends GvrActivity implements
 
     @Override
     public void onNewFrame(HeadTransform headTransform) {
-        loadFirstVideo();
 
         processHeadMotion(headTransform);
 
@@ -301,6 +301,7 @@ public class VideoActivity extends GvrActivity implements
         basicUI = new BasicUI(state);
 
         videoRenderer = new VideoRenderer(this, state);
+        playMediaFromList(0); // play first video
     }
 
 

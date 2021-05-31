@@ -131,7 +131,7 @@ public class BasicUI extends VRSurface {
     private void drawFileNameOrMessage(Canvas canvas) {
         String fullTxt = (state.message != null) ?
                 state.message :
-                "" + state.currentIndex + "/" + state.count + " " + getFileNameOrTitle();
+                "" + state.indexString + " " + getFileNameOrTitle();
 
         drawString(canvas,
                 TextUtils.ellipsize(fullTxt, leftAlignTextPaint, (endX - beginX) * 3 / 4, TextUtils.TruncateAt.END).toString(),
