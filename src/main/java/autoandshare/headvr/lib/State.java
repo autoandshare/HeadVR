@@ -229,10 +229,13 @@ public class State {
     }
 
     public float getPosition() {
-        return VideoProperties.getPosition(propertyKey);
+        float position = VideoProperties.getPosition(propertyKey);
+        Log.d(TAG, "got position " + position);
+        return position;
     }
 
     public void setPosition(float v) {
+        Log.d(TAG, "saved position " + v);
         VideoProperties.setPosition(propertyKey, v);
     }
 }

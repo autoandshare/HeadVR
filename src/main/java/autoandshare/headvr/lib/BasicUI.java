@@ -113,7 +113,8 @@ public class BasicUI extends VRSurface {
                 drawProgress(canvas);
             } else {
                 drawString(canvas,
-                        (state.playerState != null) ? state.playerState : "Loading",
+                        (state.playerState != null) ? state.playerState : "Loading"
+                                + (state.playing ? "" : " (Paused) "),
                         beginX, row1Y, leftAlignTextPaint);
             }
 
@@ -189,8 +190,13 @@ public class BasicUI extends VRSurface {
         drawString(canvas, string, motionsX, row1Y, leftAlignTextPaint);
     }
 
+    private String seekingTime() {
+        return state.seeking && (state.videoLength != 0) ?
+                "  < " + formatTime((int)(state.videoLength * state.newPosition)) + " >  " : "";
+    }
     private void drawTagAndTime(Canvas canvas) {
         drawString(canvas, (state.force2D ? "2D   " : "") +
+                        seekingTime() +
                         formatTime(state.currentTime) + " / " +
                         formatTime(state.videoLength),
                 endX, row1Y, rightAlignTextPaint);

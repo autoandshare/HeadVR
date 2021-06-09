@@ -524,9 +524,23 @@ public class VideoRenderer implements IMedia.EventListener {
         state.playing = false;
     }
 
+    boolean isCloseToEnd() {
+        if (mPlayer.getLength() != 0) {
+            return (mPlayer.getLength() - mPlayer.getTime()) < 3000;
+        }
+        else {
+            return mPlayer.getPosition() > 0.95;
+        }
+    }
+
     public void savePosition() {
         if (state.videoLoaded) {
-            state.setPosition(ended() ? 0 : mPlayer.getPosition());
+            Log.d(TAG, "saving position, length " + mPlayer.getLength()
+            + " time " + mPlayer.getTime()
+            + " position " +         mPlayer.getPosition()
+                    + " ended " + ended());
+            state.setPosition(isCloseToEnd() && ended() ?
+                    0 : mPlayer.getPosition());
         }
     }
 
