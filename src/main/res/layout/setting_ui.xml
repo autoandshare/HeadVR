@@ -123,6 +123,18 @@
             android:background="@android:color/darker_gray" />
 
         <Switch
+            android:id="@+id/landscapeSwitch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Orientation Landscape Normal" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_margin="10dp"
+            android:background="@android:color/darker_gray" />
+
+        <Switch
             android:id="@+id/distortionCorrectionSwitch"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

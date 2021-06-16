@@ -2,6 +2,7 @@ package autoandshare.headvr.activity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.opengl.GLES20;
@@ -71,6 +72,10 @@ public class VideoActivity extends GvrActivity implements
         setting = new Setting(this);
         if (!setting.getBoolean(Setting.id.EnableDistortionCorrection)) {
             NoDistortionProvider.setupProvider(this);
+        }
+
+        if (!setting.getBoolean(Setting.id.LandscapeNormal)) {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
         }
 
         state = new State(setting);

@@ -31,6 +31,7 @@ public class Setting {
         HeadControl,
         AudioLanguageKeywords,
         SubtitleLanguageKeywords,
+        LandscapeNormal,
     }
 
     private static class Item {
