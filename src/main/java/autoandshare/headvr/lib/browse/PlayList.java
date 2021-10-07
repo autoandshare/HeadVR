@@ -40,11 +40,11 @@ public class PlayList implements IPlayList {
     }
 
     @Override
-    public MediaWrapper getMediaAtOffset(int offset) {
+    public PlayItem getMediaAtOffset(int offset) {
         if (list == null) {
             initList();
         }
-        return next(offset);
+        return new PlayItem(next(offset));
     }
 
     public interface ListSource {

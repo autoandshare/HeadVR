@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.webkit.URLUtil;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 
@@ -23,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import autoandshare.headvr.R;
+import autoandshare.headvr.lib.browse.HeadVRChannel;
 
 public class StreamFragment extends Fragment {
 
@@ -77,6 +79,23 @@ public class StreamFragment extends Fragment {
 
     private void initUI(View view) {
         urlText = view.findViewById(R.id.streamUrl);
+
+        Button channelButton = view.findViewById(R.id.buttonHeadvrChannel);
+        channelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                HeadVRChannel.setChannelURL(false);
+                VlcHelper.openHeadVRChannel(getContext());
+            }
+        });
+        channelButton.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                HeadVRChannel.setChannelURL(true);
+                VlcHelper.openHeadVRChannel(getContext());
+                return true;
+            }
+        });
 
         view.findViewById(R.id.buttonPlayStream).setOnClickListener(new View.OnClickListener() {
             @Override

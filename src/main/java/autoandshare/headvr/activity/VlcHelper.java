@@ -15,6 +15,7 @@ import org.videolan.medialibrary.interfaces.media.MediaWrapper;
 import java.net.URLDecoder;
 import java.util.List;
 
+import autoandshare.headvr.lib.browse.HeadVRChannel;
 import autoandshare.headvr.lib.browse.PlayList;
 
 public class VlcHelper {
@@ -93,6 +94,12 @@ public class VlcHelper {
         VideoActivity.playListS = new PlayList(uri);
         Intent i = new Intent(context, VideoActivity.class);
         i.setData(uri);
+        context.startActivity(i);
+    }
+
+    public static void openHeadVRChannel(Context context) {
+        VideoActivity.playListS = new HeadVRChannel();
+        Intent i = new Intent(context, VideoActivity.class);
         context.startActivity(i);
     }
 }

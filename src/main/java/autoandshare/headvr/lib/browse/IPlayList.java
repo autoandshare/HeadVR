@@ -7,5 +7,5 @@ import org.videolan.medialibrary.interfaces.media.MediaWrapper;
 public interface IPlayList {
     public void setActivity(Activity activity);
     public String getIndexString();
-    public MediaWrapper getMediaAtOffset(int offset);
+    public PlayItem getMediaAtOffset(int offset);
 }

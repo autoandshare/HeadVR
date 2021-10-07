@@ -37,6 +37,7 @@ import autoandshare.headvr.lib.Setting;
 import autoandshare.headvr.lib.State;
 import autoandshare.headvr.lib.VideoRenderer;
 import autoandshare.headvr.lib.browse.IPlayList;
+import autoandshare.headvr.lib.browse.PlayItem;
 import autoandshare.headvr.lib.browse.PlayList;
 import autoandshare.headvr.lib.controller.KeyControl;
 import autoandshare.headvr.lib.controller.TouchControl;
@@ -154,12 +155,12 @@ public class VideoActivity extends GvrActivity implements
 
         new Thread(() -> {
             synchronized (playList) {
-                MediaWrapper mw = playList.getMediaAtOffset(offset);
-                if (mw == null) {
-                    state.errorMessage = "Invalid play list";
+                PlayItem item = playList.getMediaAtOffset(offset);
+                if (item == null || item.mw == null) {
+                    state.errorMessage = "Failed to get item from play list";
                 } else {
                     state.indexString = playList.getIndexString();
-                    videoRenderer.playUri(mw);
+                    videoRenderer.playUri(item);
                 }
             }
         }).start();

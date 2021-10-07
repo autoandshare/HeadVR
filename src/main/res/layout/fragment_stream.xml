@@ -4,6 +4,26 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <Button
+        android:id="@+id/buttonHeadvrChannel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="HeadVR Channel"
+        android:layout_margin="25dp"/>
+
+    <TextView
+        android:id="@+id/textViewBrightness"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="Selected online videos. Relax and enjoy!" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:background="@color/black"
+        android:layout_margin="20dp" />
+
     <EditText
         android:id="@+id/streamUrl"
         android:layout_width="match_parent"

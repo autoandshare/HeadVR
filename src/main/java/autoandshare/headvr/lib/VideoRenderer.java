@@ -25,6 +25,7 @@ import org.videolan.tools.Settings;
 import java.text.MessageFormat;
 
 import autoandshare.headvr.activity.VideoActivity;
+import autoandshare.headvr.lib.browse.PlayItem;
 import autoandshare.headvr.lib.rendering.ContentForTwoEyes;
 import autoandshare.headvr.lib.rendering.MeshExt;
 import autoandshare.headvr.lib.rendering.VRTexture2D;
@@ -302,14 +303,15 @@ public class VideoRenderer implements IMedia.EventListener {
 
     private ParcelFileDescriptor fd;
 
-    public void playUri(MediaWrapper mw) {
+    public void playUri(PlayItem item) {
         if (this.mw != null) {
             savePosition();
         }
 
         resetAll();
 
-        this.mw = mw;
+        this.mw = item.mw;
+        state.layoutInfo = item.layoutInfo;
         state.isFileProtocol = PathUtil.isFileAccessProtocol(mw.getUri().getScheme());
         state.fileName = mw.getFileName();
         state.title = mw.getTitle();

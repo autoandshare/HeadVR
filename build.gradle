@@ -1,7 +1,7 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion rootProject.ext.compileSdkVersion
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -9,8 +9,8 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion 21
-        targetSdkVersion 28
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
 
@@ -38,9 +38,11 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 
-    implementation 'com.google.vr:sdk-base:1.190.0'
-    implementation 'com.tencent:mmkv:1.0.18'
+    implementation files('C:\\gvr-sdk-base-1.190.0.aar')
+    implementation 'com.tencent:mmkv:1.2.8'
 
     api "org.videolan.android:libvlc-all:$rootProject.ext.libvlcVersion"
     api "org.videolan.android:medialibrary-all:$rootProject.ext.medialibraryVersion"
+
+    implementation("com.squareup.okhttp3:okhttp:4.9.0")
 }

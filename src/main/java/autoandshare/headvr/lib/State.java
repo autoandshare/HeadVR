@@ -1,12 +1,8 @@
 package autoandshare.headvr.lib;
 
-import android.net.Uri;
 import android.util.Log;
 
-import com.google.vr.sdk.base.Eye;
-
 import org.videolan.libvlc.MediaPlayer;
-import org.videolan.libvlc.interfaces.IMedia;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -31,6 +27,7 @@ public class State {
 
     // basic video info
     public String fileName;
+    public String layoutInfo;
 
     // loaded info
     public String title;
@@ -73,7 +70,7 @@ public class State {
 
         ContentForTwoEyes.EyeDistance3D = VideoProperties.getVideoEyeDistanceFloat(propertyKey);
 
-        getVideoType();
+        getVideoLayoutAndType();
         mediaType = getMediaFormatFromLayout(videoType.layout);
     }
 
@@ -158,6 +155,9 @@ public class State {
                     Pattern.CASE_INSENSITIVE);
 
     private void getLayoutFromName(String name, VideoType videoType) {
+        if (name == null) {
+            return;
+        }
         Matcher matcher = fileNamePattern3D.matcher(name);
         if (matcher.find()) {
             if (matcher.group(2).toLowerCase().startsWith("h") &&
@@ -187,6 +187,9 @@ public class State {
     }
 
     private void getVRFromName(String name, VideoType videoType) {
+        if (name == null) {
+            return;
+        }
         Matcher matcher = fileNamePatternVR.matcher(name);
         if (matcher.find()) {
             videoType.type = matcher.group(2).equals("180") ?
@@ -194,28 +197,36 @@ public class State {
         }
     }
 
-    private void getVideoType() {
-        videoType = VideoProperties.getVideoType(propertyKey);
+    private void getVideoLayout(String[] infos, VideoType videoType) {
+        int i = 0;
+        while (videoType.layout == VideoType.Layout.Auto && i < infos.length) {
+            getLayoutFromName(infos[i], videoType);
+            i += 1;
+        }
 
         if (videoType.layout == VideoType.Layout.Auto) {
-            getLayoutFromName(fileName, videoType);
-            if (videoType.layout == VideoType.Layout.Auto) {
-                getLayoutFromName(title, videoType);
-                if (videoType.layout == VideoType.Layout.Auto) {
-                    videoType.layout = VideoType.Layout.Mono;
-                }
-            }
+            videoType.layout = VideoType.Layout.Mono;
+        }
+    }
+
+    private void getVideoType(String[] infos, VideoType videoType) {
+        int i = 0;
+        while (videoType.type == VideoType.Type.Auto && i < infos.length) {
+            getVRFromName(infos[i], videoType);
+            i += 1;
         }
 
         if (videoType.type == VideoType.Type.Auto) {
-            getVRFromName(fileName, videoType);
-            if (videoType.type == VideoType.Type.Auto) {
-                getVRFromName(title, videoType);
-                if (videoType.type == VideoType.Type.Auto) {
-                    videoType.type = VideoType.Type.Plane;
-                }
-            }
+            videoType.type = VideoType.Type.Plane;
         }
+    }
+
+    private void getVideoLayoutAndType() {
+        videoType = VideoProperties.getVideoType(propertyKey);
+
+        getVideoLayout(new String[] {layoutInfo, fileName, title}, videoType);
+
+        getVideoType(new String[] {layoutInfo, fileName, title}, videoType);
 
         Log.d(TAG, "Video Type: " + videoType);
     }

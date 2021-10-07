@@ -57,9 +57,9 @@ public class Setting {
     static {
         items = new HashMap<>();
         items.put(id.Brightness, new Item(0, 100, 25, 0f, 0.5f, "Brightness"));
-        items.put(id.EyeDistance, new Item(-50, 50, 0, -0.4f, 0.4f, "Eye to eye distance (near <-> far)"));
-        items.put(id.VerticalDistance, new Item(-50, 50, 0, -0.6f, 0.6f, "Vertical offset (low <-> high)"));
-        items.put(id.VideoSize, new Item(50, 150, 100, 1.5f, 6.5f, "Video size (small <-> big)"));
+        items.put(id.EyeDistance, new Item(-50, 50, 0, -0.4f, 0.4f, "Eye to eye distance (near <-> far) (NA for 180/360 Video)"));
+        items.put(id.VerticalDistance, new Item(-100, 100, 0, -1.2f, 1.2f, "Vertical offset (low <-> high) (NA for 180/360 Video)"));
+        items.put(id.VideoSize, new Item(50, 150, 100, 1.5f, 6.5f, "Video size (small <-> big) (NA for 180/360 Video)"));
         items.put(id.MotionSensitivity, new Item(-10, 10, 0, 0.09f, 0.01f, "Head motion sensitivity (less <-> more)"));
     }
 
