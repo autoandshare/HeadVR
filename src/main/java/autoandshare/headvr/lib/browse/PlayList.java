@@ -10,9 +10,11 @@ import org.videolan.medialibrary.interfaces.media.MediaWrapper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 
 import autoandshare.headvr.activity.VlcHelper;
+import autoandshare.headvr.lib.Setting;
 
 public class PlayList implements IPlayList {
     private Activity activity;
@@ -39,10 +41,14 @@ public class PlayList implements IPlayList {
                 "[" + (currentPos + 1) + "/" + list.size() + "]";
     }
 
+    private Random rand = new Random();
     @Override
     public PlayItem getMediaAtOffset(int offset) {
         if (list == null) {
             initList();
+        }
+        if (Setting.Instance.getBoolean(Setting.id.RandomPlay)) {
+            offset = rand.nextInt(1024*1024);
         }
         return new PlayItem(next(offset));
     }

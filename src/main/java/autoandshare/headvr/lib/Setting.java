@@ -3,6 +3,7 @@ package autoandshare.headvr.lib;
 import android.app.Activity;
 import android.content.SharedPreferences;
 
+import java.util.Arrays;
 import java.util.HashMap;
 
 import autoandshare.headvr.activity.VideoActivity;
@@ -32,6 +33,7 @@ public class Setting {
         AudioLanguageKeywords,
         SubtitleLanguageKeywords,
         LandscapeNormal,
+        RandomPlay,
     }
 
     private static class Item {
@@ -87,8 +89,12 @@ public class Setting {
         updateStaticValue(id.MotionSensitivity);
     }
 
+    private static id[] defaultFalseSet =  {
+            id.RandomPlay,
+    };
+
     public boolean getBoolean(id name) {
-        return pref.getBoolean(name.toString(), true);
+        return pref.getBoolean(name.toString(), ! Arrays.asList(defaultFalseSet).contains(name));
     }
 
     public void putBoolean(id name, boolean value) {

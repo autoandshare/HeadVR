@@ -97,6 +97,7 @@ public class SettingFragment extends Fragment implements View.OnClickListener {
         initSwitch(view, R.id.distortionCorrectionSwitch, Setting.id.EnableDistortionCorrection);
         initSwitch(view, R.id.headControlSwitch, Setting.id.HeadControl);
         initSwitch(view, R.id.landscapeSwitch, Setting.id.LandscapeNormal);
+        initSwitch(view, R.id.randomPlaySwitch, Setting.id.RandomPlay);
     }
 
     private void initSwitch(View view, int id, Setting.id settingId) {
